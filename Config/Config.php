@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('PASSTOOL')) {
+    die();
+}
+
 return array(
     'databaseServer' => '',
     'databaseName' => '',
