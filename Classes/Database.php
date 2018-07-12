@@ -8,12 +8,6 @@
 class Database {
 
     /**
-     * Datenbank-Einstellungen
-     * @var DatabaseSettings
-     */
-    protected $databaseSettings;
-
-    /**
      * Datenbank-Server
      * @var string 
      */
@@ -43,13 +37,16 @@ class Database {
      */
     protected $databasePort;
 
-    function __construct() {
-        $this->setDatabaseSettings(DatabaseSettings::getInstance());
-        $this->setDatabaseServer($this->getDatabaseSettings()->getServer());
-        $this->setDatabaseName($this->getDatabaseSettings()->getName());
-        $this->setDatabaseUser($this->getDatabaseSettings()->getUser());
-        $this->setDatabasePassword($this->getDatabaseSettings()->getPassword());
-        $this->setDatabasePort($this->getDatabaseSettings()->getPort());
+    /**
+     * 
+     * @param DatabaseSettings $databaseSettings
+     */
+    function __construct($databaseSettings) {
+        $this->setDatabaseServer($databaseSettings->getServer());
+        $this->setDatabaseName($databaseSettings->getName());
+        $this->setDatabaseUser($databaseSettings->getUser());
+        $this->setDatabasePassword($databaseSettings->getPassword());
+        $this->setDatabasePort($databaseSettings->getPort());
     }
 
     /**
@@ -61,14 +58,6 @@ class Database {
      */
     private function generateDNS($databaseServer, $databaseName, $databasePort) {
         return $dns = 'mysql:' . 'host=' . $databaseServer . ';' . 'port=' . $databasePort . ';' . 'dbname=' . $databaseName;
-    }
-
-    /**
-     * Setzt die Datenbank-Settings
-     * @param DatabaseSettings $settings
-     */
-    private function setDatabaseSettings($settings) {
-        $this->databaseSettings = $settings;
     }
 
     /**
@@ -173,6 +162,16 @@ class Database {
      */
     public function closeConnection(&$connection) {
         unset($connection);
+    }
+
+    public function saveDataset(Dataset $dataset) {
+        $title = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $dateCreated = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $dateEdited = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $login = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $password = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $url = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+        $project = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
     }
 
 }

@@ -8,12 +8,6 @@
 class DatabaseSettings {
 
     /**
-     *
-     * @var DatabaseSettings 
-     */
-    private static $instance = null;
-
-    /**
      * Datenbank-Server
      * @var string
      */
@@ -44,56 +38,12 @@ class DatabaseSettings {
     protected $port;
 
     function __construct() {
-        $config = require dirname(dirname(__FILE__)) . '/Config/Config.php';
+        $config = require CONFIG_DIR . 'Config.php';
         $this->setServer($config['databaseServer']);
         $this->setName($config['databaseName']);
         $this->setUser($config['databaseUser']);
         $this->setPassword($config['databasePassword']);
         $this->setPort($config['databasePort']);
-    }
-
-    /**
-     * Liefert die Instanz von DatabaseSettings
-     * @return DatabaseSettings
-     */
-    public function getInstance() {
-        if (self::$instance === null || $this->detectChanges() === true) {
-            self::$instance = new DatabaseSettings();
-        }
-
-        return self::$instance;
-    }
-
-    /**
-     * Überpüft den Config-Array auf Veränderungen
-     * @return bool
-     */
-    private function detectChanges() {
-        $config = require dirname(dirname(__FILE__)) . '/Config/Config.php';
-
-        $changes = false;
-
-        foreach ($config as $settingname => $settingvalue) {
-            switch ($settingname) {
-                case 'databaseServer':
-                    $changes = $this->getServer() != $settingvalue || $changes === true ? true : false;
-                    break;
-                case 'databaseName':
-                    $changes = $this->getName() != $settingvalue || $changes === true ? true : false;
-                    break;
-                case 'databaseUser':
-                    $changes = $this->getUser() != $settingvalue || $changes === true ? true : false;
-                    break;
-                case 'databasePassword':
-                    $changes = $this->getPassword() != $settingvalue || $changes === true ? true : false;
-                    break;
-                case 'databasePort':
-                    $changes = $this->getPort() != $settingvalue || $changes === true ? true : false;
-                    break;
-            }
-        }
-
-        return $changes;
     }
 
     /**

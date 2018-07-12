@@ -5,9 +5,9 @@ if (!defined('PASSTOOL')) {
 }
 
 return array(
-    'databaseServer' => '',
-    'databaseName' => '',
-    'databaseUser' => '',
-    'databasePassword' => '',
+    'databaseServer' => 'test123456',
+    'databaseName' => 'test',
+    'databaseUser' => 'test',
+    'databasePassword' => 'test',
     'databasePort' => 3306
 );
