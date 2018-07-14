@@ -164,14 +164,8 @@ class Database {
         unset($connection);
     }
 
-    public function saveDataset(Dataset $dataset) {
-        $title = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $dateCreated = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $dateEdited = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $login = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $password = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $url = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
-        $project = filter_var($dataset->getTitle(), FILTER_SANITIZE_STRING);
+    public function setup() {
+        
     }
 
 }
