@@ -38,6 +38,12 @@ class Database {
     protected $databasePort;
 
     /**
+     * Admin Email
+     * @var string 
+     */
+    protected $adminEmail;
+
+    /**
      * 
      * @param DatabaseSettings $databaseSettings
      */
@@ -47,6 +53,7 @@ class Database {
         $this->setDatabaseUser($databaseSettings->getUser());
         $this->setDatabasePassword($databaseSettings->getPassword());
         $this->setDatabasePort($databaseSettings->getPort());
+        $this->setAdminEmail($databaseSettings->getAdminEmail());
     }
 
     /**
@@ -101,6 +108,14 @@ class Database {
     }
 
     /**
+     * Admin Email
+     * @param string $email
+     */
+    private function setAdminEmail($email) {
+        $this->adminEmail = $email;
+    }
+
+    /**
      * Gibt den Datenbank-Server zurück
      * @return string
      */
@@ -141,11 +156,11 @@ class Database {
     }
 
     /**
-     * Gibt die Datenbank-Settings zurück
-     * @return DatabaseSettings
+     * Admin Email
+     * @return string
      */
-    private function getDatabaseSettings() {
-        return $this->databaseSettings;
+    public function getAdminEmail() {
+        return $this->adminEmail;
     }
 
     /**
@@ -162,6 +177,24 @@ class Database {
      */
     public function closeConnection(&$connection) {
         unset($connection);
+    }
+
+    public function getUserID($username) {
+        $dbConnection = $this->openConnection();
+
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        $userID = null;
+
+        $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
+        $statement->bindParam(':username', $name);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $userID = $object->id;
+            }
+        }
+
+        return $userID;
     }
 
     public function setup() {

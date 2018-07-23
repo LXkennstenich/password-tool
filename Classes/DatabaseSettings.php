@@ -37,6 +37,12 @@ class DatabaseSettings {
      */
     protected $port;
 
+    /**
+     * Admin-Email
+     * @var string
+     */
+    protected $adminEmail;
+
     function __construct() {
         $config = require CONFIG_DIR . 'Config.php';
         $this->setServer($config['databaseServer']);
@@ -44,6 +50,7 @@ class DatabaseSettings {
         $this->setUser($config['databaseUser']);
         $this->setPassword($config['databasePassword']);
         $this->setPort($config['databasePort']);
+        $this->setAdminEmail($config['adminEmail']);
     }
 
     /**
@@ -87,6 +94,14 @@ class DatabaseSettings {
     }
 
     /**
+     * Setzt die Admin Email
+     * @param string $email
+     */
+    private function setAdminEmail($email) {
+        $this->adminEmail = $email;
+    }
+
+    /**
      * Liefert den Datenbank-Server
      * @return string
      */
@@ -124,6 +139,14 @@ class DatabaseSettings {
      */
     public function getPort() {
         return $this->port;
+    }
+
+    /**
+     * Liefert den Datenbank-Port
+     * @return string
+     */
+    public function getAdminEmail() {
+        return $this->adminEmail;
     }
 
 }
