@@ -1,7 +1,16 @@
 <?php
 
-/* @var $factory Factory */
-/* @var $session Session */
+/**
+ * logout.php
+ * Zerstört die Session und leitet den User zurück zum Login
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
 if (!defined('PASSTOOL')) {
     die();
 }

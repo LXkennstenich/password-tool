@@ -1,7 +1,16 @@
 <?php
 
-/* @var $factory Factory */
-/* @var $session Session */
+/**
+ * index.php
+ * Routet URL Anfragen
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
 if (!defined('PASSTOOL')) {
     define('PASSTOOL', true);
 }
@@ -19,8 +28,6 @@ include_once 'init.php';
 $file = ROOT_DIR . $page . '.php';
 
 include ELEMENTS_DIR . 'header.php';
-
-
 
 if (file_exists($file)) {
     header("HTTP/1.1 200 OK");

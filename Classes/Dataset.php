@@ -1,9 +1,13 @@
 <?php
 
 /**
- * Description of Dataset
- *
- * @author alexw
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
  */
 class Dataset {
 
@@ -223,7 +227,7 @@ class Dataset {
 
     public function load() {
         $userID = $this->getUserID();
-
+        $id = $this->getID();
         $dbConnetion = $this->getDatabase()->openConnection();
 
         $statement = $dbConnetion->prepare("SELECT title,date_created,date_edited,login,password,url,project FROM datasets WHERE id = :id AND user_id = :userID");

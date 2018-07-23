@@ -1,7 +1,11 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
  */
 
 

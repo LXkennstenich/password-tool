@@ -1,6 +1,15 @@
 <?php
-/* @var $factory Factory */
-/* @var $session Session */
+/**
+ * login.php
+ * Behinhaltet die Login-Form
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
 if (!defined('PASSTOOL')) {
     die();
 }

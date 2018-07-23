@@ -26,7 +26,7 @@
         url('../fonts/roboto-v18-latin-700italic.svg#Roboto') format('svg'); /* Legacy iOS */
 }
 
-*{
+h1,h2,h3,h4,h5,h6,p,a,li,ul,span,label,input{
     font-family:"Roboto"!important;
     font-size:16px;
     line-height:21px;
@@ -61,8 +61,12 @@ body.login {
     width: 50%;
     position: relative;
     margin: 0 auto;
+    margin-bottom: 0px;
     display: block;
     margin-bottom: 25px;
+    border: transparent;
+    padding: 8px;
+    border-radius: 2px;
 }
 
 #password-input {
@@ -70,8 +74,12 @@ body.login {
     width: 50%;
     position: relative;
     margin: 0 auto;
+    margin-bottom: 0px;
     display: block;
     margin-bottom: 25px;
+    border: transparent;
+    padding: 8px;
+    border-radius: 2px;
 }
 
 .button {
@@ -90,6 +98,36 @@ body.login {
     padding: 10px;
     border-radius: 8px;
     text-align: center;
+    background-image: url(/Icons/sign-in-alt.png);
+    background-repeat: no-repeat;
+    background-size: 21.5px;
+    background-position: left center;
+    background-position-x: left;
+    background-position-x: 10px;
+    box-shadow: 4px 2px 2px 0px #000;
+}
+
+#login-button:active {
+    box-shadow: 2px 1px 2px 0px #000;
+}
+
+#search-button {
+    background-image: url(/Icons/search.png);
+    background-repeat: no-repeat;
+    background-size: 21.5px;
+    background-position: left center;
+    background-position-x: left;
+    background-position-x: 10px;
+}
+
+#settingsLink {
+    background-image: url(/Icons/cog.png);
+    background-repeat: no-repeat;
+    background-size: 21.5px;
+    background-position: left center;
+    background-position-x: left;
+    background-position-x: left;
+    background-position-x: 10px;
 }
 
 #honeypot {
@@ -137,6 +175,13 @@ input[type=submit],
     color: #fff;
     font-size: 16px;
     text-decoration:none;
+    box-shadow: 4px 2px 2px 0px #000;
+}
+
+input[type=button]:active,
+input[type=submit]:active,
+.nav1-link:active {
+    box-shadow: 2px 1px 2px 0px #000;
 }
 
 form {
@@ -198,17 +243,25 @@ form {
 }
 
 .dataset {
-    display: inline-block;
+    display: block;
     max-width: 750px;
     box-sizing: border-box;
     width: 100%;
     border: 0.5px solid #e9eaf2;
     border-radius: 5px;
+    margin:0 auto;
     margin-top: 25px;
     padding: 15px;
     background: #e9eaf2;
     box-shadow: 4px 0px 4px 0px #000;
-    margin-left: 50px;
+}
+
+i {
+    margin-left: 10px;
+}
+
+i:first-child {
+    margin-left:0;
 }
 
 .dataset .row {
@@ -227,7 +280,7 @@ form {
 
 .dataset .row p {
     float: left;
-    width: 70%;
+    width: 60%;
     box-sizing: border-box;
     margin-left: 5%;
     margin-top: 0;
@@ -261,4 +314,8 @@ form {
 
 .dataset .content {
     display:none;
+}
+
+.edit-dataset-link {
+    float: right;
 }

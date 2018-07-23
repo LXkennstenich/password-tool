@@ -1,7 +1,17 @@
 <?php
-/* @var $factory Factory */
-/* @var $session Session */
-/* @var $account Account */
+/**
+ * validation.php
+ * Validiert den User über einen generierten Link der nach Accounterstellung 
+ * per E-Mail versandt wird.
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ * @var $account Account
+ */
 if (!defined('PASSTOOL')) {
     die();
 }

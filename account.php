@@ -1,6 +1,15 @@
 <?php
-/* @var $factory Factory */
-/* @var $session Session */
+/**
+ * account.php
+ * Stellt die Account-Seite dar
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
 if (!defined('PASSTOOL')) {
     die();
 }
@@ -35,8 +44,10 @@ include_once ELEMENTS_DIR . 'navbar.php';
         request.ts = document.getElementById('session-timestamp').value;
         request.ipaddress = document.getElementById('session-ipaddress').value;
         request.uid = document.getElementById('session-uid').value;
+        request.searchTerm = document.getElementById('search-term').value;
         $("#content-wrapper").load("Ajax.php", {"request": JSON.stringify(request)});
     </script>
+
     <?php include_once VIEW_DIR . 'newDataset.view.php'; ?>
 </div>
 
@@ -44,4 +55,3 @@ include_once ELEMENTS_DIR . 'navbar.php';
 
 
 
-<script src = "/Js/user.js"></script>

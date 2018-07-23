@@ -1,7 +1,16 @@
 <?php
 
-/* @var $factory Factory */
-/* @var $session Session */
+/**
+ * Ajax.php 
+ * Nimmt Ajax anfragen entgegen und wertet diese aus
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
 if (!defined('PASSTOOL')) {
     define('PASSTOOL', true);
 }

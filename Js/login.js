@@ -1,3 +1,13 @@
+/**
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ * @var $factory Factory
+ * @var $session Session
+ */
+
 var $loading = $('#loading-div').hide();
 var $loginmessage = $('#login-message').hide();
 var $registermessage = $('#register-message').hide();
