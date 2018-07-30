@@ -1,38 +1,39 @@
 <?php
 
 /**
- * logout.php
- * Zerstört die Session und leitet den User zurück zum Login
  * PassTool
  * @version 1.0
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
  */
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $encryption Encryption */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
 if (!defined('PASSTOOL')) {
     die();
 }
 
-if (!$session->isAuthenticated()) {
+
+if ($session->isAuthenticated() !== true) {
     $factory->redirect('login');
 }
 
-$domain = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : $_SERVER['HTTP_HOST'];
+if ($session->needAuthenticator() !== false) {
+    $factory->redirect('authenticator');
+}
+
+
+
 $session->deleteSessionData($_SESSION['UID']);
-
-
-session_start();
-$_SESSION = array();
-$_SESSION['OBSOLETE'] = true;
-$_SESSION['EXPIRES'] = time() + 10;
-
-setcookie('PHPSESSID', '', time() - 80000, '/', $domain, true, true);
-setcookie('TK', '', time() - 80000, '/', $domain, true, true);
-setcookie('TS', '', time() - 80000, '/', $domain, true, true);
-
-session_destroy();
 
 if (!$session->isAuthenticated()) {
     $factory->redirect('login');

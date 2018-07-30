@@ -6,14 +6,13 @@
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
  */
+/* @var $factory Factory */
+/* @var $session Session */
 if (!defined('PASSTOOL')) {
     die();
 }
 $encryption = $factory->getEncryption();
-$userID = $request->userID;
 $encryptedPassword = $request->encrypted;
 $decryptedPassword = $encryption->decrypt($encryptedPassword, $userID);
 

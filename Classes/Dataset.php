@@ -12,6 +12,12 @@
 class Dataset {
 
     /**
+     * Table Name für Parent-Klasse
+     * @var string 
+     */
+    protected $database;
+
+    /**
      *
      * @var type 
      */
@@ -73,14 +79,31 @@ class Dataset {
 
     /**
      *
-     * @var Database
+     * @var \Debug 
      */
-    protected $database;
+    protected $debugger;
 
-    public function __construct($database, $encryption) {
+    public function __construct($database, $encryption, $debugger) {
         $this->setDatabase($database);
         $this->setEncryption($encryption);
         $this->setUserID($_SESSION['UID']);
+        $this->setDebugger($debugger);
+    }
+
+    /**
+     * 
+     * @return \Debug
+     */
+    private function getDebugger() {
+        return $this->debugger;
+    }
+
+    /**
+     * 
+     * @param \Debug $debugger
+     */
+    private function setDebugger($debugger) {
+        $this->debugger = $debugger;
     }
 
     /**
@@ -111,7 +134,7 @@ class Dataset {
      * 
      * @return Encryption
      */
-    private function getEncryption() {
+    public function getEncryption() {
         return $this->encryption;
     }
 
@@ -196,54 +219,78 @@ class Dataset {
     }
 
     public function encrypt() {
-        $userID = $this->getUserID();
-        $login = $this->getLogin();
-        $password = $this->getPassword();
-        $title = $this->getTitle();
-        $url = $this->getUrl();
-        $project = $this->getProject();
+        try {
+            $userID = $this->getUserID();
+            $login = $this->getLogin();
+            $password = $this->getPassword();
+            $title = $this->getTitle();
+            $url = $this->getUrl();
+            $project = $this->getProject();
 
-        $this->setLogin($this->getEncryption()->encrypt($login, $userID));
-        $this->setPassword($this->getEncryption()->encrypt($password, $userID));
-        $this->setTitle($this->getEncryption()->encrypt($title, $userID));
-        $this->setUrl($this->getEncryption()->encrypt($url, $userID));
-        $this->setProject($this->getEncryption()->encrypt($project, $userID));
+            $this->setLogin($this->getEncryption()->encrypt($login, $userID));
+            $this->setPassword($this->getEncryption()->encrypt($password, $userID));
+            $this->setTitle($this->getEncryption()->encrypt($title, $userID));
+            $this->setUrl($this->getEncryption()->encrypt($url, $userID));
+            $this->setProject($this->getEncryption()->encrypt($project, $userID));
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function decrypt() {
-        $userID = $this->getUserID();
-        $login = $this->getLogin();
-        $password = $this->getPassword();
-        $title = $this->getTitle();
-        $url = $this->getUrl();
-        $project = $this->getProject();
+        try {
+            $userID = $this->getUserID();
+            $login = $this->getLogin();
+            $password = $this->getPassword();
+            $title = $this->getTitle();
+            $url = $this->getUrl();
+            $project = $this->getProject();
 
-        $this->setLogin($this->getEncryption()->decrypt($login, $userID));
-        $this->setPassword($this->getEncryption()->decrypt($password, $userID));
-        $this->setTitle($this->getEncryption()->decrypt($title, $userID));
-        $this->setUrl($this->getEncryption()->decrypt($url, $userID));
-        $this->setProject($this->getEncryption()->decrypt($project, $userID));
+            $this->setLogin($this->getEncryption()->decrypt($login, $userID));
+            $this->setPassword($this->getEncryption()->decrypt($password, $userID));
+            $this->setTitle($this->getEncryption()->decrypt($title, $userID));
+            $this->setUrl($this->getEncryption()->decrypt($url, $userID));
+            $this->setProject($this->getEncryption()->decrypt($project, $userID));
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function load() {
-        $userID = $this->getUserID();
-        $id = $this->getID();
-        $dbConnetion = $this->getDatabase()->openConnection();
+        try {
+            $userID = $this->getUserID();
+            $id = $this->getID();
+            $dbConnetion = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnetion->prepare("SELECT title,date_created,date_edited,login,password,url,project FROM datasets WHERE id = :id AND user_id = :userID");
-        $statement->bindParam(':id', $id, PDO::PARAM_INT);
-        $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $statement = $dbConnetion->prepare("SELECT title,date_created,date_edited,login,password,url,project FROM datasets WHERE id = :id AND user_id = :userID");
+            $statement->bindParam(':id', $id, PDO::PARAM_INT);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $this->setTitle($object->title);
-                $this->setDateCreated($object->date_created);
-                $this->setDateCreated($object->date_edited);
-                $this->setLogin($object->login);
-                $this->setPassword($object->password);
-                $this->setUrl($object->url);
-                $this->setProject($object->project);
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $this->setTitle($object->title);
+                    $this->setDateCreated($object->date_created);
+                    $this->setDateCreated($object->date_edited);
+                    $this->setLogin($object->login);
+                    $this->setPassword($object->password);
+                    $this->setUrl($object->url);
+                    $this->setProject($object->project);
+                }
             }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -276,12 +323,83 @@ class Dataset {
 
             return $success;
         } catch (Exception $ex) {
-            echo $ex->getMessage();
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function delete() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $success = false;
+
+            $id = $this->getID();
+            $userID = $this->getUserID();
+
+            $statement = $dbConnection->prepare("DELETE FROM datasets WHERE id = :id AND user_id = :userID");
+            $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
+            $statement->bindParam(':id', $id, PDO::PARAM_INT);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function update() {
-        
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $success = false;
+
+            $ID = filter_var($this->getID(), FILTER_VALIDATE_INT);
+            $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $title = $this->getTitle();
+            $login = $this->getLogin();
+            $password = $this->getPassword();
+            $url = $this->getUrl();
+            $project = $this->getProject();
+
+            $statement = $dbConnection->prepare("UPDATE datasets SET user_id = :userID , title = :title ,login = :login,password = :password,url = :url, project = :project WHERE user_id = :userID AND id = :ID");
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+            $statement->bindParam(':title', $title, PDO::PARAM_STR);
+            $statement->bindParam(':login', $login, PDO::PARAM_STR);
+            $statement->bindParam(':password', $password, PDO::PARAM_STR);
+            $statement->bindParam(':url', $url, PDO::PARAM_STR);
+            $statement->bindParam(':project', $project, PDO::PARAM_STR);
+
+            if ($statement->execute()) {
+
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+
+            return $ex->getMessage();
+        }
     }
 
 }

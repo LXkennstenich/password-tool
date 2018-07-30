@@ -6,18 +6,16 @@
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
  */
 if (!defined('PASSTOOL')) {
     die();
 }
 
 return array(
-    'databaseServer' => 'test@datenbankserver.com',
-    'databaseName' => 'test',
-    'databaseUser' => 'test',
-    'databasePassword' => 'test',
+    'databaseServer' => 'db1337.mydbserver.com',
+    'databaseName' => 'usr_p446700_2',
+    'databaseUser' => 'p446700d8',
+    'databasePassword' => 'aligupoR+291',
     'databasePort' => 3306,
-    'adminEmail' => 'test@test.de'
+    'adminEmail' => 'contact@alexweese.de'
 );

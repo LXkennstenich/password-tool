@@ -1,26 +1,33 @@
 <?php
+/**
+ * PassTool
+ * @version 1.0
+ * @author Alexander Weese
+ * @package PassTool
+ * @copyright (c) 2018, Alexander Weese
+ */
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
 if (!defined('PASSTOOL')) {
     die();
 }
 
-/* @var $factory Factory */
-$data = json_decode($_POST['request']);
-$userID = base64_decode($data->uid);
-$searchTerm = $data->searchTerm;
 if ($searchTerm != '') {
-    $searchString = filter_var($searchTerm, FILTER_SANITIZE_STRING);
-    $datasets = $factory->searchDatasets($userID, strtolower($searchString));
+    $datasets = $factory->searchDatasets($userID, strtolower($searchTerm));
 } else {
     $datasets = $factory->getDatasets($userID);
 }
 ?>
+
 <div class="container">
-    <div class="ajax-loading">
-
-    </div>
-    <div class="ajax-response">
-
-    </div>
 
     <?php foreach ($datasets as $dataset) { ?>
 
@@ -32,13 +39,13 @@ if ($searchTerm != '') {
         $login = $dataset->getLogin();
         $password = $dataset->getPassword();
         $url = $dataset->getUrl();
-        $project = $dataset->getID;
+        $project = $dataset->getProject();
         ?>
 
         <div id="dataset-<?php echo $ID; ?>" class="dataset">
             <input type="hidden" class="datasetID" value="<?php echo $ID; ?>">
             <input type="hidden" class="datasetUserID" value="<?php echo $userID; ?>">
-            <h2><span class="dataset-title"><?php echo $title; ?></span><a class="edit-dataset-link" href="edit/?id=<?php echo $ID; ?>" ><i class="fas fa-pen"></i></a></h2>
+            <h2><span class="dataset-title"><?php echo $title; ?></span><a class="edit-dataset-link" href="edit/?id=<?php echo $ID; ?>" ><i class="fas fa-pen"></i></a><a class="delete-dataset-link" datasetID="<?php echo $ID; ?>"><i id="deleteDataset"  class="far fa-trash-alt"></i></a></h2>
             <div class="content">
                 <div class="row">
                     <label>Login:</label>
@@ -53,14 +60,17 @@ if ($searchTerm != '') {
                         for ($i = 0; $i <= $length; $i++) {
                             echo '*';
                         }
+
+                        $dataset->encrypt();
                         ?>
                     </p>
                     <i class="far fa-eye" onclick="showPassword(this)"></i>
-                    <i class="fas fa-copy" onclick="copy(this)"></i>
+                    <i class="fas fa-copy" onclick="copy('<?php echo $dataset->getPassword(); ?>')"></i>
+                    <?php $dataset->decrypt(); ?>
                 </div>
                 <div class="row">
                     <label>URL:</label>
-                    <p><?php echo $url; ?></p>
+                    <p><a href="<?php echo $url; ?>" target="_blank"><?php echo $url; ?></a></p>
                 </div>
                 <div class="row">
                     <label>Projekt:</label>
@@ -83,36 +93,9 @@ if ($searchTerm != '') {
         <?php
     }
     ?>
+
 </div>
-<script>
-    $('.dataset-title').on("click", function () {
-        if ($(this).hasClass('open') == false) {
-            $(this).addClass('open');
-            $(this).parent('h2').next('.content').slideDown('slow');
-        } else {
-            $(this).removeClass('open');
-            $(this).parent('h2').next('.content').slideUp('slow');
-        }
-    });
 
-
-    /*
-     $('.edit-dataset-link').bind('click touch', function () {
-     $.fancybox({
-     width: 400,
-     height: 400,
-     autoSize: false,
-     href: 'Ajax.php',
-     type: 'ajax',
-     ajax: {
-     settings: {
-     "request": {JSON.stringify(request)}
-     }
-     }
-     }
-     );
-     });
-     */
-
+<script src="/Js/datasetView.min.js">
 
 </script>

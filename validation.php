@@ -1,17 +1,22 @@
 <?php
 /**
- * validation.php
- * Validiert den User über einen generierten Link der nach Accounterstellung 
- * per E-Mail versandt wird.
  * PassTool
  * @version 1.0
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
- * @var $account Account
  */
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $encryption Encryption */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
 if (!defined('PASSTOOL')) {
     die();
 }

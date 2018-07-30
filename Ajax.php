@@ -1,36 +1,37 @@
 <?php
 
 /**
- * Ajax.php 
- * Nimmt Ajax anfragen entgegen und wertet diese aus
  * PassTool
  * @version 1.0
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
  */
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $encryption Encryption */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
 if (!defined('PASSTOOL')) {
-    define('PASSTOOL', true);
+    die();
 }
-
-if (session_status() == PHP_SESSION_NONE) {
-    session_save_path('/tmp');
-    session_start();
-}
-
-include_once 'init.php';
 
 $request = json_decode($_POST['request']);
 
 $action = $request->action;
-$sessionToken = base64_decode($request->tk);
-$sessionTimestamp = base64_decode($request->ts);
+$userID = base64_decode($request->uid);
+$sessionToken = $encryption->decrypt($request->tk, $userID);
+$sessionTimestamp = $encryption->decrypt($request->ts, $userID);
 $sessionIpAddress = base64_decode($request->ipaddress);
+$searchTerm = $request->searchTerm;
 
-
-if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress)) {
+if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
 
     if ($action == 'View') {
         $file = VIEW_DIR . $request->file . '.view.php';

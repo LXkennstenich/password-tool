@@ -5,11 +5,20 @@
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var Factory $factory
- * @var Session $session
  */
-/* @var $factory Factory  */
-/* @var $session Session  */
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
+if (!defined('PASSTOOL')) {
+    die();
+}
 ?>
 <!DOCTYPE html>
 <html lang="de-DE">
@@ -25,11 +34,6 @@
         <?php } else { ?>
             <script src = "/Js/login.min.js"></script>
         <?php } ?>
-
     </head>
     <body class="<?php echo $page; ?>">
-        <input type="hidden" id="session-ipaddress" value="<?= $ts = isset($_SESSION['IP']) ? base64_encode($_SESSION['IP']) : base64_encode($_SERVER['REMOTE_ADDR']); ?>" >
-        <input type="hidden" id="session-token" value="<?= $token = isset($_SESSION['TK']) ? base64_encode($_SESSION['TK']) : null; ?>" >
-        <input type="hidden" id="session-timestamp" value="<?= $ts = isset($_SESSION['TS']) ? base64_encode($_SESSION['TS']) : null; ?>" >
-        <input type="hidden" id="session-uid" value="<?= $ts = isset($_SESSION['UID']) ? base64_encode($_SESSION['UID']) : null; ?>" >
-        <input type="hidden" id="search-term" value="<?= $searchTerm = isset($_POST['search']) ? $_POST['search'] : null ?>">
+

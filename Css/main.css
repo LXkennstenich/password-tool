@@ -32,8 +32,20 @@ h1,h2,h3,h4,h5,h6,p,a,li,ul,span,label,input{
     line-height:21px;
 }
 
+h1 {
+    font-size: 28px;
+    line-height: 36px;
+}
+
+h2 {
+    font-size: 24px;
+    line-height: 50px;
+    margin: 0;
+    position:relative;
+}
+
 body {
-    background: #fff;
+    background: #e9eaf2;
     color: #222a6d;
 }
 
@@ -42,7 +54,10 @@ body.login {
     background: #e9eaf2;  
 }
 
-#login-form {
+#login-form,
+.authenticator-form,
+#authenticator-setup,
+#first-time-password-change{
     width: 100%;
     max-width: 500px;
     display: block;
@@ -52,11 +67,15 @@ body.login {
     border-radius: 8px;
     text-align: center;
     margin: 0 auto;
-    background:#e9eaf2;
-    transform: translate(0%,50%);
+    margin-top: 0px;
+    margin-bottom: 0px;
+    background: #e9eaf2;
+    margin-bottom: 70px;
+    margin-top: 70px;
 }
 
-#username-input {
+#username-input,
+#authenticator-code{
     box-sizing: border-box;
     width: 50%;
     position: relative;
@@ -69,7 +88,13 @@ body.login {
     border-radius: 2px;
 }
 
-#password-input {
+#authenticator-code-honeypot {
+    display:none;
+}
+
+#password-input,
+#password-input-old,
+#password-input-new{
     box-sizing: border-box;
     width: 50%;
     position: relative;
@@ -85,6 +110,26 @@ body.login {
 .button {
     cursor:pointer;
     outline:0;
+    cursor: pointer;
+    outline: 0;
+    background: #222a6d;
+    color: #fff;
+    font-size: 16px;
+    padding: 8px;
+    width: auto;
+    height: auto;
+    position: relative;
+    text-decoration: none;
+    border-radius: 2px;
+    display: block;
+    margin: 0 auto;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    max-width: 250px;
+    width: 100%;
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
 #login-button {
@@ -118,6 +163,12 @@ body.login {
     background-position: left center;
     background-position-x: left;
     background-position-x: 10px;
+    width: auto;
+    display: inline-block;
+    margin-top: 0;
+    margin: 0;
+    margin-left: 0px;
+    margin-left: 15px;
 }
 
 #settingsLink {
@@ -143,11 +194,32 @@ body.login {
     box-sizing: border-box;
     max-width: 500px;
     margin: 0 auto;
-    background: #f3f3f3;
+    background: #e9eaf2;
+    border:2px solid #e9eaf2;
     border-radius: 5px;
+    text-align: center;
 }
 
-.form-input {
+#newDataset .row {
+    width: 95%;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+#newDataset .row label {
+    max-width: 80%;
+    margin: 0 auto;
+    margin-bottom: 0px;
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    margin-bottom: 8px;
+}
+
+#newDataset .row  .form-input {
     width: 100%;
     max-width: 80%;
     position: relative;
@@ -159,12 +231,36 @@ body.login {
     border: 0.5px solid #000;
     border-radius: 2px;
     margin-bottom: 15px;
+    border: transparent;
+    padding: 8px;
+    border-radius: 2px;
+}
+
+#newDataset .row.checkbox label {
+    margin: 0;
+    margin-left: 0px;
+    float: left;
+    margin-left: 10px;
+    width:60%;
+}
+
+#newDataset .row.checkbox input {
+    float:left;
+}
+
+#generatePasswordButton {
+    margin:0 auto;
+    margin-bottom:15px;
+    left:0;
+    right:0;
+
 }
 
 input[type=button],
 input[type=submit],
-.nav1-link{
-    display: inline-block;
+.nav1-link,
+.button{
+    display: block;
     position: relative;
     background: #222a6d;
     border: 2px solid #222a6d;
@@ -174,8 +270,11 @@ input[type=submit],
     cursor: pointer;
     color: #fff;
     font-size: 16px;
-    text-decoration:none;
+    text-decoration: none;
     box-shadow: 4px 2px 2px 0px #000;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
 }
 
 input[type=button]:active,
@@ -206,12 +305,18 @@ form {
     justify-content: center;
     align-items: center;
     border-radius: 2px;
+    border: 2px solid #fff;
 }
 
 #navbar form input {
     float: left;
     margin-left: 25px;
     height: 35px;
+    position:relative;
+    box-sizing:border-box;
+    border: transparent;
+    padding: 8px;
+    border-radius: 2px;
 }
 
 .nav1-item {
@@ -233,13 +338,19 @@ form {
 }
 
 #main {
-    width: 70%;
+    width: 100%;
     height: auto;
     overflow: auto;
     display: block;
     position: relative;
     float: right;
     box-sizing: border-box;
+    min-height: 485px;
+    padding-top: 35px;
+    border: 2px solid #fff;
+    margin-top: 110px;
+    padding-bottom: 50px;
+    margin-bottom: 50px;
 }
 
 .dataset {
@@ -247,17 +358,22 @@ form {
     max-width: 750px;
     box-sizing: border-box;
     width: 100%;
-    border: 0.5px solid #e9eaf2;
+    border: 0.5px solid #fff;
     border-radius: 5px;
-    margin:0 auto;
+    margin: 0 auto;
+    margin-top: 0px;
     margin-top: 25px;
     padding: 15px;
-    background: #e9eaf2;
+    padding-top: 0;
+    padding-bottom: 0;
+    background: #fff;
     box-shadow: 4px 0px 4px 0px #000;
 }
 
 i {
     margin-left: 10px;
+    cursor:pointer;
+    z-index:999;
 }
 
 i:first-child {
@@ -271,6 +387,7 @@ i:first-child {
     overflow: hidden;
     height: auto;
     margin-bottom:15px;
+    position: relative;
 }
 
 .dataset .row label {
@@ -289,21 +406,24 @@ i:first-child {
 }
 
 .loading-div {
-    display:none;
-    width: auto;
-    height: auto;
+    width: 55px;
+    height: 35px;
     position: absolute;
     overflow: hidden;
-    top: 50%;
-    left: 50%;
+    left: 0;
+    margin: 0 auto;
+    right: 0;
+    text-align: center;
+    transform: translate(0%,100%);
 }
 
 .container {
-    width: auto;
+    width: 70%;
     height: auto;
     overflow: auto;
     padding: 15px;
     box-sizing: border-box;
+    float: left;
 }
 
 .dataset-title {
@@ -317,5 +437,102 @@ i:first-child {
 }
 
 .edit-dataset-link {
-    float: right;
+    line-height: 50px;
+    position: absolute;
+    right: 35px;
+}
+
+.delete-dataset-link {
+    line-height: 50px;
+    position: absolute;
+    right: 0px;
+}
+
+#editDataset {
+    display: block;
+    max-width: 545px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 25px;
+    padding-top: 25px;
+    padding-top: 50px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+
+#editDataset .row {
+    width: 95%;
+    margin: 0 auto;
+    margin-bottom: 0px;
+    display: block;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+#editDataset .row input {
+    width: 100%;
+    box-sizing: border-box;
+    height: auto;
+    overflow: hidden;
+    padding: 8px;
+    border: none;
+    border-radius: 2px;
+}
+
+#editDataset .row label {
+    width: 100%;
+    display: inline-block;
+    height: auto;
+    overflow: hidden;
+    position: relative;
+    text-align: left;
+}
+
+.headline {
+    display: inline-block;
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 25px;
+    width: 30%;
+    float: left;
+}
+
+.info-text {
+    font-family: "Roboto Italic" !important;
+}
+
+.login-failed {
+    color: red;
+    font-size: 18px;
+    line-height: 22px;
+    margin: 0 auto;
+    margin-top: 25px;
+    font-family: "Roboto";
+    display: block;
+    position:absolute;
+    left:0;
+    right:0;
+}
+
+.fa-eye {
+    position: absolute;
+    right: 35px;
+}
+
+.fa-copy {
+    position: absolute;
+    right: 0;
+}
+
+.footer-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    box-sizing: border-box;
+    margin: 0 auto;
 }

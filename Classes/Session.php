@@ -34,22 +34,65 @@ class Session {
      * @var string 
      */
     protected $password;
+
+    /**
+     *
+     * @var string 
+     */
     protected $ip_address;
+
+    /**
+     *
+     * @var string 
+     */
     protected $host;
+
+    /**
+     *
+     * @var string 
+     */
     protected $userAgent;
+
+    /**
+     *
+     * @var int 
+     */
     protected $user_id;
+
+    /**
+     *
+     * @var Debug 
+     */
+    protected $debugger;
 
     /**
      * 
      * @param Database $database
      * @param Encryption $encryption
      */
-    public function __construct($database, $encryption) {
+    public function __construct($database, $encryption, $debugger) {
         $this->setDatabase($database);
         $this->setEncryption($encryption);
+        $this->setDebugger($debugger);
     }
 
-    private function setUserID($userID) {
+    /**
+     * 
+     * @return \Debug
+     */
+    private function getDebugger() {
+        return $this->debugger;
+    }
+
+    /**
+     * 
+     * @param \Debug $debugger
+     */
+    private function setDebugger($debugger) {
+        $this->debugger = $debugger;
+    }
+
+    public function setUserID($userID) {
         $this->user_id = $userID;
     }
 
@@ -110,7 +153,7 @@ class Session {
      * @param type $username
      */
     public function setUsername($username) {
-        $this->username = $username;
+        $this->username = filter_var($username, FILTER_VALIDATE_EMAIL);
     }
 
     /**
@@ -126,7 +169,7 @@ class Session {
      * @param type $username
      */
     public function setIpaddress($ipaddress) {
-        $this->ip_address = $ipaddress;
+        $this->ip_address = filter_var($ipaddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
     }
 
     /**
@@ -158,7 +201,7 @@ class Session {
      * @param type $password
      */
     public function setPassword($password) {
-        $this->password = $password;
+        $this->password = filter_var($password, FILTER_SANITIZE_STRING);
     }
 
     /**
@@ -174,7 +217,7 @@ class Session {
      * @param type $password
      * @return type
      */
-    private function hashPassword($password) {
+    public function hashPassword($password) {
         return password_hash($password, PASSWORD_DEFAULT, ["cost" => 12]);
     }
 
@@ -224,7 +267,7 @@ class Session {
      * @return string
      */
     private function generateSessionToken() {
-        return bin2hex(openssl_random_pseudo_bytes(256));
+        return bin2hex(openssl_random_pseudo_bytes(64));
     }
 
     /**
@@ -236,36 +279,121 @@ class Session {
     }
 
     private function queryUserdata() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $row = array();
+            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+
+            if ($username) {
+                $statement = $dbConnection->prepare("SELECT username,password FROM account WHERE username = :username AND active = 1");
+                $statement->bindParam(":username", $username, PDO::PARAM_STR);
+
+                if ($statement->execute()) {
+                    while ($object = $statement->fetchObject()) {
+                        $row['username'] = $object->username;
+                        $row['password'] = $object->password;
+                    }
+                }
+
+                $this->getDatabase()->closeConnection($dbConnection);
+            }
+
+            return $row;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    private function updatePassword($passwordToUpdate) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $success = false;
+            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $password = $passwordToUpdate;
+
+            $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE username = :username");
+            $statement->bindParam(":password", $password, PDO::PARAM_STR);
+            $statement->bindParam(":username", $username, PDO::PARAM_STR);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function queryUserID() {
+
+
         $dbConnection = $this->getDatabase()->openConnection();
 
-        $row = array();
-        $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+        $ID = null;
+        $name = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
 
-        $statement = $dbConnection->prepare("SELECT username,password FROM account WHERE username = :username AND active = 1");
-        $statement->bindParam(":username", $username, PDO::PARAM_STR);
+        $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
+        $statement->bindParam(":username", $name, PDO::PARAM_STR);
 
         if ($statement->execute()) {
             while ($object = $statement->fetchObject()) {
-                $row['username'] = $object->username;
-                $row['password'] = $object->password;
+                $ID = $object->id;
             }
         }
 
         $this->getDatabase()->closeConnection($dbConnection);
 
-        return $row;
+        return $ID;
     }
 
-    private function updatePassword($passwordToUpdate) {
+    public function needAuthenticator() {
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $needAuthenticator = true;
+        $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+
+        $statement = $dbConnection->prepare("SELECT session_authenticator FROM session WHERE user_id = :userID");
+        $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $databaseValue = filter_var($object->session_authenticator, FILTER_VALIDATE_INT);
+                if ($databaseValue !== false) {
+                    $needAuthenticator = $databaseValue === 1 ? false : true;
+                }
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $needAuthenticator;
+    }
+
+    public function updateAuthenticator($value) {
         $dbConnection = $this->getDatabase()->openConnection();
 
         $success = false;
-        $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
-        $password = $passwordToUpdate;
+        $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+        $authenticator = filter_var($value, FILTER_VALIDATE_INT);
 
-        $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE username = :username");
-        $statement->bindParam(":password", $password, PDO::PARAM_STR);
-        $statement->bindParam(":username", $username, PDO::PARAM_STR);
+        $statement = $dbConnection->prepare("UPDATE session SET session_authenticator = :authenticator WHERE user_id = :userID");
+        $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+        $statement->bindParam(":authenticator", $authenticator, PDO::PARAM_INT);
 
         if ($statement->execute()) {
             if ($statement->rowCount() > 0) {
@@ -297,13 +425,17 @@ class Session {
 
             if ($usernameSaved == $usernameInput && $usernameSaved != null) {
                 if (password_verify($passwordInput, $passwordSaved)) {
-                    $success = $this->startSession();
+                    $success = true;
                 }
             }
 
             return $success;
         } catch (Exception $ex) {
-            file_put_contents(dirname(dirname(__FILE__)) . '/log.txt', $ex->getMessage());
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -311,9 +443,8 @@ class Session {
      * 
      * @return boolean
      */
-    private function startSession() {
+    public function startSession() {
         try {
-
             session_start();
 
             session_regenerate_id();
@@ -346,64 +477,114 @@ class Session {
             $_SESSION['UA'] = $userAgent;
             $_SESSION['TK'] = $sessionToken;
             $_SESSION['TS'] = $sessionTimestamp;
+            $_SESSION['EXPIRES'] = $cookieTimestamp;
+            $_SESSION['AUTH'] = 0;
 
             if (!isset($_SESSION['IP']) || !isset($_SESSION['UA'])) {
                 return false;
             }
 
-            $saveID = $this->getEncryption()->encrypt($sessionID, $name);
-            $saveToken = $this->hashPassword($sessionToken);
-            $saveTimestamp = $this->getEncryption()->encrypt($sessionTimestamp, $name);
-            $saveIpaddress = $this->getEncryption()->encrypt($ipAddress, $name);
-            $saveUseragent = $this->getEncryption()->encrypt($userAgent, $name);
+            $saveID = $this->getEncryption()->encrypt($sessionID, $userID);
+            $saveToken = $sessionToken;
+            $saveTimestamp = $this->getEncryption()->encrypt($sessionTimestamp, $userID);
+            $saveIpaddress = $this->getEncryption()->encrypt($ipAddress, $userID);
+            $saveUseragent = $this->getEncryption()->encrypt($userAgent, $userID);
 
-            $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent, $saveVektor);
+            $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent);
 
             return true;
         } catch (Exception $ex) {
-            file_put_contents(dirname(dirname(__FILE__)) . '/log.txt', $ex->getMessage());
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
-    public function ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress) {
-        if (!isset($sessionToken)) {
-            return false;
-        }
+    /**
+     * @todo Datenbankabfrage für Session
+     * @param string $sessionToken
+     * @param string $sessionTimestamp
+     * @param string $sessionIpAddress
+     * @param string $userID
+     * @return boolean
+     */
+    public function ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID) {
+        try {
+            $sessionData = $this->queryAjaxSessionData($userID);
+            $savedToken = $sessionData['session_token'];
+            $savedTimestamp = $this->getEncryption()->decrypt($sessionData['session_timestamp'], $userID);
+            $savedIpaddress = $this->getEncryption()->decrypt($sessionData['session_ipaddress'], $userID);
 
-        if (!isset($sessionTimestamp)) {
-            return false;
-        }
+            if ($sessionToken == '') {
+                return false;
+            }
 
-        return true;
+            if ($sessionTimestamp == '') {
+                return false;
+            }
+
+            if ($sessionTimestamp != $savedTimestamp) {
+                return false;
+            }
+
+            if ($sessionToken != $savedToken) {
+                return false;
+            }
+
+            if ($sessionIpAddress != $savedIpaddress) {
+                return false;
+            }
+
+            return true;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function isAuthenticated() {
         try {
-
+            $authenticated = null;
 
             if (isset($_SESSION['EXPIRES']) && $_SESSION['EXPIRES'] < time()) {
-                return false;
+                $authenticated = false;
             }
 
             if (!isset($_SESSION['UID']) || $_SESSION['UID'] <= 0 || filter_var($_SESSION['UID'], FILTER_VALIDATE_INT) == false) {
-                return false;
+                $authenticated = false;
             }
 
             if (!isset($_SESSION['U']) || $this->getUsername() != $_SESSION['U']) {
-                return false;
+                $authenticated = false;
             }
 
             if (!isset($_SESSION['TK']) || $_SESSION['TK'] != $_COOKIE['TK']) {
-                return false;
+                $authenticated = false;
             }
 
             if (!isset($_SESSION['TS']) || $_SESSION['TS'] + (60 * 60 * 2) != $_COOKIE['TS']) {
+                $authenticated = false;
+            }
+
+            if ($authenticated === false) {
+                $this->deleteSessionData($_SESSION['UID']);
                 return false;
             }
 
+
+
             return true;
         } catch (Exception $ex) {
-            file_put_contents(dirname(dirname(__FILE__)) . '/log.txt', $ex->getMessage());
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -419,86 +600,125 @@ class Session {
 
             return true;
         } catch (Exception $ex) {
-            echo $ex->getMessage() . '<br/>';
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
-    private function querySessionData() {
-        $dbConnection = $this->getDatabase()->openConnection();
+    private function queryAjaxSessionData($user_id) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $sessionData = array();
-        $username = filter_var($name, FILTER_VALIDATE_EMAIL);
+            $sessionData = array();
+            $userID = $user_id;
 
-        $statement = $dbConnection->prepare("SELECT session_id,session_token,session_timestamp,session_ipaddress FROM session WHERE username = :username");
-        $statement->bindParam(":username", $username, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("SELECT session_token,session_timestamp,session_ipaddress FROM session WHERE user_id = :userID");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $sessionData['session_id'] = $object->session_id;
-                $sessionData['session_token'] = $object->session_token;
-                $sessionData['session_timestamp'] = $object->session_timestamp;
-                $sessionData['session_ipaddress'] = $object->session_ipaddress;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $sessionData['session_token'] = $object->session_token;
+                    $sessionData['session_timestamp'] = $object->session_timestamp;
+                    $sessionData['session_ipaddress'] = $object->session_ipaddress;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $sessionData;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $sessionData;
     }
 
     private function saveSessionData($user_id, $id, $token, $timestamp, $ipaddress, $useragent) {
-        $dbConnection = $this->getDatabase()->openConnection();
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $success = false;
-        $userID = filter_var($user_id, FILTER_VALIDATE_INT);
-        $sessionID = filter_var($id, FILTER_SANITIZE_STRING);
-        $sessionToken = $token;
-        $sessionIpaddress = filter_var($ipaddress, FILTER_VALIDATE_IP);
-        $sessionUserAgent = filter_var($useragent, FILTER_SANITIZE_STRING);
-        $sessionTimestamp = $timestamp;
+            $success = false;
+            $userID = filter_var($user_id, FILTER_SANITIZE_STRING);
+            $sessionID = filter_var($id, FILTER_SANITIZE_STRING);
+            $sessionToken = $token;
+            $sessionIpaddress = filter_var($ipaddress, FILTER_SANITIZE_STRING);
+            $sessionUserAgent = filter_var($useragent, FILTER_SANITIZE_STRING);
+            $sessionTimestamp = $timestamp;
 
-        $statement = $dbConnection->prepare("INSERT INTO session (user_id,session_id,session_token,session_timestamp,session_ipaddress,session_useragent) VALUES (:userID,:sessionID,:sessionToken,:sessionTimestamp,:sessionIpaddress,:sessionUseragent)");
-        $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
-        $statement->bindParam(":sessionID", $sessionID, PDO::PARAM_STR);
-        $statement->bindParam(":sessionToken", $sessionToken, PDO::PARAM_STR);
-        $statement->bindParam(":sessionTimestamp", $sessionTimestamp, PDO::PARAM_STR);
-        $statement->bindParam(":sessionIpaddress", $sessionIpaddress, PDO::PARAM_STR);
-        $statement->bindParam(":sessionUseragent", $sessionUserAgent, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("INSERT INTO session (user_id,session_id,session_token,session_timestamp,session_ipaddress,session_useragent) VALUES (:userID,:sessionID,:sessionToken,:sessionTimestamp,:sessionIpaddress,:sessionUseragent)");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
+            $statement->bindParam(":sessionID", $sessionID, PDO::PARAM_STR);
+            $statement->bindParam(":sessionToken", $sessionToken, PDO::PARAM_STR);
+            $statement->bindParam(":sessionTimestamp", $sessionTimestamp, PDO::PARAM_STR);
+            $statement->bindParam(":sessionIpaddress", $sessionIpaddress, PDO::PARAM_STR);
+            $statement->bindParam(":sessionUseragent", $sessionUserAgent, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
     /**
      * 
-     * @param type $name
+     * @param type $userID
      * @return boolean
      */
-    public function deleteSessionData($name) {
-        $dbConnection = $this->getDatabase()->openConnection();
+    public function deleteSessionData($user_id) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $success = false;
-        $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $success = false;
+            $userID = $user_id;
 
-        $statement = $dbConnection->prepare("DELETE FROM session WHERE user_id = :userID");
-        $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+            $statement = $dbConnection->prepare("DELETE FROM session WHERE user_id = :userID");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $domain = isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : $_SERVER['HTTP_HOST'];
+
+                    session_start();
+                    $_SESSION = array();
+                    $_SESSION['OBSOLETE'] = true;
+                    $_SESSION['EXPIRES'] = time() + 10;
+
+                    setcookie('PHPSESSID', '', time() - 80000, '/', $domain, true, true);
+                    setcookie('TK', '', time() - 80000, '/', $domain, true, true);
+                    setcookie('TS', '', time() - 80000, '/', $domain, true, true);
+
+                    session_destroy();
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
 }
