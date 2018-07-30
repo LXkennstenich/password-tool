@@ -12,10 +12,10 @@ if (!defined('PASSTOOL')) {
 }
 
 return array(
-    'databaseServer' => 'db1337.mydbserver.com',
-    'databaseName' => 'usr_p446700_2',
-    'databaseUser' => 'p446700d8',
-    'databasePassword' => 'aligupoR+291',
+    'databaseServer' => 'test.com',
+    'databaseName' => 'name',
+    'databaseUser' => 'user',
+    'databasePassword' => 'pass',
     'databasePort' => 3306,
-    'adminEmail' => 'contact@alexweese.de'
+    'adminEmail' => 'test@test.de'
 );
