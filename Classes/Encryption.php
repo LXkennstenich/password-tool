@@ -29,8 +29,8 @@ class Encryption {
 
     public function __construct($database, $userID, $debugger) {
         $this->setDatabase($database);
-        $this->setUserID($userID);
         $this->setDebugger($debugger);
+        $this->setUserID($userID);
     }
 
     /**
@@ -84,7 +84,6 @@ class Encryption {
     private function getEncryptionKey($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $user = $userID;
             $encryptionKey = null;
             $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :userID");
@@ -104,14 +103,13 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function getCipherMode($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $user = $userID;
             $cipherMode = null;
             $statement = $dbConnection->prepare("SELECT cypher_mode FROM account WHERE id = :userID");
@@ -131,7 +129,7 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -157,7 +155,7 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -181,7 +179,7 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -220,7 +218,7 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -235,7 +233,7 @@ class Encryption {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 

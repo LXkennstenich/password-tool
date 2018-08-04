@@ -177,8 +177,10 @@ class Factory {
      * @return Encryption
      */
     public function getEncryption() {
+        $sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : null;
+
         if (static::$encryption == null || !isset(static::$encryption)) {
-            static::$encryption = new Encryption($this->getDatabase(), $_SESSION['UID'], $this->getDebugger());
+            static::$encryption = new Encryption($this->getDatabase(), $sessionUID, $this->getDebugger());
         }
 
         return static::$encryption;
@@ -210,6 +212,46 @@ class Factory {
         return $dataset;
     }
 
+    public function getUserID($username) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+            $userID = null;
+
+            $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
+            $statement->bindParam(':username', $name);
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $userID = $object->id;
+                }
+            }
+
+            return $userID;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function getUserIDs() {
+        $dbConnection = $this->getDatabase()->openConnection();
+        $statement = $dbConnection->prepare("SELECT DISTINCT id FROM account");
+        $IDs = array();
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetch(PDO::FETCH_UNIQUE)) {
+                $IDs[] = $object->id;
+            }
+        }
+
+        return $IDs;
+    }
+
     /**
      * 
      * @param string $user_id
@@ -234,18 +276,18 @@ class Factory {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function getDatasets($user_id) {
         try {
-            $userID = $user_id;
+            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $datasets = array();
 
             $dbConnection = $this->getDatabase()->openConnection();
             $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM datasets WHERE user_id = :userID");
-            $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -265,7 +307,7 @@ class Factory {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -292,43 +334,27 @@ class Factory {
 
                     $dataset->setID($object->id);
                     $dataset->setUserID($object->user_id);
-                    $dataset->setTitle($object->title);
-                    $dataset->setDateCreated($object->date_created);
-                    $dataset->setDateEdited($object->date_edited);
-                    $dataset->setLogin($object->login);
-                    $dataset->setPassword($object->password);
-                    $dataset->setUrl($object->url);
-                    $dataset->setProject($object->project);
+                    $dataset->getEncryption()->setUserID($object->user_id);
+                    $dataset->load();
+                    $dataset->decrypt();
+                    $title = $dataset->getTitle();
+                    $login = $dataset->getLogin();
+                    $project = $dataset->getProject();
 
-                    $datasets[] = $dataset;
+                    if (strpos(strtolower($title), $searchTerm) !== false || strpos(strtolower($login), $searchTerm) !== false || strpos(strtolower($project), $searchTerm) !== false) {
+                        $dataset->encrypt();
+                        $datasets[] = $dataset;
+                    }
                 }
             }
 
-            $filteredDatasets = array();
-
-            /* @var $dataset Dataset */
-            foreach ($datasets as $dataset) {
-                $dataset->decrypt();
-
-                $title = $dataset->getTitle();
-                $login = $dataset->getLogin();
-                $project = $dataset->getProject();
-
-                if (strpos(strtolower($title), $searchTerm) !== false || strpos(strtolower($login), $searchTerm) !== false || strpos(strtolower($project), $searchTerm) !== false) {
-                    $dataset->encrypt();
-                    $filteredDatasets[] = $dataset;
-                }
-            }
-
-            unset($datasets);
-
-            return $filteredDatasets;
+            return $datasets;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -344,7 +370,7 @@ class Factory {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -360,7 +386,7 @@ class Factory {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -388,6 +414,54 @@ class Factory {
         $host = $_SERVER['HTTP_HOST'];
         header("Location: https://{$host}/" . $page);
         die();
+    }
+
+    public function isSystemInstalled() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $installed = false;
+
+            $statement = $dbConnection->prepare("SELECT installed FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $installed = $object->installed == 1 ? true : false;
+                }
+            }
+
+            return $installed;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function systemInstalled() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $success = false;
+
+            $statement = $dbConnection->prepare("UPDATE system SET installed = 1");
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
 }

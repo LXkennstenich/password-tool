@@ -21,15 +21,13 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+if ($factory->isSystemInstalled() !== false) {
+    $factory->redirect('login');
+}
+
 try {
 
-
-
     $database = $factory->getDatabase();
-
-    if ($database->getSystemInstalled() === true) {
-        $factory->redirect('login');
-    }
 
     $databaseSetup = $database->setup();
     $defaultValueOptions = false;
@@ -67,7 +65,7 @@ try {
         $this->getDebugger()->printError($ex->getMessage());
     }
 
-    $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+    $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
 }
 ?>
 

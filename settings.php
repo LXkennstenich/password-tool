@@ -29,3 +29,5 @@ if ($session->isAuthenticated() !== true) {
 if ($session->needAuthenticator() !== false) {
     $factory->redirect('authenticator');
 }
+
+include_once VIEW_DIR . 'settings.view.php';

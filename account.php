@@ -52,6 +52,7 @@ $loggedInUser = $sessionUsername;
 
     </div>
     <script>
+        $('.loading-div').show();
         var request = {};
         request.action = 'View';
         request.file = 'dataset';

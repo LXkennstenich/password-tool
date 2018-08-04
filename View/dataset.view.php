@@ -20,6 +20,8 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+$debugger = $factory->getDebugger();
+
 if ($searchTerm != '') {
     $datasets = $factory->searchDatasets($userID, strtolower($searchTerm));
 } else {
@@ -32,6 +34,7 @@ if ($searchTerm != '') {
     <?php foreach ($datasets as $dataset) { ?>
 
         <?php
+        $dataset->getEncryption()->setUserID($userID);
         $dataset->decrypt();
         $ID = $dataset->getID();
         $userID = $dataset->getUserID();

@@ -15,7 +15,7 @@ return array(
     'databaseServer' => 'db1337.mydbserver.com',
     'databaseName' => 'usr_p446700_2',
     'databaseUser' => 'p446700d8',
-    'databasePassword' => 'aligupoR+291',
+    'databasePassword' => 'ediFuqeg!781',
     'databasePort' => 3306,
     'adminEmail' => 'contact@alexweese.de'
 );

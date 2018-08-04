@@ -145,6 +145,10 @@ class System {
         return $this->cron_active == true ? true : false;
     }
 
+    public function getInstalled() {
+        return $this->installed != null ? $this->installed : false;
+    }
+
     public function load() {
         try {
             $dbConnetion = $this->getDatabase()->openConnection();
@@ -154,11 +158,13 @@ class System {
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
                     $this->setCronRecrypt($object->cron_recrypt);
-                    $this->setDateCreated($object->cron_clear_session_data);
-                    $this->setDateCreated($object->cron_last);
-                    $this->setLogin($object->cron_last_success);
-                    $this->setPassword($object->cron_active);
-                    $this->setUrl($object->cron_url);
+                    $this->setCronClearSessionData($object->cron_clear_session_data);
+                    $this->setCronLast($object->cron_last);
+                    $this->setCronToken($object->cron_token);
+                    $this->setLastSuccess($object->cron_last_success);
+                    $this->setCronActive($object->cron_active);
+                    $this->setCronUrl($object->cron_url);
+                    $this->setInstalled($object->installed == 1 ? true : false);
                 }
 
                 return true;
@@ -170,7 +176,7 @@ class System {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -191,7 +197,7 @@ class System {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -201,7 +207,7 @@ class System {
         $IDs = array();
 
         if ($statement->execute()) {
-            while ($object = $statement->fetch(PDO::FETCH_UNIQUE)) {
+            while ($object = $statement->fetchObject()) {
                 $IDs[] = $object->id;
             }
         }
@@ -223,22 +229,45 @@ class System {
         return $token;
     }
 
+    private function getEncryptionKey($userID) {
+
+        $dbConnection = $this->getDatabase()->openConnection();
+        $key = null;
+        $ID = filter_var($userID, FILTER_VALIDATE_INT);
+        $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :ID");
+        $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $key = $object->encryption_key;
+            }
+        }
+
+        return $key;
+    }
+
     public function updateEncryptionKey($id, $cronToken) {
-        $token = filter_var($cronToken, FILTER_SANITIZE_STRING);
-        $savedToken = $this->queryCronToken();
+        $token = (string) filter_var($cronToken, FILTER_SANITIZE_STRING);
+        $savedToken = (string) $this->queryCronToken();
         $success = false;
-        $hash = password_hash($savedToken, PASSWORD_DEFAULT, ["cost" => 12]);
-        if (password_verify($token, $hash)) {
+        if ($token === $savedToken) {
+
             $newKey = $this->getAccount()->generateEncryptionKey();
             $dbConnection = $this->getDatabase()->openConnection();
             $ID = filter_var($id, FILTER_VALIDATE_INT);
+
             $statement = $dbConnection->prepare("UPDATE account SET encryption_key = :encryptionKey WHERE id = :ID");
             $statement->bindParam(':encryptionKey', $newKey, PDO::PARAM_STR);
             $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
 
+            $oldKey = $this->getEncryptionKey($ID);
+
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
-                    $success = true;
+                    $newKey = $this->getEncryptionKey($ID);
+                    if ($newKey != $oldKey) {
+                        $success = true;
+                    }
                 }
             }
         }

@@ -9,20 +9,89 @@
  */
 class Account {
 
+    /**
+     *
+     * @var type 
+     */
     protected $database;
+
+    /**
+     *
+     * @var type 
+     */
     protected $id;
+
+    /**
+     *
+     * @var type 
+     */
     protected $username;
+
+    /**
+     *
+     * @var type 
+     */
     protected $password;
+
+    /**
+     *
+     * @var type 
+     */
     protected $last_login;
+
+    /**
+     *
+     * @var type 
+     */
     protected $access_level;
+
+    /**
+     *
+     * @var type 
+     */
     protected $secret_key;
+
+    /**
+     *
+     * @var type 
+     */
     protected $encryption_key;
+
+    /**
+     *
+     * @var type 
+     */
     protected $validation_token;
+
+    /**
+     *
+     * @var type 
+     */
     protected $cipherMode;
+
+    /**
+     *
+     * @var type 
+     */
     protected $first_login_password_changed;
+
+    /**
+     *
+     * @var type 
+     */
     protected $authenticator_is_setup;
+
+    /**
+     *
+     * @var type 
+     */
     protected $debugger;
 
+    /**
+     * 
+     * @param type $database
+     * @param type $debugger
+     */
     public function __construct($database, $debugger) {
         $this->setDatabase($database);
         $this->setDebugger($debugger);
@@ -60,70 +129,138 @@ class Account {
         return $this->database;
     }
 
+    /**
+     * 
+     * @param type $token
+     */
     public function setValidationToken($token) {
         $this->validation_token = $token;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getValidationToken() {
         return $this->validation_token;
     }
 
+    /**
+     * 
+     * @param type $ID
+     */
     public function setID($ID) {
         $this->id = $ID;
     }
 
+    /**
+     * 
+     * @param type $username
+     */
     public function setUsername($username) {
         $this->username = $username;
     }
 
+    /**
+     * 
+     * @param type $password
+     */
     public function setPassword($password) {
         $this->password = $password;
     }
 
+    /**
+     * 
+     * @param type $lastLogin
+     */
     public function setLastLogin($lastLogin) {
         $this->last_login = $lastLogin;
     }
 
+    /**
+     * 
+     * @param type $accessLevel
+     */
     public function setAccessLevel($accessLevel) {
         $this->access_level = $accessLevel;
     }
 
+    /**
+     * 
+     * @param type $secretKey
+     */
     public function setSecretKey($secretKey) {
         $this->secret_key = $secretKey;
     }
 
+    /**
+     * 
+     * @param type $encryptionKey
+     */
     public function setEncryptionKey($encryptionKey) {
         $this->encryption_key = $encryptionKey;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getID() {
         return $this->id;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getUsername() {
         return $this->username;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getPassword() {
         return $this->password;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getLastLogin() {
         return $this->last_login;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getAccessLevel() {
         return $this->access_level;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getSecretKey() {
         return $this->secret_key;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getEncryptionKey() {
         return $this->encryption_key;
     }
 
+    /**
+     * 
+     * @return type
+     */
     private function generatePassword() {
         $passwortLength = random_int(8, 16);
 
@@ -139,10 +276,18 @@ class Account {
         return $password;
     }
 
+    /**
+     * 
+     * @return type
+     */
     private function generateValidationToken() {
         return bin2hex(openssl_random_pseudo_bytes(random_int(128, 256)));
     }
 
+    /**
+     * 
+     * @return type
+     */
     private function generateSecretKey() {
         try {
             $secretKeyLength = 10;
@@ -162,10 +307,14 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function generateEncryptionKey() {
         return bin2hex(openssl_random_pseudo_bytes(256));
     }
@@ -183,10 +332,14 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function save() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -197,7 +350,7 @@ class Account {
             $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
             $password = $this->getPassword();
             $accessLevel = filter_var($this->getAccessLevel(), FILTER_VALIDATE_INT);
-            $secretKey = filter_var($this->getSecretKey(), FILTER_SANITIZE_STRING);
+            $secretKey = $this->getSecretKey();
             $encryptionKey = filter_var($this->getEncryptionKey(), FILTER_SANITIZE_STRING);
             $sql = '';
             $statement = new PDOStatement;
@@ -245,10 +398,13 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     */
     private function sendUserInformation() {
         try {
             $password = $this->getPassword();
@@ -272,10 +428,15 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @return type
+     */
     public function needPasswordChange($id) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -301,10 +462,51 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $name
+     * @return boolean
+     */
+    public function updateValidationToken($name) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $username = filter_var($name, FILTER_VALIDATE_EMAIL);
+            $validationToken = $this->generateValidationToken();
+            $success = false;
+
+            $statement = $dbConnection->prepare("UPDATE account SET validation_token = :token WHERE username = :username");
+            $statement->bindParam(":username", $username, PDO::PARAM_INT);
+            $statement->bindParam(":token", $validationToken, PDO::PARAM_INT);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    /**
+     * 
+     * @param type $id
+     * @param type $value
+     * @return boolean
+     */
     public function updateAuthSetup($id, $value) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -331,10 +533,13 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     */
     private function sendValidationMail() {
         try {
             $validationToken = $this->getValidationToken();
@@ -358,10 +563,15 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $name
+     * @return type
+     */
     private function getValidationTokenByUsername($name) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -386,10 +596,15 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @return type
+     */
     public function querySecretKey($id) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -414,10 +629,15 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $name
+     * @return boolean
+     */
     private function activateAccount($name) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -442,10 +662,16 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $mail
+     * @param type $token
+     * @return boolean
+     */
     public function validate($mail, $token) {
         try {
             $success = false;
@@ -460,6 +686,7 @@ class Account {
 
             if ($validationToken == $validationTokenSaved) {
                 $success = $this->activateAccount($username);
+                $success = $this->updateValidationToken($username);
             }
 
             return $success;
@@ -468,10 +695,13 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     */
     public function generateProperties() {
         try {
             $this->setPassword($this->generatePassword());
@@ -482,10 +712,14 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @return boolean
+     */
     public function exists() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -511,10 +745,14 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function authenticatorIsSetup() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -541,10 +779,15 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @return type
+     */
     private function queryUsername($id) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -570,10 +813,16 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @param type $savedUsername
+     * @return type
+     */
     public function queryPassword($id, $savedUsername) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -601,10 +850,17 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @param type $username
+     * @param type $val
+     * @return boolean
+     */
     private function updateFirstPasswordChange($id, $username, $val) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -636,10 +892,18 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
+    /**
+     * 
+     * @param type $id
+     * @param type $username
+     * @param type $oldPassword
+     * @param type $newPassword
+     * @return boolean
+     */
     public function updatePassword($id, $username, $oldPassword, $newPassword) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -677,8 +941,37 @@ class Account {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
+    }
+
+    /**
+     * 
+     * @return boolean
+     */
+    public function load() {
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $success = false;
+
+        $ID = $this->getID();
+
+        $statement = $dbConnection->prepare("SELECT username,access_level FROM account WHERE id = :id");
+        $statement->bindParam(':id', $ID, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+
+            if ($statement->rowCount > 0) {
+                $success = true;
+            }
+
+            while ($object = $statement->fetchObject()) {
+                $this->setUsername($object->username);
+                $this->setAccessLevel($object->access_level);
+            }
+        }
+
+        return $success;
     }
 
 }

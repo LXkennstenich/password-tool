@@ -237,7 +237,7 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -260,7 +260,7 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -290,14 +290,13 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function insert() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $success = false;
 
             $userID = $this->getUserID();
@@ -327,14 +326,13 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function delete() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $success = false;
 
             $id = $this->getID();
@@ -356,14 +354,13 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function update() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $success = false;
 
             $ID = filter_var($this->getID(), FILTER_VALIDATE_INT);
@@ -396,7 +393,7 @@ class Dataset {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
 
             return $ex->getMessage();
         }

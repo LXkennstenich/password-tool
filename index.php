@@ -33,21 +33,15 @@ $page = str_replace('/', '', $requestUri);
 
 include 'init.php';
 
-if ($system->isDoingCron()) {
-    die("Das System aktualisiert sich gerade bitte versuchen Sie es in einem Moment erneut");
-}
-
 $file = ROOT_DIR . $page . '.php';
 
-if ($page != 'Ajax') {
+if ($page != 'Ajax' && $page != 'cron') {
     include_once ELEMENTS_DIR . 'header.php';
     include ELEMENTS_DIR . 'JsGlobals.php';
 
     if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
         include_once ELEMENTS_DIR . 'navbar.php';
     }
-
-    include_once ELEMENTS_DIR . 'ajaxLoader.php';
 }
 
 if (file_exists($file)) {
@@ -58,7 +52,7 @@ if (file_exists($file)) {
     $factory->redirect('login');
 }
 
-if ($page != 'Ajax') {
+if ($page != 'Ajax' && $page != 'cron') {
     include ELEMENTS_DIR . 'footer.php';
 }
 

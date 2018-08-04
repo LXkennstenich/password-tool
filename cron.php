@@ -7,72 +7,99 @@
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
-/* @var $factory Factory */
-/* @var $session Session */
-/* @var $encryption Encryption */
-/* @var $sessionUID int */
-/* @var $sessionUsername string */
-/* @var $sessionIP string */
-/* @var $sessionToken string */
-/* @var $sessionTimestamp int */
-/* @var $searchTerm string */
-/* @var $host string */
-/* @var $userAgent string */
-if (!defined('PASSTOOL')) {
-    die();
-}
+$debugger = $factory->getDebugger();
+
+
 
 try {
-    $cronToken = isset($_GET['CT']) ? filter_var($_GET['CT'], FILTER_SANITIZE_STRING) : false;
 
-    if ($cronToken !== false) {
+    if (true) {
+
         $error = false;
         $system = $factory->getSystem();
         $system->load();
         $savedToken = $system->queryCronToken();
-        $hash = password_hash($savedToken, PASSWORD_DEFAULT, ["cost" => 12]);
 
-        if ($savedToken != null && $cronToken != null) {
-            if (password_verify($cronToken, $hash)) {
+        $system->doingCron();
 
-                $system->doingCron();
+        $IDs = $system->getUserIDs();
 
-                $IDs = $system->getUserIDs();
+        $datasetError = false;
 
-                $datasetError = false;
+        foreach ($IDs as $ID) {
+            $datasets = $factory->getDatasets($ID);
 
-                foreach ($IDs as $ID) {
-                    $datasets = $factory->getDatasets($ID);
+            $encryptionKeyUpdated = false;
 
-                    foreach ($datasets as $dataset) {
-                        $i = 0;
-                        $dataset->load();
-                        $dataset->decrypt();
+            foreach ($datasets as $dataset) {
 
-                        if ($i === 0) {
-                            $system->updateEncryptionKey($ID, $savedToken);
+                $i = 0;
+
+                if ($i === 0 || $encryptionKeyUpdated === true) {
+                    $dataset->decrypt();
+
+
+                    if ($i === 0) {
+                        if ($system->updateEncryptionKey($ID, $savedToken)) {
+                            $encryptionKeyUpdated = true;
                         }
+                    }
 
+                    if ($encryptionKeyUpdated === true) {
                         $dataset->encrypt();
 
                         if ($dataset->update()) {
                             $datasetError = $datasetError !== true ? false : true;
+                            $debugger->cronlog('dataset geupdated ');
                         } else {
                             $datasetError = true;
+                            $debugger->cronlog('dataseterror id: ' . $dataset->getID());
                         }
-
-                        $i++;
                     }
                 }
+
+                $i++;
+            }
+
+            $account = $factory->getAccount();
+
+            $account->setID($ID);
+            $account->load();
+
+            $username = $account->getUsername();
+            $session = $factory->getSession();
+            $session->setUsername($username);
+
+            $lockTime = $session->getLockTime($username);
+            $locked = $session->isAccountLocked($username);
+
+            if ($lockTime <= time() && $locked === true) {
+                if ($session->unlockAccount($username)) {
+                    $debugger->cronlog('Account mit der ID ' . (string) $ID . ' wurde entsperrt ' . date('d-m-Y H:m:i'));
+                }
+            }
+
+            $sessionData = $session->queryAjaxSessionData($ID);
+
+            if (isset($sessionData['session_token']) && isset($sessionData['session_timestamp']) && isset($sessionData['session_ipaddress'])) {
+                $timestamp = $sessionData['session_timestamp'];
+                $timeNow = time();
+                $maxTimestamp = $timestamp + (60 * 60 * 2);
+
+                if ($timeNow > $maxTimestamp) {
+                    if ($session->deleteSessionDataFromDatabase($ID)) {
+                        $debugger->cronlog('Abgelaufene Session von Account ' . (string) $ID . ' wurde aus der Datenbank entfernt ' . date('d-m-Y H:m:i'));
+                    }
+                }
+            }
+
+            if ($datasetError === true) {
+                $debugger->cronlog('dataseterror');
             }
         }
 
         $system->finishedCron();
     }
 } catch (Exception $ex) {
-    if (SYSTEM_MODE == 'DEV') {
-        $this->getDebugger()->printError($ex->getMessage());
-    }
-
-    $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+    $debugger->cronlog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
 }

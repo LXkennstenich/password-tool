@@ -1,13 +1,11 @@
 <?php
 
 /**
- * PassTool
+ * InstagramShare
  * @version 1.0
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
- * @var $factory Factory
- * @var $session Session
  */
 class Session {
 
@@ -16,12 +14,6 @@ class Session {
      * @var Database 
      */
     protected $database;
-
-    /**
-     *
-     * @var Encryption 
-     */
-    protected $encryption;
 
     /**
      *
@@ -70,9 +62,8 @@ class Session {
      * @param Database $database
      * @param Encryption $encryption
      */
-    public function __construct($database, $encryption, $debugger) {
+    public function __construct($database, $debugger) {
         $this->setDatabase($database);
-        $this->setEncryption($encryption);
         $this->setDebugger($debugger);
     }
 
@@ -114,22 +105,6 @@ class Session {
      */
     private function getDatabase() {
         return $this->database;
-    }
-
-    /**
-     * 
-     * @param Encryption $encryption
-     */
-    private function setEncryption($encryption) {
-        $this->encryption = $encryption;
-    }
-
-    /**
-     * 
-     * @return Encryption
-     */
-    private function getEncryption() {
-        return $this->encryption;
     }
 
     /**
@@ -305,7 +280,7 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -335,7 +310,7 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -406,6 +381,160 @@ class Session {
         return $success;
     }
 
+    public function sendLockMail($username) {
+        try {
+            $mailAddress = filter_var($username, FILTER_VALIDATE_EMAIL);
+
+            $host = $_SERVER['HTTP_HOST'];
+            $hostAddress = 'https://' . $host;
+
+            $header = 'From: no-reply@' . $host . "\r\n" .
+                    'X-Sender: ' . $hostAddress . "\r\n" .
+                    'X-Mailer: PHP/' . phpversion();
+
+            $subject = 'Ihr Zugang wurde vorübergehend gesperrt';
+            $message = 'Das System hat eine mehrfach falsche Passworteingabe erkannt und aus Sicherheitsgründen den Zugang für 15 Minuten gesperrt.' . "\r\n";
+            $message .= 'Wenn der Account 3 mal hintereinander gesperrt wird blockiert das System die Angreifer IP-Adresse dauerhauft' . "\r\n";
+
+            mail($mailAddress, $subject, $message, $header);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function unlockAccount($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+
+        $success = false;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("UPDATE account SET login_attempts = 0, locked = 0, locktime = 0 WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+
+        if ($statement->execute()) {
+            if ($statement->rowCount() > 0) {
+                $success = true;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $success;
+    }
+
+    public function isAccountLocked($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+
+        $locked = false;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("SELECT locked FROM account WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $locked = $object->locked == 0 ? false : true;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $locked;
+    }
+
+    public function getLockTime($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+
+        $locktime = 0;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("SELECT locktime FROM account WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $locktime = $object->locktime;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $locktime;
+    }
+
+    public function lockAccount($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        $lockTime = time() + (15 * 60);
+        $success = false;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("UPDATE account SET locked = 1, locktime = :lockTime WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+        $statement->bindParam(':lockTime', $lockTime, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+            if ($statement->rowCount() > 0) {
+                $success = true;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $success;
+    }
+
+    public function getLoginAttempts($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+
+        $attempts = 0;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("SELECT login_attempts FROM account WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $attempts = $object->login_attempts;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $attempts;
+    }
+
+    public function countLoginAttempt($username) {
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        $success = false;
+        $attempts = $this->getLoginAttempts($name) == '' || $this->getLoginAttempts($name) == null ? 0 : $this->getLoginAttempts($name);
+        $attempts++;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("UPDATE account SET login_attempts = :loginAttempts WHERE username = :username");
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+        $statement->bindParam(':loginAttempts', $attempts, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+            if ($statement->rowCount() > 0) {
+                $success = true;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $success;
+    }
+
     /**
      * 
      * @return boolean
@@ -429,14 +558,38 @@ class Session {
                 }
             }
 
+            $this->getDatabase()->closeConnection($dbConnection);
+
             return $success;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
+    }
+
+    private function queryAccessLevel($id, $username) {
+        $ID = filter_var($id, FILTER_VALIDATE_INT);
+        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        $accessLevel = 0;
+
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $statement = $dbConnection->prepare("SELECT access_level FROM account WHERE id = :ID AND username = :username");
+        $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+
+        if ($statement->execute()) {
+            while ($object = $statement->fetchObject()) {
+                $accessLevel = $object->access_level;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $accessLevel;
     }
 
     /**
@@ -457,7 +610,6 @@ class Session {
                 return false;
             }
 
-            $this->setUserID($this->getDatabase()->getUserID($name));
             $userID = $this->getUserID();
             $sessionID = session_id();
             $sessionToken = $this->generateSessionToken();
@@ -465,6 +617,7 @@ class Session {
             $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $this->getUseragent();
             $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $this->getIpaddress();
+            $accessLevel = $this->queryAccessLevel($userID, $name);
 
             setcookie('PHPSESSID', $sessionID, 0, '/', $domain, true, true);
             setcookie('TK', $sessionToken, 0, '/', $domain, true, true);
@@ -478,17 +631,18 @@ class Session {
             $_SESSION['TK'] = $sessionToken;
             $_SESSION['TS'] = $sessionTimestamp;
             $_SESSION['EXPIRES'] = $cookieTimestamp;
+            $_SESSION['AL'] = $accessLevel;
             $_SESSION['AUTH'] = 0;
 
             if (!isset($_SESSION['IP']) || !isset($_SESSION['UA'])) {
                 return false;
             }
 
-            $saveID = $this->getEncryption()->encrypt($sessionID, $userID);
+            $saveID = $sessionID;
             $saveToken = $sessionToken;
-            $saveTimestamp = $this->getEncryption()->encrypt($sessionTimestamp, $userID);
-            $saveIpaddress = $this->getEncryption()->encrypt($ipAddress, $userID);
-            $saveUseragent = $this->getEncryption()->encrypt($userAgent, $userID);
+            $saveTimestamp = $sessionTimestamp;
+            $saveIpaddress = $ipAddress;
+            $saveUseragent = $userAgent;
 
             $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent);
 
@@ -498,7 +652,7 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -514,8 +668,8 @@ class Session {
         try {
             $sessionData = $this->queryAjaxSessionData($userID);
             $savedToken = $sessionData['session_token'];
-            $savedTimestamp = $this->getEncryption()->decrypt($sessionData['session_timestamp'], $userID);
-            $savedIpaddress = $this->getEncryption()->decrypt($sessionData['session_ipaddress'], $userID);
+            $savedTimestamp = $sessionData['session_timestamp'];
+            $savedIpaddress = $sessionData['session_ipaddress'];
 
             if ($sessionToken == '') {
                 return false;
@@ -543,13 +697,18 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function isAuthenticated() {
         try {
             $authenticated = null;
+
+
+            if ($this->isValid() === false) {
+                $authenticated = false;
+            }
 
             if (isset($_SESSION['EXPIRES']) && $_SESSION['EXPIRES'] < time()) {
                 $authenticated = false;
@@ -584,12 +743,37 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
     public function isValid() {
         try {
+
+            if (!isset($_SESSION['PHPSESSID'])) {
+                return false;
+            }
+
+            if (!isset($_SESSION['EXPIRES'])) {
+                return false;
+            }
+
+            if (!isset($_SESSION['UID'])) {
+                return false;
+            }
+
+            if (!isset($_SESSION['U'])) {
+                return false;
+            }
+
+            if (!isset($_SESSION['TK'])) {
+                return false;
+            }
+
+            if (!isset($_SESSION['TS'])) {
+                return false;
+            }
+
             if (isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES'])) {
                 return false;
             }
@@ -604,11 +788,11 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
-    private function queryAjaxSessionData($user_id) {
+    public function queryAjaxSessionData($user_id) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
@@ -634,7 +818,7 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -672,7 +856,35 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function deleteSessionDataFromDatabase($user_id) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $success = false;
+            $userID = $user_id;
+
+            $statement = $dbConnection->prepare("DELETE FROM session WHERE user_id = :userID");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 
@@ -717,7 +929,7 @@ class Session {
                 $this->getDebugger()->printError($ex->getMessage());
             }
 
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
     }
 

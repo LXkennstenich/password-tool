@@ -47,3 +47,13 @@ if (!defined('VIEW_DIR')) {
     define('VIEW_DIR', ROOT_DIR . 'View/');
 }
 
+if (!defined('SESSION_ADMIN')) {
+    define('SESSION_ADMIN', 5);
+}
+
+
+if (!defined('SESSION_USER')) {
+    define('SESSION_USER', 0);
+}
+
+

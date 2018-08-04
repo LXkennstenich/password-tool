@@ -27,18 +27,19 @@ $sessionUsername = isset($_SESSION['U']) ? filter_var($_SESSION['U'], FILTER_VAL
 $sessionIP = isset($_SESSION['IP']) ? filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) : filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
 $sessionToken = isset($_SESSION['TK']) ? filter_var($_SESSION['TK'], FILTER_SANITIZE_STRING) : null;
 $sessionTimestamp = isset($_SESSION['TS']) ? filter_var($_SESSION['TS'], FILTER_VALIDATE_INT) : null;
+$sessionAccessLevel = isset($_SESSION['AL']) ? filter_var($_SESSION['AL'], FILTER_VALIDATE_INT) : 0;
 $searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : '';
 
 $isSearch = $searchTerm != '' ? true : false;
 $host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
 $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
 
+include_once 'defines.php';
+
 if (SYSTEM_MODE == 'DEV') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL ^ E_NOTICE);
 }
-
-include_once 'defines.php';
 
 require_once ROOT_DIR . 'vendor/autoload.php';
 
@@ -58,6 +59,7 @@ $account = $factory->getAccount();
 $account->setUsername($sessionUsername);
 $encryption = $factory->getEncryption();
 $system = $factory->getSystem();
+$system->load();
 ob_start();
 
 
