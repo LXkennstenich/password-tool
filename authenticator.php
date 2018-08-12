@@ -43,3 +43,4 @@ if ($session->needAuthenticator() === false) {
     <input type="text" id="authenticator-code-honeypot">
     <a class="button" id="authenticator-button">Bestätigen</a>
 </div>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>

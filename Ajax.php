@@ -22,6 +22,7 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+
 $request = json_decode($_POST['request']);
 
 $action = $request->action;
@@ -43,7 +44,15 @@ if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $us
         include $file;
     }
 } else {
-    include CONTROLLER_DIR . 'LoginController.php';
+    $file = null;
+
+    if ($action == 'Login' || $action == 'NewPassword') {
+        $file = CONTROLLER_DIR . $action . 'Controller.php';
+    }
+
+    if (file_exists($file)) {
+        include $file;
+    }
 }
 
 

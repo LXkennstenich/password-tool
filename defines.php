@@ -47,6 +47,10 @@ if (!defined('VIEW_DIR')) {
     define('VIEW_DIR', ROOT_DIR . 'View/');
 }
 
+if (!defined('ICON_DIR')) {
+    define('ICON_DIR', ROOT_DIR . 'Icons/');
+}
+
 if (!defined('SESSION_ADMIN')) {
     define('SESSION_ADMIN', 5);
 }

@@ -48,3 +48,4 @@ if ($account->authenticatorIsSetup() === true) {
     ?>
     <a class="button" id="validate-auth-setup-button">Bestätigen</a>
 </div>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>

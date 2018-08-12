@@ -315,70 +315,92 @@ class Session {
     }
 
     public function queryUserID() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
+            $ID = null;
+            $name = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
+            $statement->bindParam(":username", $name, PDO::PARAM_STR);
 
-        $ID = null;
-        $name = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
-
-        $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
-        $statement->bindParam(":username", $name, PDO::PARAM_STR);
-
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $ID = $object->id;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $ID = $object->id;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $ID;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $ID;
     }
 
     public function needAuthenticator() {
-        $dbConnection = $this->getDatabase()->openConnection();
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $needAuthenticator = true;
-        $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $needAuthenticator = true;
+            $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
 
-        $statement = $dbConnection->prepare("SELECT session_authenticator FROM session WHERE user_id = :userID");
-        $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+            $statement = $dbConnection->prepare("SELECT session_authenticator FROM session WHERE user_id = :userID");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $databaseValue = filter_var($object->session_authenticator, FILTER_VALIDATE_INT);
-                if ($databaseValue !== false) {
-                    $needAuthenticator = $databaseValue === 1 ? false : true;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $databaseValue = filter_var($object->session_authenticator, FILTER_VALIDATE_INT);
+                    if ($databaseValue !== false) {
+                        $needAuthenticator = $databaseValue === 1 ? false : true;
+                    }
                 }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $needAuthenticator;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $needAuthenticator;
     }
 
     public function updateAuthenticator($value) {
-        $dbConnection = $this->getDatabase()->openConnection();
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $success = false;
-        $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
-        $authenticator = filter_var($value, FILTER_VALIDATE_INT);
+            $success = false;
+            $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $authenticator = filter_var($value, FILTER_VALIDATE_INT);
 
-        $statement = $dbConnection->prepare("UPDATE session SET session_authenticator = :authenticator WHERE user_id = :userID");
-        $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
-        $statement->bindParam(":authenticator", $authenticator, PDO::PARAM_INT);
+            $statement = $dbConnection->prepare("UPDATE session SET session_authenticator = :authenticator WHERE user_id = :userID");
+            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+            $statement->bindParam(":authenticator", $authenticator, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
     public function sendLockMail($username) {
@@ -407,132 +429,180 @@ class Session {
     }
 
     public function unlockAccount($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
 
-        $success = false;
+            $success = false;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("UPDATE account SET login_attempts = 0, locked = 0, locktime = 0 WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("UPDATE account SET login_attempts = 0, locked = 0, locktime = 0 WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
     public function isAccountLocked($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
 
-        $locked = false;
+            $locked = false;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("SELECT locked FROM account WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("SELECT locked FROM account WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $locked = $object->locked == 0 ? false : true;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $locked = $object->locked == 0 ? false : true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $locked;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $locked;
     }
 
     public function getLockTime($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
 
-        $locktime = 0;
+            $locktime = 0;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("SELECT locktime FROM account WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("SELECT locktime FROM account WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $locktime = $object->locktime;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $locktime = $object->locktime;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $locktime;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $locktime;
     }
 
     public function lockAccount($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-        $lockTime = time() + (15 * 60);
-        $success = false;
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+            $lockTime = time() + (15 * 60);
+            $success = false;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("UPDATE account SET locked = 1, locktime = :lockTime WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
-        $statement->bindParam(':lockTime', $lockTime, PDO::PARAM_INT);
+            $statement = $dbConnection->prepare("UPDATE account SET locked = 1, locktime = :lockTime WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':lockTime', $lockTime, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
     public function getLoginAttempts($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
 
-        $attempts = 0;
+            $attempts = 0;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("SELECT login_attempts FROM account WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("SELECT login_attempts FROM account WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $attempts = $object->login_attempts;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $attempts = $object->login_attempts;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $attempts;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $attempts;
     }
 
     public function countLoginAttempt($username) {
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-        $success = false;
-        $attempts = $this->getLoginAttempts($name) == '' || $this->getLoginAttempts($name) == null ? 0 : $this->getLoginAttempts($name);
-        $attempts++;
+        try {
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+            $success = false;
+            $attempts = $this->getLoginAttempts($name) == '' || $this->getLoginAttempts($name) == null ? 0 : $this->getLoginAttempts($name);
+            $attempts++;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("UPDATE account SET login_attempts = :loginAttempts WHERE username = :username");
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
-        $statement->bindParam(':loginAttempts', $attempts, PDO::PARAM_INT);
+            $statement = $dbConnection->prepare("UPDATE account SET login_attempts = :loginAttempts WHERE username = :username");
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':loginAttempts', $attempts, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $success;
     }
 
     /**
@@ -571,25 +641,33 @@ class Session {
     }
 
     private function queryAccessLevel($id, $username) {
-        $ID = filter_var($id, FILTER_VALIDATE_INT);
-        $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-        $accessLevel = 0;
+        try {
+            $ID = filter_var($id, FILTER_VALIDATE_INT);
+            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
+            $accessLevel = 0;
 
-        $dbConnection = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $statement = $dbConnection->prepare("SELECT access_level FROM account WHERE id = :ID AND username = :username");
-        $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-        $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("SELECT access_level FROM account WHERE id = :ID AND username = :username");
+            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $accessLevel = $object->access_level;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $accessLevel = $object->access_level;
+                }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $accessLevel;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $accessLevel;
     }
 
     /**

@@ -21,26 +21,25 @@ $timeCalculated = $time - $timeRequest;
 
 
 if ($timeCalculated > 500 || $timeCalculated < 1) {
-    echo 'Fehler bei der Anfrage bitte Seite neu laden';
-    die();
+    exit('Fehler bei der Anfrage bitte Seite neu laden');
 }
 
 
 $debugger = $factory->getDebugger();
 $honeypot = $request->honeypot;
 
-if (!empty($honeypot) || $honeypot != '') {
-    echo 'Benutzername oder Passwort ist nicht korrekt';
-    die();
+
+if ($honeypot != '') {
+    exit('Benutzername oder Passwort ist nicht korrekt');
 }
+
 
 $account = $factory->getAccount();
 $username = filter_var($request->username, FILTER_VALIDATE_EMAIL);
 $account->setUsername($username);
 
 if ($account->exists() !== true) {
-    echo 'Benutzername oder Passwort ist nicht korrekt';
-    die();
+    exit('Benutzername oder Passwort ist nicht korrekt');
 }
 
 $password = $request->password;
@@ -55,9 +54,8 @@ if ($lockTime <= time() && $session->isAccountLocked($username) === true) {
 }
 
 if ($lockTime > time() || $session->isAccountLocked($username) !== false) {
-    echo 'Zugang vorübergehend gesperrt';
     $session->countLoginAttempt($username);
-    die();
+    exit('Zugang vorübergehend gesperrt');
 }
 
 $session->setUsername($username);

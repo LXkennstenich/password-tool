@@ -99,31 +99,39 @@ class Options {
     }
 
     public function load() {
-        $userID = filter_var($this->getUserID(), FILTER_SANITIZE_NUMBER_INT);
-        $loaded = false;
+        try {
+            $userID = filter_var($this->getUserID(), FILTER_SANITIZE_NUMBER_INT);
+            $loaded = false;
 
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("SELECT id,user_id,display_login,use_two_factor,email_notification_login,email_notification_password_change WHERE user_id = :userID");
-        $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT id,user_id,display_login,use_two_factor,email_notification_login,email_notification_password_change WHERE user_id = :userID");
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $this->setID(filter_var($object->id, FILTER_SANITIZE_NUMBER_INT));
-                $this->setUserID(filter_var($object->user_id, FILTER_SANITIZE_NUMBER_INT));
-                $this->setDisplayLogin(boolval($object->display_login));
-                $this->setUseTwoFactor(boolval($object->use_two_factor));
-                $this->setEmailNotificationLogin(boolval($object->email_notification_login));
-                $this->setEmailNotificationPasswordChange(boolval($object->email_notification_password_change));
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $this->setID(filter_var($object->id, FILTER_SANITIZE_NUMBER_INT));
+                    $this->setUserID(filter_var($object->user_id, FILTER_SANITIZE_NUMBER_INT));
+                    $this->setDisplayLogin(boolval($object->display_login));
+                    $this->setUseTwoFactor(boolval($object->use_two_factor));
+                    $this->setEmailNotificationLogin(boolval($object->email_notification_login));
+                    $this->setEmailNotificationPasswordChange(boolval($object->email_notification_password_change));
+                }
+
+                if ($statement->rowCount() > 0) {
+                    $loaded = true;
+                }
             }
 
-            if ($statement->rowCount() > 0) {
-                $loaded = true;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $loaded;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
             }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
-
-        $this->getDatabase()->closeConnection($dbConnection);
-
-        return $loaded;
     }
 
 }

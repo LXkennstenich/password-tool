@@ -33,6 +33,7 @@ $jsVarTimestamp = 'var timestamp="' . $sessionTimestampEncrypted . '";';
 $jsVarIpAddress = 'var ipaddress="' . $sessionIpAddressEncoded . '";';
 $jsVarHost = 'var host="' . $sessionHostEncrypted . '";';
 $jsVarUserAgent = 'var userAgent="' . $sessionUserAgentEncrypted . '";';
+$jsVarRequestTimestamp = 'var requestTimestamp="' . microtime(true) . '";';
 ?>
 
 <script>
@@ -44,6 +45,7 @@ echo $jsVarSearchTerm;
 echo $jsVarIpAddress;
 echo $jsVarHost;
 echo $jsVarUserAgent;
+echo $jsVarRequestTimestamp;
 ?>
     function getAjaxUrl() {
         var hostname = document.location.hostname;

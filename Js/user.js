@@ -22,6 +22,7 @@ $(document).ready(function () {
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.timestamp = requestTimestamp;
         request.uid = uid;
         request.title = document.getElementById('datasetTitle').value;
         request.login = document.getElementById('datasetLogin').value;
@@ -36,6 +37,37 @@ $(document).ready(function () {
             'success': function (data) {
                 if (parseInt(data) == 1) {
                     window.location.href = '/account';
+                } else {
+
+                }
+            },
+            error: function (jqXHR, exception) {
+                $('.ajax-message .text').addClass('error');
+                displayNotice(jqXHR + exception);
+            }
+
+        });
+    });
+    
+    $('#updateSystemSettingsButton').bind('click touch', function () {
+        var request = {};
+        request.action = 'UpdateSystemSettings';
+        request.tk = token;
+        request.ts = timestamp;
+        request.ipaddress = ipaddress;
+        request.timestamp = requestTimestamp;
+        request.uid = uid;
+        request.cronActive = document.getElementById('cronActive').checked !== false ? 1 : 0;
+        request.clearSessionData = document.getElementById('cronClearSessionData').checked !== false ? 1 : 0;
+        request.recrypt = document.getElementById('cronRecrypt').checked !== false ? 1 : 0;
+
+        $.ajax({
+            'type': 'POST',
+            'data': {"request": JSON.stringify(request)},
+            'url': getAjaxUrl(),
+            'success': function (data) {
+                if (parseInt(data) == 1) {
+                    window.location.href = '/settings';
                 } else {
 
                 }
@@ -157,7 +189,12 @@ $(document).ready(function () {
         });
     });
 
-   
+   $('#input-search').keypress(function(e) {
+      if(e.which == 13) {
+          $('#input-search').submit();
+          return false;
+      } 
+   });
 
 });
 

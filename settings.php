@@ -31,3 +31,4 @@ if ($session->needAuthenticator() !== false) {
 }
 
 include_once VIEW_DIR . 'settings.view.php';
+

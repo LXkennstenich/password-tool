@@ -357,6 +357,7 @@ class Database {
                             `cron_active` tinyint(1) NOT NULL DEFAULT '0',
                             `cron_url` text NOT NULL,
                             `cron_token` text NOT NULL,
+                            `doing_cron` tinyint(1) NOT NULL DEFAULT '0',
                             `installed` tinyint(1) NOT NULL DEFAULT '0'
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
                         break;
@@ -400,7 +401,7 @@ class Database {
     }
 
     private function generateCronToken() {
-        return bin2hex(openssl_random_pseudo_bytes(256));
+        return bin2hex(openssl_random_pseudo_bytes(32));
     }
 
     public function insertDefaultValues($user_id, $tableName) {
@@ -414,8 +415,8 @@ class Database {
             switch ($table) {
                 case 'system':
                     $cronLastSuccess = 0;
-                    $cronUrl = $this->linkCheck($_SERVER['HTTP_HOST']);
                     $cronToken = $this->generateCronToken();
+                    $cronUrl = $this->linkCheck($_SERVER['HTTP_HOST'] . '/cron?CT=' . $cronToken);
                     $statement = $dbConnection->prepare("INSERT INTO system (cron_last_success,cron_url,cron_token) VALUES (:cronLastSuccess,:cronUrl,:cronToken)");
                     $statement->bindParam(':cronLastSuccess', $cronLastSuccess, PDO::PARAM_INT);
                     $statement->bindParam(':cronUrl', $cronUrl, PDO::PARAM_STR);

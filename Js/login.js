@@ -21,6 +21,7 @@ $(document).ready(function () {
         request.action = 'NewPassword';
         request.tk = token;
         request.ts = timestamp;
+        request.timestamp = requestTimestamp;
         request.ipaddress = ipaddress;
         request.host = host;
         request.userAgent = userAgent;

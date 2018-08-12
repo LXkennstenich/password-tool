@@ -98,7 +98,5 @@ if ($searchTerm != '') {
     ?>
 
 </div>
-
-<script src="/Js/datasetView.min.js">
-
-</script>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
+<script src = "/Js/datasetView.min.js"></script>

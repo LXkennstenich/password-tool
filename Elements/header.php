@@ -24,7 +24,7 @@ if (!defined('PASSTOOL')) {
 <html lang="de-DE">
     <head>
         <title>Password Tool</title>
-        <link rel="stylesheet" href="/Css/main.css" />
+        <link rel="stylesheet" href="/Css/main.min.css" />
         <link rel="stylesheet" href="/Libs/fancybox/dist/jquery.fancybox.min.css" />
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
         <script src="/Js/jquery.min.js"></script>

@@ -26,10 +26,17 @@ if (!defined('PASSTOOL')) {
 
 <div id="main">
     <div class="forget-password-form form">
+
+        <div class="row">
+            <input type="text" class="honeypot-field" id="newPasswordHoneypot" value="">
+        </div>
+
         <div class="row">
             <label for="usernamePasswordReset">Benutzername</label>
             <input type="text" value="" id="usernamePasswordReset" class="form-input">
-            <input type="text" class="honeypot-field" id="newPasswordHoneypot" value="">
+        </div>
+
+        <div class="row">
             <input type="button" class="button" id="requestNewPasswordButton" value="Neues Passwort anfordern">
         </div>
     </div>

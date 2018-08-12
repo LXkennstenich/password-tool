@@ -7,18 +7,46 @@
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
-$debugger = $factory->getDebugger();
+/* @var $factory Factory */
+/* @var $session Session */
+/* @var $system System */
+/* @var $debugger Debug */
+/* @var $encryption Encryption */
+/* @var $sessionUID int */
+/* @var $sessionUsername string */
+/* @var $sessionIP string */
+/* @var $sessionToken string */
+/* @var $sessionTimestamp int */
+/* @var $searchTerm string */
+/* @var $host string */
+/* @var $userAgent string */
+if (!defined('PASSTOOL')) {
+    die();
+}
 
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'GET') {
+    die();
+}
 
+if (!isset($_GET['CT'])) {
+    die("No Authentication Token provided");
+}
 
 try {
 
-    if (true) {
+    $debugger = $factory->getDebugger();
+    $system = $factory->getSystem();
+    $system->load();
 
-        $error = false;
-        $system = $factory->getSystem();
-        $system->load();
-        $savedToken = $system->queryCronToken();
+    if ($system->isCronEnabled() != true) {
+        die();
+    }
+
+    $error = false;
+    $savedToken = (string) $system->queryCronToken();
+    $token = (string) filter_var($_GET['CT'], FILTER_SANITIZE_STRING);
+
+    if ($savedToken === $token) {
 
         $system->doingCron();
 
@@ -27,25 +55,28 @@ try {
         $datasetError = false;
 
         foreach ($IDs as $ID) {
-            $datasets = $factory->getDatasets($ID);
 
-            $encryptionKeyUpdated = false;
+            if ($system->cronRecrypt()) {
+                $datasets = $factory->getDatasets($ID);
 
-            foreach ($datasets as $dataset) {
+                $encryptionKeyUpdated = false;
+                $datasetsDecrypted = array();
 
-                $i = 0;
-
-                if ($i === 0 || $encryptionKeyUpdated === true) {
+                foreach ($datasets as $dataset) {
                     $dataset->decrypt();
+                    $datasetsDecrypted[] = $dataset;
+                }
 
+                unset($datasets);
 
-                    if ($i === 0) {
-                        if ($system->updateEncryptionKey($ID, $savedToken)) {
-                            $encryptionKeyUpdated = true;
-                        }
-                    }
+                if ($system->updateEncryptionKey($ID, $savedToken)) {
+                    $encryptionKeyUpdated = true;
+                }
 
-                    if ($encryptionKeyUpdated === true) {
+                if ($encryptionKeyUpdated === true) {
+
+                    foreach ($datasetsDecrypted as $dataset) {
+
                         $dataset->encrypt();
 
                         if ($dataset->update()) {
@@ -58,8 +89,10 @@ try {
                     }
                 }
 
-                $i++;
+                unset($datasetsDecrypted);
             }
+
+
 
             $account = $factory->getAccount();
 
@@ -79,22 +112,20 @@ try {
                 }
             }
 
-            $sessionData = $session->queryAjaxSessionData($ID);
+            if ($system->cronClearSessionData()) {
+                $sessionData = $session->queryAjaxSessionData($ID);
 
-            if (isset($sessionData['session_token']) && isset($sessionData['session_timestamp']) && isset($sessionData['session_ipaddress'])) {
-                $timestamp = $sessionData['session_timestamp'];
-                $timeNow = time();
-                $maxTimestamp = $timestamp + (60 * 60 * 2);
+                if (isset($sessionData['session_token']) && isset($sessionData['session_timestamp']) && isset($sessionData['session_ipaddress'])) {
+                    $timestamp = $sessionData['session_timestamp'];
+                    $timeNow = time();
+                    $maxTimestamp = $timestamp + (60 * 60 * 2);
 
-                if ($timeNow > $maxTimestamp) {
-                    if ($session->deleteSessionDataFromDatabase($ID)) {
-                        $debugger->cronlog('Abgelaufene Session von Account ' . (string) $ID . ' wurde aus der Datenbank entfernt ' . date('d-m-Y H:m:i'));
+                    if ($timeNow > $maxTimestamp) {
+                        if ($session->deleteSessionDataFromDatabase($ID)) {
+                            $debugger->cronlog('Abgelaufene Session von Account ' . (string) $ID . ' wurde aus der Datenbank entfernt ' . date('d-m-Y H:m:i'));
+                        }
                     }
                 }
-            }
-
-            if ($datasetError === true) {
-                $debugger->cronlog('dataseterror');
             }
         }
 

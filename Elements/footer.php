@@ -25,19 +25,6 @@ if (!defined('PASSTOOL')) {
         <a href="/account" class="button">Zurück</a>
     <?php } ?>
 </div>
-
-<script defer="">
-    var $loading = $('.loading-div').hide();
-    var $ajaxMessage = $('.ajax-message').hide();
-    $(document)
-            .ajaxStart(function () {
-                $loading.show();
-            })
-            .ajaxStop(function () {
-                $loading.hide();
-                $ajaxMessage.show();
-            });
-</script>
 </body>
 </html>
 

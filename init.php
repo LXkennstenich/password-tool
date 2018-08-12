@@ -22,15 +22,17 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+$standardProject = 'Privat';
+
 $sessionUID = isset($_SESSION['UID']) ? filter_var($_SESSION['UID'], FILTER_VALIDATE_INT) : null;
 $sessionUsername = isset($_SESSION['U']) ? filter_var($_SESSION['U'], FILTER_VALIDATE_EMAIL) : null;
 $sessionIP = isset($_SESSION['IP']) ? filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) : filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
 $sessionToken = isset($_SESSION['TK']) ? filter_var($_SESSION['TK'], FILTER_SANITIZE_STRING) : null;
 $sessionTimestamp = isset($_SESSION['TS']) ? filter_var($_SESSION['TS'], FILTER_VALIDATE_INT) : null;
 $sessionAccessLevel = isset($_SESSION['AL']) ? filter_var($_SESSION['AL'], FILTER_VALIDATE_INT) : 0;
-$searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : '';
+$searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
 
-$isSearch = $searchTerm != '' ? true : false;
+$isSearch = $searchTerm != $standardProject ? true : false;
 $host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
 $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
 

@@ -47,12 +47,11 @@ $loggedInUser = $sessionUsername;
         <p class="info-text">Anzahl Datensätze:&nbsp;<?php echo $amountDatasets; ?></p>
         <p class="info-text">Eingeloggt als:&nbsp;<?php echo $loggedInUser; ?></p>
     </div>
-
+    <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
     <div id="content-wrapper">
 
     </div>
     <script>
-        $('.loading-div').show();
         var request = {};
         request.action = 'View';
         request.file = 'dataset';
@@ -63,9 +62,9 @@ $loggedInUser = $sessionUsername;
         request.searchTerm = searchTerm;
         $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});
     </script>
-
     <?php include_once VIEW_DIR . 'newDataset.view.php'; ?>
 </div>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 
 
 

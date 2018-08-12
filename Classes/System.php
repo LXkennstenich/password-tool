@@ -57,8 +57,7 @@ class System {
     }
 
     public function setCronClearSessionData($cronClearSessionData) {
-        $value = filter_var(intval($cronClearSessionData, 10), FILTER_VALIDATE_INT);
-        $this->cron_clear_session_data = $value === 1 ? true : false;
+        $this->cron_clear_session_data = filter_var($cronClearSessionData, FILTER_VALIDATE_INT);
     }
 
     public function setCronLast($cronLast) {
@@ -66,22 +65,19 @@ class System {
     }
 
     public function setLastSuccess($conLastSuccess) {
-        $value = filter_var(intval($conLastSuccess, 10), FILTER_VALIDATE_INT);
-        $this->cron_last_success = $value === 1 ? true : false;
+        $this->cron_last_success = filter_var($conLastSuccess, FILTER_VALIDATE_INT);
     }
 
     public function setCronActive($cronActive) {
-        $value = filter_var(intval($cronActive, 10), FILTER_VALIDATE_INT);
-        $this->cron_active = $value === 1 ? true : false;
+        $this->cron_active = filter_var($cronActive, FILTER_VALIDATE_INT);
     }
 
     public function setCronUrl($cronURL) {
-        $this->cron_url = filter_var($cronURL, FILTER_VALIDATE_URL);
+        $this->cron_url = $cronURL;
     }
 
     public function setCronRecrypt($cronReCrypt) {
-        $value = filter_var(intval($cronReCrypt, 10), FILTER_VALIDATE_INT);
-        $this->cron_recrypt = $value === 1 ? true : false;
+        $this->cron_recrypt = filter_var($cronReCrypt, FILTER_VALIDATE_INT);
     }
 
     public function setCronToken($cronToken) {
@@ -89,8 +85,7 @@ class System {
     }
 
     public function setInstalled($installed) {
-        $value = filter_var(intval($installed, 10), FILTER_VALIDATE_INT);
-        $this->installed = $value === 1 ? true : false;
+        $this->installed = $installed;
     }
 
     /**
@@ -166,11 +161,9 @@ class System {
                     $this->setCronUrl($object->cron_url);
                     $this->setInstalled($object->installed == 1 ? true : false);
                 }
-
-                return true;
             }
 
-            return false;
+            $this->getDatabase()->closeConnection($dbConnection);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -191,6 +184,8 @@ class System {
                 $exists = $statement->rowCount > 0 ? true : false;
             }
 
+            $this->getDatabase()->closeConnection($dbConnection);
+
             return $exists;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
@@ -202,119 +197,364 @@ class System {
     }
 
     public function getUserIDs() {
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("SELECT DISTINCT id FROM account");
-        $IDs = array();
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT DISTINCT id FROM account");
+            $IDs = array();
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $IDs[] = $object->id;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $IDs[] = $object->id;
+                }
             }
-        }
 
-        return $IDs;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $IDs;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function queryCronToken() {
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("SELECT cron_token FROM system");
-        $token = null;
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT cron_token FROM system");
+            $token = null;
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $token = $object->cron_token;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $token = $object->cron_token;
+                }
             }
-        }
 
-        return $token;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $token;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     private function getEncryptionKey($userID) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $key = null;
+            $ID = filter_var($userID, FILTER_VALIDATE_INT);
+            $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :ID");
+            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
 
-        $dbConnection = $this->getDatabase()->openConnection();
-        $key = null;
-        $ID = filter_var($userID, FILTER_VALIDATE_INT);
-        $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :ID");
-        $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $key = $object->encryption_key;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $key = $object->encryption_key;
+                }
             }
-        }
 
-        return $key;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $key;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function updateEncryptionKey($id, $cronToken) {
-        $token = (string) filter_var($cronToken, FILTER_SANITIZE_STRING);
-        $savedToken = (string) $this->queryCronToken();
-        $success = false;
-        if ($token === $savedToken) {
+        try {
+            $token = (string) filter_var($cronToken, FILTER_SANITIZE_STRING);
+            $savedToken = (string) $this->queryCronToken();
+            $success = false;
+            if ($token === $savedToken) {
 
-            $newKey = $this->getAccount()->generateEncryptionKey();
-            $dbConnection = $this->getDatabase()->openConnection();
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
+                $newKey = $this->getAccount()->generateEncryptionKey();
+                $dbConnection = $this->getDatabase()->openConnection();
+                $ID = filter_var($id, FILTER_VALIDATE_INT);
 
-            $statement = $dbConnection->prepare("UPDATE account SET encryption_key = :encryptionKey WHERE id = :ID");
-            $statement->bindParam(':encryptionKey', $newKey, PDO::PARAM_STR);
-            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+                $statement = $dbConnection->prepare("UPDATE account SET encryption_key = :encryptionKey WHERE id = :ID");
+                $statement->bindParam(':encryptionKey', $newKey, PDO::PARAM_STR);
+                $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
 
-            $oldKey = $this->getEncryptionKey($ID);
+                $oldKey = $this->getEncryptionKey($ID);
 
-            if ($statement->execute()) {
-                if ($statement->rowCount() > 0) {
-                    $newKey = $this->getEncryptionKey($ID);
-                    if ($newKey != $oldKey) {
-                        $success = true;
+                if ($statement->execute()) {
+                    if ($statement->rowCount() > 0) {
+                        $newKey = $this->getEncryptionKey($ID);
+                        if ($newKey != $oldKey) {
+                            $success = true;
+                        }
                     }
                 }
             }
-        }
 
-        return $success;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function isCronEnabled() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $enabled = false;
+            $statement = $dbConnection->prepare("SELECT cron_active FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $enabled = $object->cron_active;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return boolval($enabled);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function update($cronActive, $clearSessionData, $cronRecrypt) {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $success = false;
+            $active = filter_var($cronActive, FILTER_VALIDATE_INT);
+            $clear = filter_var($clearSessionData, FILTER_VALIDATE_INT);
+            $recrypt = filter_var($cronRecrypt, FILTER_VALIDATE_INT);
+            $statement = $dbConnection->prepare("UPDATE system SET cron_active = :cronActive, cron_clear_session_data = :clearSessionData, cron_recrypt = :cronRecrypt");
+            $statement->bindParam(':cronActive', $active, PDO::PARAM_INT);
+            $statement->bindParam(':clearSessionData', $clear, PDO::PARAM_INT);
+            $statement->bindParam(':cronRecrypt', $recrypt, PDO::PARAM_INT);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount > 0) {
+                    $success = true;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function cronUrl() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $cronUrl = '';
+            $statement = $dbConnection->prepare("SELECT cron_url FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $cronUrl = $object->cron_url;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $cronUrl;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function cronLastSuccess() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $lastSuccess = false;
+            $statement = $dbConnection->prepare("SELECT cron_last_success FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $lastSuccess = $object->cron_last_success;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return boolval($lastSuccess);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function cronRecrypt() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $recrypt = false;
+            $statement = $dbConnection->prepare("SELECT cron_recrypt FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $recrypt = $object->cron_recrypt;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return boolval($recrypt);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function cronClearSessionData() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $clearSessionData = false;
+            $statement = $dbConnection->prepare("SELECT cron_clear_session_data FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $clearSessionData = $object->cron_clear_session_data;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return boolval($clearSessionData);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function doingCron() {
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("UPDATE system SET doing_cron = 1");
-        $success = false;
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("UPDATE system SET doing_cron = 1");
+            $success = false;
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
-        }
 
-        return $success;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function cronLast() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT cron_last FROM system");
+            $cronLast = null;
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $cronLast = $object->cron_last;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $cronLast;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function finishedCron() {
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("UPDATE system SET doing_cron = 0");
-        $success = false;
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $cronLast = date('Y-m-d H:i:s');
+            $statement = $dbConnection->prepare("UPDATE system SET doing_cron = 0 , cron_last_success = 1, cron_last = :cronLast");
+            $statement->bindParam(':cronLast', $cronLast, PDO::PARAM_STR);
+            $success = false;
 
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
             }
-        }
 
-        return $success;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function isDoingCron() {
-        $dbConnection = $this->getDatabase()->openConnection();
-        $statement = $dbConnection->prepare("SELECT doing_cron FROM system");
-        $doingCron = false;
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+            $statement = $dbConnection->prepare("SELECT doing_cron FROM system");
+            $doingCron = false;
 
-        if ($statement->execute()) {
-            while ($object = $statement->fetchObject()) {
-                $doingCron = $object->doing_cron == 1 ? true : false;
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $doingCron = $object->doing_cron == 1 ? true : false;
+                }
             }
-        }
 
-        return $doingCron;
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $doingCron;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
 }

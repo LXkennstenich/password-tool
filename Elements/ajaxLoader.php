@@ -28,3 +28,15 @@ if (!defined('PASSTOOL')) {
 <div class="ajax-message">
 
 </div>
+<script>
+    var $loading = $('.loading-div').hide();
+    var $ajaxMessage = $('.ajax-message').hide();
+    $(document)
+            .ajaxStart(function () {
+                $loading.show();
+            })
+            .ajaxStop(function () {
+                $loading.hide();
+                $ajaxMessage.show();
+            });
+</script>

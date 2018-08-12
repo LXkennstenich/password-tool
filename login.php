@@ -27,15 +27,18 @@ if ($session->isAuthenticated() === true) {
 }
 ?>
 
-
+<div class="logo-container">
+    <img src="<?php echo 'https://' . $_SERVER['HTTP_HOST'] . '/Icons/logo-weese.png' ?>" width="300px">
+</div>
 
 <div id="login-form" class="form">
+    <input type="email" class="honeypot-field" id="honeypot">
     <input type="email" id="username-input" placeholder="Benutzername">
-    <input type="email" class="honeypot-field" id="honeypot" value="">
     <input type="password" id="password-input">
     <a id="login-button" class="button">Login</a>
     <a class="forgot-password-link" href="/newpassword">Passwort vergessen</a>
 </div>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 <script>
     $('#login-button').bind('click touch', function () {
 
@@ -49,7 +52,7 @@ if ($session->isAuthenticated() === true) {
         request.honeypot = document.getElementById('honeypot').value;
         request.password = document.getElementById('password-input').value;
         request.action = 'Login';
-        request.timestamp = <?php echo microtime(true); ?>;
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
@@ -80,9 +83,4 @@ if ($session->isAuthenticated() === true) {
         });
     });
 </script>
-<div class="loading-div">
 
-</div>
-<div class="ajax-message">
-
-</div>

@@ -466,6 +466,47 @@ class Account {
         }
     }
 
+    public function requestNewPassword() {
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
+
+            $success = false;
+
+            if (!$this->exists()) {
+                return false;
+            }
+
+            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+
+            $generatedPassword = $this->generatePassword();
+            $this->setPassword($generatedPassword);
+            $password = $this->hashPassword($generatedPassword);
+            $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE username = :username");
+            $statement->bindParam(":username", $username, PDO::PARAM_STR);
+            $statement->bindParam(":password", $password, PDO::PARAM_STR);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            if ($success === true) {
+                $this->sendUserInformation();
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
     /**
      * 
      * @param type $name

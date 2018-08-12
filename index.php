@@ -22,7 +22,11 @@
 if (!defined('PASSTOOL')) {
     define('PASSTOOL', true);
 }
+/*
+  $files = scandir(dirname(__FILE__));
 
+  var_dump($files);
+ */
 if (session_status() == PHP_SESSION_NONE) {
     session_save_path('/tmp');
     session_start();
