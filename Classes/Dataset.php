@@ -268,9 +268,9 @@ class Dataset {
         try {
             $userID = $this->getUserID();
             $id = $this->getID();
-            $dbConnetion = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-            $statement = $dbConnetion->prepare("SELECT title,date_created,date_edited,login,password,url,project FROM datasets WHERE id = :id AND user_id = :userID");
+            $statement = $dbConnection->prepare("SELECT title,date_created,date_edited,login,password,url,project FROM datasets WHERE id = :id AND user_id = :userID");
             $statement->bindParam(':id', $id, PDO::PARAM_INT);
             $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
@@ -285,6 +285,8 @@ class Dataset {
                     $this->setProject($object->project);
                 }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -320,6 +322,8 @@ class Dataset {
                 }
             }
 
+            $this->getDatabase()->closeConnection($dbConnection);
+
             return $success;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
@@ -347,6 +351,8 @@ class Dataset {
                     $success = true;
                 }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
 
             return $success;
         } catch (Exception $ex) {
@@ -386,6 +392,8 @@ class Dataset {
                     $success = true;
                 }
             }
+
+            $this->getDatabase()->closeConnection($dbConnection);
 
             return $success;
         } catch (Exception $ex) {

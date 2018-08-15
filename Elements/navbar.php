@@ -26,18 +26,30 @@ if (!defined('PASSTOOL')) {
         <input type="search" id="search-input" name="search" placeholder="Suche">
     </form>
     <ul class="nav-1">
-        <li class="nav1-item">
-            <?php if ($page == 'account') { ?>
+
+        <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>
+            <li class="nav1-item">
+                <a class="nav1-link" id="newUserLink" href="#newUser"><i class="fas fa-user-plus"></i></a>
+            </li>
+        <?php } ?>
+
+        <?php if ($page == 'account') { ?>
+
+            <li class="nav1-item">
                 <a class="nav1-link" id="createNewDatasetButton" href="#newDataset"><i class="fas fa-plus"></i></a>
-            <?php } ?>
-        </li>
+            </li>
+
+        <?php } ?>
+
         <li class="nav1-item">
             <a class="nav1-link" id="settingsLink" href="/settings"><i class="fas fa-cog"></i></a>
         </li>
+
     </ul>
     <form method="post" action="/logout" >
         <input type="submit" value="Ausloggen">
     </form>
 </div>
+
 
 

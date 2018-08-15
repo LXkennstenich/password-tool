@@ -22,11 +22,7 @@
 if (!defined('PASSTOOL')) {
     define('PASSTOOL', true);
 }
-/*
-  $files = scandir(dirname(__FILE__));
 
-  var_dump($files);
- */
 if (session_status() == PHP_SESSION_NONE) {
     session_save_path('/tmp');
     session_start();
@@ -46,6 +42,8 @@ if ($page != 'Ajax' && $page != 'cron') {
     if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
         include_once ELEMENTS_DIR . 'navbar.php';
     }
+
+    include_once ELEMENTS_DIR . 'ajaxLoader.php';
 }
 
 if (file_exists($file)) {
@@ -57,6 +55,15 @@ if (file_exists($file)) {
 }
 
 if ($page != 'Ajax' && $page != 'cron') {
+
+    if ($page == 'account') {
+        include_once VIEW_DIR . 'newDataset.view.php';
+    }
+
+    if ($sessionAccessLevel === SESSION_ADMIN) {
+        include_once VIEW_DIR . 'newUser.view.php';
+    }
+
     include ELEMENTS_DIR . 'footer.php';
 }
 

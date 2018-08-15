@@ -222,19 +222,4 @@ class Encryption {
         }
     }
 
-    function getRealPasswordLength($encryptedPassword, $username) {
-        try {
-            $decryptedPassword = $this->decrypt($encryptedPassword, $username);
-            $length = strlen($decryptedPassword);
-            unset($decryptedPassword);
-            return $length;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
 }

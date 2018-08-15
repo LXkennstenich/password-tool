@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PassTool
  * @version 1.0
@@ -29,6 +28,16 @@ if ($session->isAuthenticated() !== true) {
 if ($session->needAuthenticator() !== false) {
     $factory->redirect('authenticator');
 }
+?>
 
-include_once VIEW_DIR . 'settings.view.php';
+<div id="main">
+    <div class="headline">
+        <h1>Einstellungen</h1>
+    </div>
+
+    <?php include_once VIEW_DIR . 'settings.view.php'; ?>
+
+</div>
+
+
 

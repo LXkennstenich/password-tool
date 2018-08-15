@@ -24,6 +24,7 @@ class System {
     protected $debugger;
     protected $encryption;
     protected $account;
+    protected $blockedIpAddresses;
 
     public function __construct($database, $encryption, $debugger, $account) {
         $this->setDatabase($database);
@@ -88,6 +89,10 @@ class System {
         $this->installed = $installed;
     }
 
+    public function setBlockedIpAddresses($ipAddresses) {
+        $this->blockedIpAddresses = $ipAddresses;
+    }
+
     /**
      * 
      * @return \Database
@@ -144,11 +149,63 @@ class System {
         return $this->installed != null ? $this->installed : false;
     }
 
+    public function getBlockedIpAddresses() {
+        return $this->blockedIpAddresses;
+    }
+
+    public function updateBlockedIpAddresses($ipAddresses) {
+        try {
+            $dbConnetion = $this->getDatabase()->openConnection();
+
+            $ipAddressesSerialized = is_array($ipAddresses) ? serialize($ipAddresses) : serialize(array());
+            $statement = $dbConnetion->prepare("UPDATE system SET blocked_ip_addresses = :ipAddresses");
+            $statement->bindParam(':ipAddresses', $ipAddressesSerialized);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    return true;
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+
+            return false;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function queryBlockedIpAddresses() {
+        try {
+            $dbConnetion = $this->getDatabase()->openConnection();
+
+            $statement = $dbConnetion->prepare("SELECT blocked_ip_addresses FROM system");
+
+            if ($statement->execute()) {
+                while ($object = $statement->fetchObject()) {
+                    $this->setBlockedIpAddresses(unserialize($object->blocked_ip_addresses));
+                }
+            }
+
+            $this->getDatabase()->closeConnection($dbConnection);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
     public function load() {
         try {
             $dbConnetion = $this->getDatabase()->openConnection();
 
-            $statement = $dbConnetion->prepare("SELECT cron_recrypt,cron_clear_session_data,cron_last,cron_last_success,cron_active,cron_url FROM system");
+            $statement = $dbConnetion->prepare("SELECT cron_recrypt,cron_clear_session_data,cron_last,cron_last_success,cron_active,cron_url,blocked_ip_addresses FROM system");
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -160,6 +217,7 @@ class System {
                     $this->setCronActive($object->cron_active);
                     $this->setCronUrl($object->cron_url);
                     $this->setInstalled($object->installed == 1 ? true : false);
+                    $this->setBlockedIpAddresses(unserialize($object->blocked_ip_addresses));
                 }
             }
 

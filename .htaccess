@@ -11,6 +11,30 @@ Header always set X-Content-Type-Options "nosniff"
 Header set Referrer-Policy "same-origin"
 </IfModule>
 
+<Files "*.txt">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "*.json">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "*.lock">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "*.yml">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "*.gitignore">
+Order Allow,Deny
+Deny from all
+</Files>
 
 # 6G:[BAD IPS]
 <Limit GET POST PUT>

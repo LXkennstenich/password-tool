@@ -31,14 +31,14 @@ if ($session->needAuthenticator() !== false) {
 
 $datasetID = filter_var($_GET['id'], FILTER_SANITIZE_STRING);
 
-$dataset = $factory->getDataset($datasetID);
+$dataset = $factory->getDataset($datasetID, $_SESSION['UID']);
 ?>
 
-<div id="info">
-
-</div>
-
 <div id="main">
+    <div class="headline">
+        <h1>Datensatz bearbeiten</h1>
+    </div>
+
     <?php include_once VIEW_DIR . 'editDataset.view.php'; ?>
 </div>
 

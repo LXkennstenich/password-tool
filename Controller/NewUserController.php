@@ -18,24 +18,19 @@ if (!defined('PASSTOOL')) {
 $debugger = $factory->getDebugger();
 
 try {
-    $honeypot = $request->honeypot;
-
-    if (!empty($honeypot) || $honeypot != '') {
-        exit('Benutzername nicht vorhanden');
-    }
-
     $username = $request->username;
+    $accessLevel = $request->accessLevel;
 
     $account = $factory->getAccount();
 
     $account->setUsername($username);
+    $account->setAccessLevel($accessLevel);
+    $account->generateProperties();
 
-    if ($account->exists()) {
-        if ($account->requestNewPassword()) {
-            echo '1';
-        } else {
-            echo 'fehlgeschlagen';
-        }
+    if ($account->save()) {
+        echo "1";
+    } else {
+        echo "Fehlgeschlagen";
     }
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());

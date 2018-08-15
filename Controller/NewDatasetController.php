@@ -21,6 +21,14 @@ $password = $request->password;
 $url = $request->url;
 $project = $request->project;
 
+if ($title == '') {
+    exit('Kein Titel angegeben. Datensatz wurde nicht erstellt');
+}
+
+if ($login == '') {
+    exit('Kein Login angegeben. Datensatz wurde nicht erstellt');
+}
+
 $dataset->setUserID($userID);
 $dataset->setTitle($title);
 $dataset->setLogin($login);

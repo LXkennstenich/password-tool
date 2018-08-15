@@ -52,4 +52,11 @@ echo $jsVarRequestTimestamp;
         var url = "https://" + hostname + "/" + "Ajax";
         return url;
     }
+
+    $.ajaxSetup({
+        async: true,
+        cache: true,
+        url: getAjaxUrl()
+    });
+
 </script>

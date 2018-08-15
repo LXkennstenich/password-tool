@@ -199,9 +199,9 @@ class Factory {
      * @param string $ID
      * @return Dataset
      */
-    public function getDataset($ID) {
+    public function getDataset($ID, $user_id) {
         $id = filter_var($ID, FILTER_VALIDATE_INT);
-        $userID = filter_var($_SESSION['UID'], FILTER_SANITIZE_STRING);
+        $userID = filter_var($user_id, FILTER_VALIDATE_INT);
 
         $dataset = $this->createDataset();
         $dataset->setID($id);

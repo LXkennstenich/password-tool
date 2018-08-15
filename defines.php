@@ -19,6 +19,10 @@ if (!defined('ROOT_DIR')) {
     define('ROOT_DIR', dirname(__FILE__) . '/');
 }
 
+if (!defined('LOG_DIR')) {
+    define('LOG_DIR', ROOT_DIR . 'logs/');
+}
+
 if (!defined('CLASS_DIR')) {
     define('CLASS_DIR', ROOT_DIR . 'Classes/');
 }

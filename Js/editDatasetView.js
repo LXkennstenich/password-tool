@@ -40,4 +40,32 @@ $(document).ready(function () {
 
         });
     });
+
+    $('#regeneratePasswordButton').bind('click touch', function () {
+        var request = {};
+        request.action = 'GeneratePassword';
+        request.tk = token;
+        request.ts = timestamp;
+        request.ipaddress = ipaddress;
+        request.uid = uid;
+        request.length = document.getElementById('passwordLengthBox').value;
+        request.lowerCharacters = document.getElementById('lowerCharacters').checked !== false ? 1 : 0;
+        request.highCharacters = document.getElementById('highCharacters').checked !== false ? 1 : 0;
+        request.numbers = document.getElementById('numbers').checked !== false ? 1 : 0;
+        request.specialChars = document.getElementById('specialchars').checked !== false ? 1 : 0;
+
+        $.ajax({
+            'type': 'POST',
+            'data': {"request": JSON.stringify(request)},
+            'url': getAjaxUrl(),
+            'success': function (data) {
+                $('#datasetPassword').val(data);
+                $('#datasetPassword').text(data);
+            },
+            error: function (jqXHR, exception) {
+
+            }
+
+        });
+    });
 });

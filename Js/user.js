@@ -15,6 +15,7 @@
 /* @var ipaddress */
 $(document).ready(function () {
     $('#createNewDatasetButton').fancybox();
+    $('#newUserLink').fancybox();
 
     $('#createDatasetButton').bind('click touch', function () {
         var request = {};
@@ -48,7 +49,7 @@ $(document).ready(function () {
 
         });
     });
-    
+
     $('#updateSystemSettingsButton').bind('click touch', function () {
         var request = {};
         request.action = 'UpdateSystemSettings';
@@ -189,76 +190,65 @@ $(document).ready(function () {
         });
     });
 
-   $('#input-search').keypress(function(e) {
-      if(e.which == 13) {
-          $('#input-search').submit();
-          return false;
-      } 
-   });
-
-});
-
-
-function copy(encrypted) {
-    var request = {};
-    request.action = 'DecryptPassword';
-    request.file = 'dataset';
-    request.tk = token;
-    request.ts = timestamp;
-    request.ipaddress = ipaddress;
-    request.uid = uid;
-    request.searchTerm = '';
-    request.encrypted = encrypted;
-    $.ajax({
-        'type': 'POST',
-        'data': {"request": JSON.stringify(request)},
-        'url': getAjaxUrl(),
-        'success': function (data) {
-            var $temp = $("<input>");
-            $("body").append($temp);
-            var value = data;
-            var $pass = $('<input id="realPass" value="' + value + '">');
-            $("body").append($pass);
-            $temp.val(document.getElementById('realPass').value).select();
-            document.execCommand("copy");
-            $temp.remove();
-            /*
-             var copynotice = $(this).next('#copy-notice').text('Kopiert!');
-             $(copynotice).text('Kopiert!');
-             var interval = setInterval(function () {
-             $(copynotice).text('');
-             clearInterval(interval);
-             }, 1000);*/
-
-        },
-        error: function (jqXHR, exception) {
-            $(selector).siblings('p').text(jqXHR + exception);
+    $('#input-search').keypress(function (e) {
+        if (e.which == 13) {
+            $('#input-search').submit();
+            return false;
         }
-
     });
 
- 
-
-}
-
-function showPassword(selector) {
-
-    if ($(selector).hasClass('show-password')) {
-        var hiddenValue = $(selector).parent('.row').parent('.content').siblings('.datasetHidden').val();
-        $(selector).removeClass('show-password');
-        $(selector).siblings('p').text(hiddenValue);
-    } else {
+    $('#newUserButton').bind('click touch', function() {
         var request = {};
-        request.action = 'DecryptPassword';
-        request.file = 'dataset';
+        request.action = 'NewUser';
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
         request.uid = uid;
-        request.searchTerm = '';
-        request.encrypted = $(selector).parent('.row').parent('.content').next('.datasetEncrypted').val();
+        request.username = document.getElementById('newUsername').value;
+        request.accessLevel = document.getElementById('newAccessLevel').value;
+        $.ajax({
+            'type': 'POST',
+            'data': {"request": JSON.stringify(request)},
+            'url': getAjaxUrl(),
+            'success': function (data) {
+                if (parseInt(data) == 1) {
+                    window.location.href = '/account';
+                } else {
+                    $('.ajax-message').text(data);
+                }
+            }
+        });
+    });
 
-        var hiddenValue = $.ajax({
+});
+
+
+function showPassword(selector) {
+
+    if ($(selector).hasClass('show-password')) {
+        $(selector).removeClass('show-password');
+        var passwordElement = $(selector).siblings('p');
+        var password = passwordElement.text();
+        var passwordLength = password.length;
+
+        var hidden = '';
+
+        for (i = 0; i <= passwordLength; i++) {
+            hidden += '*';
+        }
+
+        passwordElement.text(hidden);
+
+    } else {
+        var request = {};
+        request.action = 'DecryptPassword';
+        request.tk = token;
+        request.ts = timestamp;
+        request.ipaddress = ipaddress;
+        request.uid = uid;
+        request.id = $(selector).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
+
+        $.ajax({
             'type': 'POST',
             'data': {"request": JSON.stringify(request)},
             'url': getAjaxUrl(),

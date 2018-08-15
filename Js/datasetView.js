@@ -19,8 +19,6 @@ $('.dataset-title').on("click", function () {
     }
 });
 
-
-
 $('.delete-dataset-link').bind('click touch', function () {
     if (confirm("Den ausgewählten Datensatz wirklich löschen?")) {
         var request = {};
@@ -33,7 +31,6 @@ $('.delete-dataset-link').bind('click touch', function () {
         $.ajax({
             'type': 'POST',
             'data': {"request": JSON.stringify(request)},
-            'url': getAjaxUrl(),
             'success': function (data) {
                 if (parseInt(data) == 1) {
                     window.location.href = '/account';
@@ -48,3 +45,44 @@ $('.delete-dataset-link').bind('click touch', function () {
         });
     }
 });
+
+
+/* Copy the Content of the Passwordbox */
+$('.copy-password').bind('click touch', function () {
+
+    var password = '';
+
+    var request = {};
+    request.action = 'DecryptPassword';
+    request.tk = token;
+    request.ts = timestamp;
+    request.ipaddress = ipaddress;
+    request.uid = uid;
+    request.id = $(this).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
+
+    $.ajax({
+        async: false,
+        'type': 'POST',
+        'data': {"request": JSON.stringify(request)},
+        'url': getAjaxUrl(),
+        'success': function (data) {
+            password = data;
+        }
+    });
+
+    var $temp = $("<input>");
+    $("body").append($temp);
+    $temp.val(password);
+    console.log($temp.val());
+    $temp.select();
+    document.execCommand("copy");
+    $temp.remove();
+    /*
+     var copynotice = $(this).next('#copy-notice').text('Kopiert!');
+     $(copynotice).text('Kopiert!');
+     var interval = setInterval(function () {
+     $(copynotice).text('');
+     clearInterval(interval);
+     }, 1000);*/
+});
+                       

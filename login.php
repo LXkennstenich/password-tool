@@ -32,11 +32,11 @@ if ($session->isAuthenticated() === true) {
 </div>
 
 <div id="login-form" class="form">
-    <input type="email" class="honeypot-field" id="honeypot">
+    <input type="email" class="honeypot-field" id="honeypot" value="">
     <input type="email" id="username-input" placeholder="Benutzername">
-    <input type="password" id="password-input">
+    <input type="password" id="password-input" placeholder="Passwort">
     <a id="login-button" class="button">Login</a>
-    <a class="forgot-password-link" href="/newpassword">Passwort vergessen</a>
+    <a class="forgot-password-link" href="/newpassword">Passwort vergessen ?</a>
 </div>
 <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 <script>
