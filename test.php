@@ -44,7 +44,7 @@ try {
     define("DIR", ROOT_DIR);                          // The path to your repostiroy; this must begin with a forward slash (/)
     define("BRANCH", "origin/master");                                 // The branch route
     define("LOGFILE", "update.log");                                       // The name of the file you want to log to.
-    define("GIT", "/usr/bin/git");                                         // The path to the git executable
+    define("GIT", "/usr/local/git/bin/git");                                         // The path to the git executable
     define("AFTER_PULL", "");
 
     $file = fopen(LOGFILE, "a");
