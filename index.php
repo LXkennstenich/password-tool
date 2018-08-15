@@ -42,8 +42,6 @@ if ($page != 'Ajax' && $page != 'cron') {
     if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
         include_once ELEMENTS_DIR . 'navbar.php';
     }
-
-    include_once ELEMENTS_DIR . 'ajaxLoader.php';
 }
 
 if (file_exists($file)) {
@@ -63,6 +61,8 @@ if ($page != 'Ajax' && $page != 'cron') {
     if ($sessionAccessLevel === SESSION_ADMIN) {
         include_once VIEW_DIR . 'newUser.view.php';
     }
+
+    include_once ELEMENTS_DIR . 'ajaxLoader.php';
 
     include ELEMENTS_DIR . 'footer.php';
 }

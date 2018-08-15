@@ -12,10 +12,10 @@ if (!defined('PASSTOOL')) {
 }
 
 return array(
-    'databaseServer' => 'db1358.mydbserver.com',
-    'databaseName' => 'usr_p446700_4',
-    'databaseUser' => 'p446700d4',
-    'databasePassword' => 'avixohEf#081',
+    'databaseServer' => 'databaseserver.com',
+    'databaseName' => 'database',
+    'databaseUser' => 'databaseUser',
+    'databasePassword' => 'pass',
     'databasePort' => 3306,
-    'adminEmail' => 'contact@alexweese.de'
+    'adminEmail' => 'max@mustermann.de'
 );
