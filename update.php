@@ -1,6 +1,6 @@
 <?php
 
-require_once("updateconfig.php");
+require_once(ROOT_DIR . "update/updateconfig.php");
 
 $content = file_get_contents("php://input");
 $json = json_decode($content, true);
