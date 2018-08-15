@@ -37,7 +37,7 @@ if ($account->needPasswordChange($sessionUID) === true) {
 $amountDatasets = $factory->countDatasets($sessionUID);
 $loggedInUser = $sessionUsername;
 ?>
-
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 
 <div id="main">
 
@@ -64,6 +64,7 @@ $loggedInUser = $sessionUsername;
     </script>
     <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 </div>
+
 
 
 
