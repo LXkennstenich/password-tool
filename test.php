@@ -41,7 +41,7 @@ if ($account->needPasswordChange($sessionUID) === true) {
 
 try {
 
-
+//
 
     $result = shell_exec("git clone https://LXkennstenich@bitbucket.org/LXkennstenich/password-tool.git" . ' ' . ROOT_DIR);
     var_dump($result);
