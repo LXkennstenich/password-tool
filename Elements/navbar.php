@@ -26,6 +26,9 @@ if (!defined('PASSTOOL')) {
         <input type="search" id="search-input" name="search" placeholder="Suche">
     </form>
     <ul class="nav-1">
+        <li class="nav1-item">
+            <a class="nav1-link" href="/update/update?token=secret-token"><i class="fas fa-sync-alt"></i></a>
+        </li>
 
         <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>
             <li class="nav1-item">
