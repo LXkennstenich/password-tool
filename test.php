@@ -90,7 +90,7 @@ try {
     }
 
     // ensure directory is a repository
-    if (file_exists(DIR . ".git") && is_dir(DIR)) {
+    if (file_exists(DIR) && is_dir(DIR)) {
         try {
             // pull
             fputs($file, "*** AUTO PULL INITIATED ***" . "\n");
