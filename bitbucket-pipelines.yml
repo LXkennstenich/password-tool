@@ -12,11 +12,7 @@ pipelines:
           - composer
         script:
           - apt-get update && apt-get install -y unzip
-          - apt-get install -y wget
-          - wget https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
-          - wget https://squizlabs.github.io/PHP_CodeSniffer/phpcbf.phar
-          - php phpcs.phar -h
-          - php phpcbf.phar -h
-          - phpcs.phar /opt/atlassian/pipelines/agent/build 
+          - echo ${BITBUCKET_BUILD_NUMBER} >> version.dat
+          - cp version.dat /opt/atlassian/pipelines/agent/build
         deployment:
          production
