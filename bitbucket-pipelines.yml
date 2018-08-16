@@ -15,8 +15,10 @@ pipelines:
           - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
           - composer global require "squizlabs/php_codesniffer=*"
           - composer install
-          - phpcs -h
-          - phpcbf -h
-          - phpcs /opt/atlassian/pipelines/agent/build
+          - git clone https://github.com/squizlabs/PHP_CodeSniffer.git
+          - cd PHP_CodeSniffer
+          - php bin/phpcs -h
+          - php bin/phpcbf -h
+          - bin/phpcs /opt/atlassian/pipelines/agent/build
         deployment:
          production
