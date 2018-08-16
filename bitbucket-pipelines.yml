@@ -15,7 +15,8 @@ pipelines:
           - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
           - composer global require "squizlabs/php_codesniffer=*"
           - composer install
-          - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"passtool-${BITBUCKET_CLONE_DIR}.txt"
-          - echo ${BITBUCKET_CLONE_DIR}
+          - ./vendor/bin/phpcs -h
+          - ./vendor/bin/phpcbf -h
+          - ./vendor/bin/phpcs /opt/atlassian/pipelines/agent/build
         deployment:
          production
