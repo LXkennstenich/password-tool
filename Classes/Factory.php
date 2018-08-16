@@ -348,6 +348,8 @@ class Factory {
                 }
             }
 
+            $this->getDatabase()->closeConnection($dbConnection);
+
             return $datasets;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
