@@ -12,7 +12,7 @@ pipelines:
           - composer
         script:
           - apt-get update && apt-get install -y unzip
-          - apt-get install wget
+          - apt-get install -y wget
           - wget https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
           - wget https://squizlabs.github.io/PHP_CodeSniffer/phpcbf.phar
           - php phpcs.phar -h
