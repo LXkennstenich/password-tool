@@ -87,7 +87,7 @@ class Options {
     }
 
     public function getUgetwoFactor() {
-        return $this->$use_two_factor;
+        return $this->use_two_factor;
     }
 
     public function getEmailNotificationLogin() {
