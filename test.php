@@ -37,14 +37,10 @@ if ($account->needPasswordChange($sessionUID) === true) {
     $factory->redirect('updatepassword');
 }
 
-
+$system = $factory->getSystem();
 
 try {
-
-///
-//
-    $result = shell_exec("git clone https://LXkennstenich@bitbucket.org/LXkennstenich/password-tool.git" . ' ' . ROOT_DIR);
-    var_dump($result);
+    echo $system->updateAvailable();
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());
 }

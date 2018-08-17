@@ -227,6 +227,7 @@ function showPassword(selector) {
 
     if ($(selector).hasClass('show-password')) {
         $(selector).removeClass('show-password');
+        $(selector).removeClass('fa-eye-slash');
         var passwordElement = $(selector).siblings('p');
         var password = passwordElement.text();
         var passwordLength = password.length;
@@ -254,6 +255,7 @@ function showPassword(selector) {
             'url': getAjaxUrl(),
             'success': function (data) {
                 $(selector).addClass('show-password');
+                $(selector).addClass('fa-eye-slash');
                 $(selector).siblings('p').text(data);
             },
             error: function (jqXHR, exception) {

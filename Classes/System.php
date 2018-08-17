@@ -25,6 +25,9 @@ class System {
     protected $encryption;
     protected $account;
     protected $blockedIpAddresses;
+    private static $bitbucketUsername = "LXKennstenich";
+    private static $bitbucketRepoSlug = "Password-Tool";
+    private static $bitbucketAPI_BaseURL = "https://api.bitbucket.org/2.0";
 
     public function __construct($database, $encryption, $debugger, $account) {
         $this->setDatabase($database);
@@ -613,6 +616,81 @@ class System {
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
+    }
+
+    public function updateAvailable() {
+        $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/downloads';
+        $curl = curl_init();
+
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+        $result = curl_exec($curl);
+
+        if (!$result) {
+            echo '<pre>';
+            var_dump(curl_error($curl));
+            echo '<pre/>';
+        }
+
+        $resultObject = null;
+
+        if ($result) {
+            $resultObject = json_decode($result);
+            set_time_limit(0);
+            $filePath = ROOT_DIR . '/update/version.dat';
+            $file = fopen($filePath, 'w+');
+
+            $downloadName = $resultObject->values[0]->name;
+
+            $downloadUrl = null;
+
+            if ($downloadName == 'version.dat') {
+                $downloadUrl = $resultObject->values[0]->links->self->href;
+            }
+
+            if ($downloadUrl !== null) {
+                $curlDownload = curl_init($downloadUrl);
+
+
+                curl_setopt_array($curlDownload, [
+                    CURLOPT_URL => $downloadUrl,
+                    CURLOPT_RETURNTRANSFER => 1,
+                    CURLOPT_FILE => $file,
+                    CURLOPT_TIMEOUT => 50,
+                    CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)'
+                ]);
+            }
+
+            $response = curl_exec($curlDownload);
+
+            if ($response === false) {
+                echo '<pre>';
+                var_dump(curl_error($curl));
+                echo '<pre/>';
+            } else {
+
+                fclose($file);
+
+                echo '<pre>';
+                var_dump($response);
+                echo '<pre/>';
+
+                $versionServer = file_get_contents($filePath);
+                $versionCurrent = file_get_contents(ROOT_DIR . 'version.dat');
+
+                echo '<pre>';
+                var_dump($versionServer);
+                echo '<pre/>';
+                echo '<pre>';
+                var_dump($versionCurrent);
+                echo '<pre/>';
+            }
+
+            curl_close($curlDownload);
+        }
+
+        curl_close($curl);
     }
 
 }
