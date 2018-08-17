@@ -637,8 +637,15 @@ class System {
 
         if ($result) {
             $resultObject = json_decode($result);
-            set_time_limit(0);
-            $filePath = ROOT_DIR . '/update/version.dat';
+            set_time_limit(9999);
+            chmod(UPDATE_DIR, 755);
+
+            $filePath = UPDATE_DIR . 'version.dat';
+
+            if (file_exists($filePath)) {
+                throw new Exception("version.dat nicht vorhanden pfad: " . $filePath);
+            }
+
             $file = fopen($filePath, 'w+');
 
             $downloadName = $resultObject->values[0]->name;
@@ -658,6 +665,7 @@ class System {
                     CURLOPT_RETURNTRANSFER => 1,
                     CURLOPT_FILE => $file,
                     CURLOPT_TIMEOUT => 300,
+                    CURLOPT_FOLLOWLOCATION => true,
                     CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)'
                 ]);
             }
@@ -665,26 +673,35 @@ class System {
             $response = curl_exec($curlDownload);
 
             if ($response === false) {
-                echo '<pre>';
                 var_dump(curl_error($curl));
-                echo '<pre/>';
             } else {
 
                 fclose($file);
 
-                echo '<pre>';
-                var_dump($response);
-                echo '<pre/>';
+                $versionServer = @fopen($filePath, 'r');
 
-                $versionServer = file_get_contents($filePath);
-                $versionCurrent = file_get_contents(ROOT_DIR . 'version.dat');
+                $serverVersion = "";
 
-                echo '<pre>';
-                var_dump($versionServer);
-                echo '<pre/>';
-                echo '<pre>';
-                var_dump($versionCurrent);
-                echo '<pre/>';
+                $versionServerArray = array();
+
+                if ($versionServer) {
+                    $versionServerArray = explode('\n', fread($versionServer, filesize($filePath)));
+                }
+
+                if (!empty($versionServerArray) && sizeof($versionServerArray) > 0) {
+                    $maxIndex = sizeof($versionServerArray) - 1;
+                    $serverVersion = $versionServerArray[$maxIndex];
+                }
+
+                $currentVersion = file_get_contents(ROOT_DIR . 'version.dat');
+
+                if ($currentVersion != $serverVersion) {
+                    echo 'update available';
+                } else {
+                    echo 'no update-available';
+                }
+
+                /* @todo Projekt ZIP downloaden und über vorhandene dateien spielen */
             }
 
             curl_close($curlDownload);

@@ -19,6 +19,10 @@ if (!defined('ROOT_DIR')) {
     define('ROOT_DIR', dirname(__FILE__) . '/');
 }
 
+if (!defined('UPDATE_DIR')) {
+    define('UPDATE_DIR', ROOT_DIR . 'update/');
+}
+
 if (!defined('LOG_DIR')) {
     define('LOG_DIR', ROOT_DIR . 'logs/');
 }
