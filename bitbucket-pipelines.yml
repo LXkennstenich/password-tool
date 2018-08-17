@@ -14,6 +14,9 @@ pipelines:
           - apt-get update
           - apt-get -qq install git
           - echo ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT} >> version.dat
+          - git init
+          - git config user.name "<LXKennstenich>"
+          - git config user.email "<kontakt@alexanderweese-webdesign.de>"
           - git add version.dat
           - git commit -m "[skip CI]"
           - git push
