@@ -18,8 +18,8 @@ pipelines:
           - git config remote.origin.url https://${BB_AUTH_STRING}@bitbucket.org/LXkennstenich/password-tool.git
           - git config --global push.default matching
           - git init
-          - git config user.name "<LXKennstenich>"
-          - git config user.email "<kontakt@alexanderweese-webdesign.de>"
+          - git config user.name "<$USER_NAME>"
+          - git config user.email "<$USER_EMAIL>"
           - git add version.dat
           - git commit -m "[skip CI]"
           - git push
