@@ -14,6 +14,9 @@ pipelines:
           - apt-get update
           - apt-get -qq install git
           - echo ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT} >> version.dat
+          # AUTO VERSIONING
+          - git config remote.origin.url https://bitbucket.org/LXkennstenich/password-tool/
+          - gulp autoversion
           - git init
           - git config user.name "<LXKennstenich>"
           - git config user.email "<kontakt@alexanderweese-webdesign.de>"
