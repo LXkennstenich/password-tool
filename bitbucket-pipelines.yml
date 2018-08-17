@@ -11,7 +11,11 @@ pipelines:
         caches:
           - composer
         script:
+          - apt-get update
+          - apt-get -qq install git-ftp
+          - apt-get -qq install git
           - echo ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT} >> version.dat
-          - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"${BITBUCKET_REPO_OWNER}-${BITBUCKET_REPO_SLUG}-${BITBUCKET_COMMIT}/version.dat"
+          - git add version.dat
+          - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"version.dat"
         deployment:
          production
