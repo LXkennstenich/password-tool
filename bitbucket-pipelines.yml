@@ -12,10 +12,15 @@ pipelines:
           - composer
         script:
           - apt-get update
-          - apt-get -qq install git-ftp
           - apt-get -qq install git
           - echo ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT} >> version.dat
           - git add version.dat
+          - git commit -m "[skip CI]"
+          - git push
+          - declare -x VERSION=${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT}
+          - echo $VERSION
+          - git tag $VERSION
+          - git push origin --tags
           - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"version.dat"
         deployment:
          production
