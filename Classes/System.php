@@ -635,15 +635,26 @@ class System {
 
             if ($result) {
 
-                $filePath = UPDATE_DIR . 'version.dat';
+                $fileName = 'version.dat';
+                $filePath = UPDATE_DIR . $fileName;
 
-                $downloadName = $resultObject->values[1]->name;
+                $valueArray = $resultObject->values;
 
-                $downloadUrl = null;
+                $downloadName = "";
 
-                if ($downloadName == 'version.dat') {
-                    $downloadUrl = $resultObject->values[1]->links->self->href;
+                $i = 0;
+                $index = null;
+
+                foreach ($valueArray as $value) {
+                    if ($value->name == $fileName) {
+                        $downloadName = $value->name;
+                        $index = $i;
+                    }
+
+                    $i++;
                 }
+
+                $downloadUrl = $valueArray[$index]->links->self->href;
 
                 if ($downloadUrl !== null) {
                     if ($this->downloadFile($downloadUrl, $filePath) !== false) {
@@ -695,6 +706,10 @@ class System {
         $versionArray = array();
 
         $index = strlen($version) - 1;
+
+        if ($index < 0) {
+            return $versionArray[] = file_get_contents($path);
+        }
 
         if (strpos($version, "|", $index) !== false) {
             $version = substr($version, 0, $index);
