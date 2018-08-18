@@ -728,24 +728,33 @@ class System {
 
     public function downloadUpdate($serverVersion) {
         try {
+
             $updateDownloaded = false;
             $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/downloads';
             $curl = curl_init($url);
+            $fileName = $serverVersion . '.zip';
 
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
             $result = json_decode(curl_exec($curl));
 
-            $downloadName = $result->values[0]->name;
+            $resultArray = $result->values;
 
-            $downloadUrl = null;
+            $i = 0;
+            $index = null;
 
-            $filename = $serverVersion . '.zip';
-            $filePath = UPDATE_DIR . $filename;
+            foreach ($resultArray as $value) {
 
-            if ($downloadName == $filename) {
-                $downloadUrl = $result->values[0]->links->self->href;
+                if ($value->name == $fileName) {
+                    $index = $i;
+                }
+
+                $i++;
             }
+
+            $downloadUrl = $result->values[$index]->links->self->href;
+
+            $filePath = UPDATE_DIR . $fileName;
 
             if ($this->downloadFile($downloadUrl, $filePath)) {
                 $updateDownloaded = $filePath;
