@@ -1,65 +1,139 @@
 <?php
 
 /**
+ * Benutzerspezifische Optionen
  * PassTool
  * @version 1.0
  * @author Alexander Weese
  * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
-/* @var $factory Factory */
-/* @var $session Session */
-
 class Options {
 
+    /**
+     * Die ID der Option
+     * @var int 
+     */
     protected $id;
+
+    /**
+     * Die entsprechende User-ID
+     * @var int 
+     */
     protected $user_id;
+
+    /**
+     * Soll der Benutzername nach dem Login angezeigt werden?
+     * @var boolean 
+     */
     protected $display_login;
+
+    /**
+     * Soll 2-Faktor-Authentifizierung verwendet werden?
+     * @var boolean 
+     */
     protected $use_two_factor;
+
+    /**
+     * E-Mail Benachrichtigung bei Login-Vorgang ?
+     * @var boolean 
+     */
     protected $email_notification_login;
+
+    /**
+     * E-Mail Benachrichtigung bei Passwortänderung ?
+     * @var boolean 
+     */
     protected $email_notification_password_change;
+
+    /**
+     * Database Objekt
+     * @var \Database 
+     */
     protected $database;
+
+    /**
+     * Debug Objekt
+     * @var \Debug 
+     */
     protected $debugger;
 
+    /**
+     * Konstruktor
+     * @param \Database $database
+     * @param \Debug $debugger
+     */
     public function __construct($database, $debugger) {
         $this->setDatabase($database);
         $this->setDebugger($debugger);
     }
 
+    /**
+     * Database-Setter
+     * @param \Database $database
+     */
     private function setDatabase($database) {
         $this->database = $database;
     }
 
+    /**
+     * Debug-Setter
+     * @param \Debug $debugger
+     */
     private function setDebugger($debugger) {
         $this->debugger = $debugger;
     }
 
+    /**
+     * ID-Setter
+     * @param int $id
+     */
     public function setID($id) {
         $this->id = $id;
     }
 
+    /**
+     * User-ID-Setter
+     * @param int $user_id
+     */
     public function setUserID($user_id) {
         $this->user_id = $user_id;
     }
 
+    /**
+     * Display-Login-Setter
+     * @param boolean $display_login
+     */
     public function setDisplayLogin($display_login) {
         $this->display_login = $display_login;
     }
 
+    /**
+     * Use-Two-Factor-Setter
+     * @param boolean $use_two_factor
+     */
     public function setUseTwoFactor($use_two_factor) {
         $this->$use_two_factor = $use_two_factor;
     }
 
+    /**
+     * E-Mail-Notification-Setter
+     * @param boolean $email_notification_login
+     */
     public function setEmailNotificationLogin($email_notification_login) {
         $this->email_notification_login = $email_notification_login;
     }
 
+    /**
+     * E-Mail-Notification-Password-Change-Setter
+     * @param boolean $email_notification_password_change
+     */
     public function setEmailNotificationPasswordChange($email_notification_password_change) {
         $this->email_notification_password_change = $email_notification_password_change;
     }
 
     /**
-     * 
+     * Database-Getter
      * @return \Database
      */
     private function getDatabase() {
@@ -67,37 +141,65 @@ class Options {
     }
 
     /**
-     * 
+     * Debug-Getter
      * @return \Debug
      */
     private function getDebugger() {
         return $this->debugger;
     }
 
+    /**
+     * ID-Getter
+     * @return int
+     */
     public function getID() {
         return $this->id;
     }
 
+    /**
+     * User-ID-Getter
+     * @return int
+     */
     public function getUserID() {
         return $this->user_id;
     }
 
+    /**
+     * Display-Login-Getter
+     * @return boolean
+     */
     public function getDisplayLogin() {
         return $this->display_login;
     }
 
-    public function getUgetwoFactor() {
+    /**
+     * Use-Two-Factor-Getter
+     * @return boolean
+     */
+    public function getUsetwoFactor() {
         return $this->use_two_factor;
     }
 
+    /**
+     * E-Mail-Notification-Login-Getter
+     * @return boolean
+     */
     public function getEmailNotificationLogin() {
         return $this->email_notification_login;
     }
 
+    /**
+     * E-Mail-Notification-Password-Change-Getter
+     * @return boolean
+     */
     public function getEmailNotificationPasswordChange() {
         return $this->email_notification_password_change;
     }
 
+    /**
+     * Lädt das Objekt anhand der gesetzten ID und User-ID aus der Datenbank
+     * @return boolean
+     */
     public function load() {
         try {
             $userID = filter_var($this->getUserID(), FILTER_SANITIZE_NUMBER_INT);

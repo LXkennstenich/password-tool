@@ -43,9 +43,7 @@ if ($account->needPasswordChange($sessionUID) === true) {
 <div id="main">
 
     <div class="headline">
-        <h1>Account</h1>
-        <h2>Hier finden sie alle Datensätze</h2>
-        <p class="info-text">Anzahl Datensätze:&nbsp;<?php echo $amountDatasets; ?></p>
+        <h1>Aktualisieren</h1>
         <p class="info-text">Eingeloggt als:&nbsp;<?php echo $loggedInUser; ?></p>
     </div>
 
