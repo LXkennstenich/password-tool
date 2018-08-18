@@ -7,6 +7,7 @@
  * @copyright (c) 2018, Alexander Weese
  */
 /* @var $factory Factory */
+/* @var $system System */
 /* @var $session Session */
 /* @var $sessionUID int */
 /* @var $sessionUsername string */
@@ -27,7 +28,7 @@ if (!defined('PASSTOOL')) {
     </form>
     <ul class="nav-1">
         <li class="nav1-item">
-            <a class="nav1-link" href="/update"><i class="fas fa-sync-alt"></i></a>
+            <a class="nav1-link" href="/checkforupdate"><i class="fas fa-sync-alt" style="<?= $system->updateAvailable() ? 'color:orange;' : '' ?>"></i></a>
         </li>
 
         <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>

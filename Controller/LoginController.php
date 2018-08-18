@@ -19,9 +19,7 @@ try {
     $time = microtime(true);
     $timeRequest = (float) $request->timestamp;
 
-    //millisekunden
     $timeCalculated = $time - $timeRequest;
-
 
     if ($timeCalculated > 500 || $timeCalculated < 1) {
         $debugger->log('Zeitüberschreitung Formular || Datei: ' . __FILE__ . ' Zeit: ' . $timeCalculated);
