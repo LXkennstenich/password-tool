@@ -28,6 +28,8 @@ pipelines:
           - git tag $VERSION
           - git push origin --tags
           - echo ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT} >> version.dat
+          - git archive --format zip --output ${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT}.zip master 
           - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"version.dat"
+          - curl -X POST "https://${BB_AUTH_STRING}@api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}/downloads" --form files=@"${BITBUCKET_BUILD_NUMBER}-${BITBUCKET_COMMIT}.zip"
         deployment:
          production
