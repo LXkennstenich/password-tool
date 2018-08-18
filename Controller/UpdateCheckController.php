@@ -26,7 +26,8 @@ try {
         $path = $system->downloadUpdate($commitHash);
 
         if ($path !== false) {
-            if ($system->installUpdate($path) !== false) {
+
+            if ($system->installUpdate($path)) {
                 echo 'Erfolgreich aktualisiert';
             } else {
                 echo 'Installation schief gelaufen';

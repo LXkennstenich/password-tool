@@ -631,83 +631,31 @@ class System {
 
             $result = curl_exec($curl);
 
-            $resultObject = null;
+            $resultObject = json_decode($result);
 
             if ($result) {
-                $resultObject = json_decode($result);
 
                 $filePath = UPDATE_DIR . 'version.dat';
 
-                $file = fopen($filePath, 'w+');
-
-                $downloadName = $resultObject->values[0]->name;
+                $downloadName = $resultObject->values[1]->name;
 
                 $downloadUrl = null;
 
                 if ($downloadName == 'version.dat') {
-                    $downloadUrl = $resultObject->values[0]->links->self->href;
+                    $downloadUrl = $resultObject->values[1]->links->self->href;
                 }
 
                 if ($downloadUrl !== null) {
-                    $curlDownload = curl_init($downloadUrl);
+                    if ($this->downloadFile($downloadUrl, $filePath) !== false) {
+                        $filePathCurrent = ROOT_DIR . 'version.dat';
+
+                        $serverVersion = "";
+                        $currentVersion = "";
 
 
-                    curl_setopt_array($curlDownload, [
-                        CURLOPT_URL => $downloadUrl,
-                        CURLOPT_RETURNTRANSFER => 1,
-                        CURLOPT_FILE => $file,
-                        CURLOPT_TIMEOUT => 300,
-                        CURLOPT_FOLLOWLOCATION => true,
-                        CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)'
-                    ]);
-                }
+                        $versionServerArray = $this->getVersionArray($filePath);
+                        $currentVersionArray = $this->getVersionArray($filePathCurrent);
 
-                $response = curl_exec($curlDownload);
-
-                fclose($file);
-
-                if ($response !== false) {
-
-                    $filePathCurrent = ROOT_DIR . 'version.dat';
-
-                    $serverVersion = "";
-                    $currentVersion = "";
-
-                    $currentVersionArray = array();
-                    $versionServerArray = array();
-
-                    if ($versionCurrent !== false && $versionServer !== false) {
-
-                        $serverVersion = file_get_contents($filePath);
-                        $serverVersion = str_replace("\n", "|", $serverVersion);
-
-                        $index = strlen($serverVersion) - 1;
-
-                        if (strpos($serverVersion, "|", $index) !== false) {
-                            $serverVersion = substr($serverVersion, 0, $index);
-                        }
-
-                        $serverVersion = preg_replace('/\s+/', '', $serverVersion);
-
-                        $versionServerArray = explode("|", $serverVersion);
-
-                        $currentVersion = file_get_contents($filePathCurrent);
-                        $currentVersion = str_replace("\n", "|", $currentVersion);
-
-                        $index = strlen($currentVersion) - 1;
-
-                        if (strpos($currentVersion, "|", $index) !== false) {
-                            $currentVersion = substr($currentVersion, 0, $index);
-                        }
-
-                        $currentVersion = preg_replace('/\s+/', '', $currentVersion);
-
-                        $currentVersionArray = explode("|", $currentVersion);
-
-                        array_filter($versionServerArray);
-                        array_filter($currentVersionArray);
-                        array_unique($versionServerArray);
-                        array_unique($currentVersionArray);
 
                         if ($currentVersionArray !== false && is_array($currentVersionArray)) {
                             $maxIndex = sizeof($currentVersionArray) - 1;
@@ -723,16 +671,12 @@ class System {
 
                         if ($currentVersion != $serverVersion && $currentVersion != null && $serverVersion != null) {
                             $this->getDebugger()->log("Update verfügbar " . $serverVersion);
-                            curl_close($curlDownload);
-                            curl_close($curl);
-
-                            return $serverVersion;
+                            $updateAvailable = $serverVersion;
                         }
                     }
                 }
             }
 
-            curl_close($curlDownload);
             curl_close($curl);
 
             return $updateAvailable;
@@ -745,27 +689,100 @@ class System {
         }
     }
 
+    public function getVersionArray($path) {
+        $version = file_get_contents($path);
+        $version = str_replace("\n", "|", $version);
+        $versionArray = array();
+
+        $index = strlen($version) - 1;
+
+        if (strpos($version, "|", $index) !== false) {
+            $version = substr($version, 0, $index);
+        }
+
+        $version = preg_replace('/\s+/', '', $version);
+
+        $versionArray = explode("|", $version);
+
+        array_filter($versionArray);
+        array_unique($versionArray);
+        unset($version);
+
+        return $versionArray;
+    }
+
     public function downloadUpdate($serverVersion) {
         try {
-
-            $this->getDebugger()->log("server-version: " . $serverVersion);
-
-            $commitArray = explode('-', $serverVersion);
-            $commit = $commitArray[1];
-            $this->getDebugger()->log("commit-hash: " . $commit);
-
-            $downloaded = false;
-            $filename = static::$bitbucketUsername . '-' . static::$bitbucketRepoSlug . '-' . $commit . '.zip';
-            $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/src';
+            $updateDownloaded = false;
+            $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/downloads';
             $curl = curl_init($url);
 
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
-            $result = curl_exec($curl);
+            $result = json_decode(curl_exec($curl));
 
-            var_dump($result);
+            $downloadName = $result->values[0]->name;
 
-            return $downloaded;
+            $downloadUrl = null;
+
+            $filename = $serverVersion . '.zip';
+            $filePath = UPDATE_DIR . $filename;
+
+            if ($downloadName == $filename) {
+                $downloadUrl = $result->values[0]->links->self->href;
+            }
+
+            if ($this->downloadFile($downloadUrl, $filePath)) {
+                $updateDownloaded = $filePath;
+            }
+
+            curl_close($curl);
+
+            return $updateDownloaded;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public function downloadFile($url, $filepath) {
+        $curlDownload = curl_init($url);
+
+        $file = fopen($filepath, "w+");
+
+        curl_setopt_array($curlDownload, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FILE => $file,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)'
+        ]);
+
+        $result = curl_exec($curlDownload);
+
+        curl_close($curlDownload);
+        fclose($file);
+
+        return $result !== false ? true : false;
+    }
+
+    public function unzip($src, $destination) {
+        try {
+            $unzipped = false;
+            $zip = new ZipArchive;
+
+            $result = $zip->open($src);
+
+            if ($result === true) {
+                $zip->extractTo($destination);
+                $zip->close();
+                $unzipped = true;
+            }
+
+            return $unzipped;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -776,30 +793,13 @@ class System {
     }
 
     public function installUpdate($path) {
-        try {
-            $zip = new ZipArchive;
-            $res = $zip->open($path);
-            if ($res === true) {
-                $this->getDebugger()->log("Zip Archiv " . $path . ' geöffnet');
-                $this->getDebugger()->log("Entpacke nach: " . dirname(dirname(dirname(__FILE__))));
-                if ($zip->extractTo(dirname(__FILE__))) {
-                    $this->getDebugger()->log("Archiv entpackt");
-                    if ($zip->close()) {
-                        $this->getDebugger()->log("Zip Archiv geschlossen");
-                        unlink($path);
-                        return true;
-                    }
-                }
-            }
+        $destination = ROOT_DIR;
 
-            return false;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        if ($this->unzip($path, $destination) !== false) {
+            return true;
         }
+
+        return false;
     }
 
 }
