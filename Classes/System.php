@@ -680,6 +680,10 @@ class System {
                             $this->getDebugger()->log("Server Version: " . $serverVersion);
                         }
 
+                        if ($serverVersion == '' || $serverVersion == null || $serverVersion == false) {
+                            return false;
+                        }
+
                         if ($currentVersion != $serverVersion && $currentVersion != null && $serverVersion != null) {
                             $this->getDebugger()->log("Update verfügbar " . $serverVersion);
                             $updateAvailable = $serverVersion;
