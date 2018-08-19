@@ -399,7 +399,7 @@ class Factory {
 
     public function getOptions() {
         if (static::$options == null || !isset(static::$options)) {
-            static::$options = new Options($this->getDatabase());
+            static::$options = new Options($this->getDatabase(), $this->getDebugger());
         }
 
         return static::$options;
