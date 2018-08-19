@@ -1,10 +1,9 @@
 <?php
 
 /**
- * InstagramShare
- * @version 1.0
+ * PassTool
+ * Tool zum sicheren verwalten von Passwörtern
  * @author Alexander Weese
- * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
 class Session {
@@ -119,7 +118,7 @@ class Session {
      * 
      * @return string
      */
-    private function getHost() {
+    public function getHost() {
         return $this->host;
     }
 

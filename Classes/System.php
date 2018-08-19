@@ -2,14 +2,10 @@
 
 /**
  * PassTool
- * @version 1.0
+ * Tool zum sicheren verwalten von Passwörtern
  * @author Alexander Weese
- * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
-/* @var $factory Factory */
-/* @var $session Session */
-
 class System {
 
     protected $cron_recrypt;
@@ -824,6 +820,26 @@ class System {
         $destination = ROOT_DIR;
 
         if ($this->unzip($path, $destination) !== false) {
+            if (unlink($path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function sendMail($message, $subject, $mailAddress, $host) {
+        $hostAddress = 'https://' . $host;
+
+        $subjectFiltered = filter_var($subject, FILTER_SANITIZE_STRING);
+        $messageFiltered = filter_var($message, FILTER_SANITIZE_STRING);
+        $address = filter_var($mailAddress, FILTER_VALIDATE_EMAIL);
+
+        $header = 'From: no-reply@' . $host . "\r\n" .
+                'X-Sender: ' . $hostAddress . "\r\n" .
+                'X-Mailer: PHP/' . phpversion();
+
+        if (mail($address, $subjectFiltered, $messageFiltered, $header) !== false) {
             return true;
         }
 

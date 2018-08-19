@@ -1,22 +1,34 @@
 <?php
 /**
  * PassTool
- * @version 1.0
+ * Tool zum sicheren verwalten von Passwörtern
  * @author Alexander Weese
- * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
+/* ---------------------------------------------------------------------------------------------------------------------------------- */
+/* ------------------------------------------------- Verfügbare Objekte / Variablen ------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------------------------------------- */
+
 /* @var $factory Factory */
-/* @var $system System */
 /* @var $session Session */
-/* @var $sessionUID int */
+/* @var $system System */
+/* @var $account Account */
+/* @var $encryption Encryption */
+/* @var $options Options */
+/* @var $sessionUID string */
 /* @var $sessionUsername string */
 /* @var $sessionIP string */
 /* @var $sessionToken string */
-/* @var $sessionTimestamp int */
+/* @var $sessionTimestamp string */
+/* @var $sessionAccessLevel string */
 /* @var $searchTerm string */
+/* @var $isSearch string */
 /* @var $host string */
 /* @var $userAgent string */
+
+/* ---------------------------------------------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------------------------------------- */
 if (!defined('PASSTOOL')) {
     die();
 }
@@ -27,9 +39,14 @@ if (!defined('PASSTOOL')) {
         <input type="search" id="search-input" name="search" placeholder="Suche">
     </form>
     <ul class="nav-1">
-        <li class="nav1-item">
-            <a class="nav1-link" href="/checkforupdate"><i class="fas fa-sync-alt" style="<?= $system->updateAvailable() ? 'color:orange;' : '' ?>"></i></a>
-        </li>
+
+        <?php if ($page == 'account') { ?>
+
+            <li class="nav1-item">
+                <a class="nav1-link" href="/checkforupdate"><i class="fas fa-sync-alt" style="<?= $system->updateAvailable() ? 'color:orange;' : '' ?>"></i></a>
+            </li>
+
+        <?php } ?>
 
         <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>
             <li class="nav1-item">

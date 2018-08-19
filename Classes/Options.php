@@ -1,11 +1,9 @@
 <?php
 
 /**
- * Benutzerspezifische Optionen
  * PassTool
- * @version 1.0
+ * Tool zum sicheren verwalten von Passwörtern
  * @author Alexander Weese
- * @package PassTool
  * @copyright (c) 2018, Alexander Weese
  */
 class Options {
@@ -45,6 +43,12 @@ class Options {
      * @var boolean 
      */
     protected $email_notification_password_change;
+
+    /**
+     *
+     * @var boolean 
+     */
+    protected $email_notifictaion_login_failed;
 
     /**
      * Database Objekt
@@ -132,6 +136,10 @@ class Options {
         $this->email_notification_password_change = $email_notification_password_change;
     }
 
+    public function setEmailNotificationLoginFailed($email_notification_login_failed) {
+        $this->email_notifictaion_login_failed = $email_notification_login_failed;
+    }
+
     /**
      * Database-Getter
      * @return \Database
@@ -194,6 +202,10 @@ class Options {
      */
     public function getEmailNotificationPasswordChange() {
         return $this->email_notification_password_change;
+    }
+
+    public function getEmailNotificationLoginFailed() {
+        return $this->email_notifictaion_login_failed;
     }
 
     /**
