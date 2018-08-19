@@ -511,7 +511,7 @@ i:first-child {
     box-sizing:border-box;
     float:left;
     height:auto;
-    overflow:auto;
+    overflow:hidden;
     padding:15px;
     width:70%
 }
