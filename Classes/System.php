@@ -839,9 +839,14 @@ class System {
                 'X-Sender: ' . $hostAddress . "\r\n" .
                 'X-Mailer: PHP/' . phpversion();
 
+
+
         if (mail($address, $subjectFiltered, $messageFiltered, $header) !== false) {
+            $this->getDebugger()->log("Nachricht an " . $address . ' versendet');
             return true;
         }
+
+        $this->getDebugger()->log("Versenden der Nachricht an " . $address . ' fehlgeschlagen');
 
         return false;
     }

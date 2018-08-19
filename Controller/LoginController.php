@@ -35,34 +35,36 @@ if (!defined('PASSTOOL')) {
 }
 
 $debugger = $factory->getDebugger();
-$username = filter_var($request->username, FILTER_VALIDATE_EMAIL);
+$account = $factory->getAccount();
+$account->setUsername($username);
+$host = $request->host;
+$userAgent = $request->userAgent;
+
 try {
     $time = microtime(true);
     $timeRequest = (float) $request->timestamp;
 
     $timeCalculated = $time - $timeRequest;
 
+    if ($account->exists() !== true) {
+        $message = 'Loginversuch mit dem nicht existierenden Benutzernamen: ' . $username;
+        $debugger->log($message);
+        exit('Benutzername oder Passwort ist nicht korrekt');
+    }
+
     if ($timeCalculated > 500 || $timeCalculated < 1) {
         $message = 'Zeitüberschreitung Formular || Datei: ' . __FILE__ . ' Zeit: ' . $timeCalculated;
         $debugger->log($message);
-        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
+        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch Password-Tool", $username, $host);
         exit('Fehler bei der Anfrage bitte Seite neu laden');
     }
 
     $honeypot = $request->honeypot;
 
     if ($honeypot != '') {
-        $debugger->log('Bot detected || Useragent: ' . $request->userAgent . ' IP-Adresse: ' . $sessionIpAddress . ' Benutzername: ' . $username . ' Honeypot: ' . $honeypot);
-        exit('Benutzername oder Passwort ist nicht korrekt');
-    }
-
-
-    $account = $factory->getAccount();
-
-    $account->setUsername($username);
-
-    if ($account->exists() !== true) {
-        $debugger->log('Loginversuch mit dem nicht existierenden Benutzernamen: ' . $username);
+        $message = 'Bot detected || Useragent: ' . $request->userAgent . ' IP-Adresse: ' . $sessionIpAddress . ' Benutzername: ' . $username . ' Honeypot: ' . $honeypot;
+        $debugger->log($message);
+        $system->sendMail($message, "Bot-Detected Password-Tool", $username, $host);
         exit('Benutzername oder Passwort ist nicht korrekt');
     }
 
@@ -85,10 +87,6 @@ try {
 
     $session->setUsername($username);
     $session->setPassword($password);
-
-    $host = $request->host;
-    $userAgent = $request->userAgent;
-
     $session->setIpaddress($sessionIpAddress);
     $session->setUserID($factory->getUserID($username));
     $session->setHost($host);
@@ -96,7 +94,9 @@ try {
 
     if ($session->validate()) {
         if ($session->startSession()) {
-            $debugger->log('Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' eingeloggt.');
+            $message = 'Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' eingeloggt.';
+            $debugger->log($message);
+            $system->sendMail($message, "Login-Vorgang Password-Tool", $username, $host);
             echo "1";
         }
     } else {
@@ -110,8 +110,9 @@ try {
 
         $session->countLoginAttempt($username);
 
-        $debugger->log('Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' hat ein falsches Passwort eingegeben.');
-
+        $message = 'Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' hat ein falsches Passwort eingegeben.';
+        $debugger->log($message);
+        $system->sendMail($message, "Fehlgeschlagener Login-Vorgang Password-Tool", $username, $host);
         echo "Benutzername oder Passwort ist nicht korrekt";
     }
 } catch (Exception $ex) {

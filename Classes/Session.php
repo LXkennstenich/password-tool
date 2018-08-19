@@ -756,6 +756,10 @@ class Session {
                 return false;
             }
 
+            if ($sessionIpAddress == '') {
+                return false;
+            }
+
             if ($sessionTimestamp != $savedTimestamp) {
                 return false;
             }

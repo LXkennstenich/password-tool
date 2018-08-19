@@ -140,6 +140,20 @@ class Options {
         $this->email_notifictaion_login_failed = $email_notification_login_failed;
     }
 
+    public function setDefault($user_id = null) {
+
+        $this->setDisplayLogin(true);
+        $this->setEmailNotificationLogin(true);
+        $this->setEmailNotificationLoginFailed(true);
+        $this->setEmailNotificationPasswordChange(true);
+        $this->setUseTwoFactor(true);
+
+        if ($user_id !== null) {
+            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
+            $this->setUserID($userID);
+        }
+    }
+
     /**
      * Database-Getter
      * @return \Database
@@ -246,6 +260,18 @@ class Options {
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
+    }
+
+    public function update() {
+        
+    }
+
+    public function insert() {
+        
+    }
+
+    public function exists() {
+        
     }
 
 }
