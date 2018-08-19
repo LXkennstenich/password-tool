@@ -35,7 +35,7 @@ if (!defined('PASSTOOL')) {
 }
 
 
-$standardProject = 'Privat';
+$standardProject = '';
 
 $sessionUID = isset($_SESSION['UID']) ? filter_var($_SESSION['UID'], FILTER_VALIDATE_INT) : null;
 $sessionUsername = isset($_SESSION['U']) ? filter_var($_SESSION['U'], FILTER_VALIDATE_EMAIL) : null;
