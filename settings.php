@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PassTool
  * Tool zum sicheren verwalten von Passwörtern
@@ -32,24 +33,12 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-
-if ($session->isAuthenticated() !== true) {
-    $factory->redirect('login');
-}
-
-if ($session->needAuthenticator() !== false) {
-    $factory->redirect('authenticator');
-}
 ?>
 
-<div id="main">
-    <div class="headline">
-        <h1>Einstellungen</h1>
-    </div>
 
-    <?php include_once VIEW_DIR . 'settings.view.php'; ?>
+<?php include_once VIEW_DIR . 'settings.view.php'; ?>
 
-</div>
+
 
 
 

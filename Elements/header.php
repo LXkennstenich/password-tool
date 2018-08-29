@@ -36,10 +36,11 @@ if (!defined('PASSTOOL')) {
 <!DOCTYPE html>
 <html lang="de-DE">
     <head>
+        <meta charset="UTF-8"/>
         <title>Password Tool</title>
-        <link rel="stylesheet" href="/Css/main.min.css" />
-        <link rel="stylesheet" href="/Libs/fancybox/dist/jquery.fancybox.min.css" />
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/Css/main.min.css" />
+        <link rel="stylesheet" type="text/css" href="/Libs/fancybox/dist/jquery.fancybox.min.css" />
+        <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
         <script src="/Js/jquery.min.js"></script>
         <?php if ($session->isAuthenticated() !== false) { ?>
             <script src="/Libs/fancybox/dist/jquery.fancybox.min.js"></script>

@@ -32,19 +32,6 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-
-if ($session->isAuthenticated() !== true) {
-    $factory->redirect('login');
-}
-
-if ($account->authenticatorIsSetup() === false) {
-    $factory->redirect('authenticatorsetup');
-}
-
-
-if ($session->needAuthenticator() === false) {
-    $factory->redirect('account');
-}
 ?>
 
 
@@ -54,4 +41,4 @@ if ($session->needAuthenticator() === false) {
     <input type="text" id="authenticator-code-honeypot">
     <a class="button" id="authenticator-button">Bestätigen</a>
 </div>
-<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
+

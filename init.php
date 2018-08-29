@@ -34,6 +34,9 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') {
+    exit('Kein SSL Zertifikat vorhanden! Diese Software setzt das vorhanden sein eines SSL-Zertifikats voraus, um höchstmögliche Sicherheit zu bieten.');
+}
 
 $standardProject = '';
 
@@ -76,7 +79,8 @@ $encryption = $factory->getEncryption();
 $system = $factory->getSystem();
 $system->load();
 $options = $factory->getOptions();
+$debugger = $factory->getDebugger();
 
-ob_start();
+
 
 

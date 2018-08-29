@@ -32,11 +32,6 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-
-
-if ($session->isAuthenticated() === true) {
-    $factory->redirect('account');
-}
 ?>
 
 <div class="logo-container">
@@ -50,49 +45,6 @@ if ($session->isAuthenticated() === true) {
     <a id="login-button" class="button">Login</a>
     <a class="forgot-password-link" href="/newpassword">Passwort vergessen ?</a>
 </div>
-<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
-<script>
-    $('#login-button').bind('click touch', function () {
 
-        if ($('.ajax-message').hasClass('login-failed')) {
-            $('.ajax-message').removeClass('login-failed');
-            $('.ajax-message').text('');
-        }
-
-        var request = {};
-        request.username = document.getElementById('username-input').value;
-        request.honeypot = document.getElementById('honeypot').value;
-        request.password = document.getElementById('password-input').value;
-        request.action = 'Login';
-        request.timestamp = requestTimestamp;
-        request.tk = token;
-        request.ts = timestamp;
-        request.ipaddress = ipaddress;
-        request.host = host;
-        request.userAgent = userAgent;
-
-        $.ajax({
-            'type': 'POST',
-            'data': {"request": JSON.stringify(request)},
-            'url': getAjaxUrl(),
-            'success': function (data) {
-                if (parseInt(data) == 1) {
-                    window.location.href = '/account';
-                } else {
-                    $('.ajax-message').addClass('login-failed');
-                    $('.ajax-message').text(data);
-                    setTimeout(function () {
-                        if ($('.ajax-message').hasClass('login-failed')) {
-                            $('.ajax-message').removeClass('login-failed');
-                            $('.ajax-message').text('');
-                        }
-                    }, 2000);
-                }
-            },
-            error: function (jqXHR, exception) {
-                $('.ajax-message').text(jqXHR + ' ' + exception);
-            }
-        });
-    });
-</script>
+<script src="/Js/login.min.js"></script>
 

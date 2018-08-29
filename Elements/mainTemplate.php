@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PassTool
  * Tool zum sicheren verwalten von Passwörtern
@@ -34,12 +33,28 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-$session->deleteSessionData($_SESSION['UID']);
 
-if (!$session->isAuthenticated()) {
-    $factory->redirect('login');
+if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
+    include_once ELEMENTS_DIR . 'navbar.php';
+}
+?>
+
+<div id = "main">
+    <?php
+    include_once System::getPage($page);
+    ?>
+</div>
+
+<?php
+include_once ELEMENTS_DIR . 'ajaxLoader.php';
+
+if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
+    include_once System::getView('newDataset');
+
+    if ($sessionAccessLevel === SESSION_ADMIN) {
+        include_once System::getView('newUser');
+    }
 }
 
-
-
-
+include ELEMENTS_DIR . 'footer.php';
+?>

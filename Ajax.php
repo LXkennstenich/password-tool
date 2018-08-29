@@ -30,10 +30,9 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
-if (!defined('PASSTOOL')) {
-    die();
-}
 
+ob_flush();
+ob_start();
 
 $request = json_decode($_POST['request']);
 
@@ -44,28 +43,21 @@ $sessionTimestamp = $encryption->decrypt($request->ts, $userID);
 $sessionIpAddress = base64_decode($request->ipaddress);
 $searchTerm = $request->searchTerm;
 
-if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
-
-    if ($action == 'View') {
-        $file = VIEW_DIR . $request->file . '.view.php';
-    } else {
-        $file = CONTROLLER_DIR . $action . 'Controller.php';
-    }
-
-    if (file_exists($file)) {
-        include $file;
-    }
+if ($action == 'View') {
+    $file = VIEW_DIR . $request->file . '.view.php';
 } else {
-    $file = null;
-
-    if ($action == 'Login' || $action == 'NewPassword') {
-        $file = CONTROLLER_DIR . $action . 'Controller.php';
-    }
-
-    if (file_exists($file)) {
-        include $file;
-    }
+    $file = CONTROLLER_DIR . $action . 'Controller.php';
 }
 
+if (file_exists($file)) {
+    if ($action == 'Login' || $action == 'NewPassword') {
+        $file = CONTROLLER_DIR . $action . 'Controller.php';
+        include_once $file;
+    } else {
+        if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
+            include_once $file;
+        }
+    }
+}
 
 

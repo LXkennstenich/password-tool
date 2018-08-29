@@ -220,15 +220,11 @@ class Dataset {
             $userID = $this->getUserID();
             $login = $this->getLogin();
             $password = $this->getPassword();
-            $title = $this->getTitle();
             $url = $this->getUrl();
-            $project = $this->getProject();
 
             $this->setLogin($this->getEncryption()->encrypt($login, $userID));
             $this->setPassword($this->getEncryption()->encrypt($password, $userID));
-            $this->setTitle($this->getEncryption()->encrypt($title, $userID));
             $this->setUrl($this->getEncryption()->encrypt($url, $userID));
-            $this->setProject($this->getEncryption()->encrypt($project, $userID));
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -243,15 +239,11 @@ class Dataset {
             $userID = $this->getUserID();
             $login = $this->getLogin();
             $password = $this->getPassword();
-            $title = $this->getTitle();
             $url = $this->getUrl();
-            $project = $this->getProject();
 
             $this->setLogin($this->getEncryption()->decrypt($login, $userID));
             $this->setPassword($this->getEncryption()->decrypt($password, $userID));
-            $this->setTitle($this->getEncryption()->decrypt($title, $userID));
             $this->setUrl($this->getEncryption()->decrypt($url, $userID));
-            $this->setProject($this->getEncryption()->decrypt($project, $userID));
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -316,6 +308,7 @@ class Dataset {
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
                     $success = true;
+                    apcu_clear_cache();
                 }
             }
 
@@ -346,6 +339,7 @@ class Dataset {
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
                     $success = true;
+                    apcu_clear_cache();
                 }
             }
 
@@ -387,6 +381,7 @@ class Dataset {
 
                 if ($statement->rowCount() > 0) {
                     $success = true;
+                    apcu_clear_cache();
                 }
             }
 

@@ -31,7 +31,7 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 ?>
 
-<div id="newUser">
+<div id="newUser" class="form">
     <div class="row">
         <label for="newUsername">Benutzername (E-Mail)</label>
         <input type="text" id="newUsername" value="">

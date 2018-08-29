@@ -53,7 +53,7 @@ try {
 
     if ($honeypot != '') {
         $debugger->log('Bot detected || Useragent: ' . $request->userAgent . ' IP-Adresse: ' . $sessionIpAddress . ' Benutzername: ' . $username . ' Honeypot: ' . $honeypot);
-        exit('Benutzername oder Passwort ist nicht korrekt - 30');
+        exit('Benutzername oder Passwort ist nicht korrekt');
     }
 
 
@@ -63,7 +63,7 @@ try {
 
     if ($account->exists() !== true) {
         $debugger->log('Loginversuch mit dem nicht existierenden Benutzernamen: ' . $username);
-        exit('Benutzername oder Passwort ist nicht korrekt - 31');
+        exit('Benutzername oder Passwort ist nicht korrekt');
     }
 
     $password = $request->password;
@@ -117,7 +117,7 @@ try {
         $debugger->log($message);
         $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
 
-        echo "Benutzername oder Passwort ist nicht korrekt - 32";
+        echo "Benutzername oder Passwort ist nicht korrekt";
     }
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());

@@ -51,10 +51,10 @@ try {
 
     if ($account->exists()) {
         if ($account->requestNewPassword()) {
-            echo '1';
-        } else {
-            echo 'fehlgeschlagen';
+            echo 'Es wurde ein neues Passwort an die hinterlegte E-Mail Adresse gesendet';
         }
+    } else {
+        echo 'Der angegebene Benutzername existiert nicht';
     }
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());

@@ -30,14 +30,17 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
+/* nur über index.php! */
 if (!defined('PASSTOOL')) {
     die();
 }
 
+/* nur get request erlauben */
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'GET') {
     die();
 }
 
+/* kein token ? ziemlich blöd ! */
 if (!isset($_GET['CT'])) {
     die("No Authentication Token provided");
 }
@@ -49,12 +52,16 @@ try {
     $system->load();
 
     if ($system->isCronEnabled() != true) {
-        die();
+        exit("Bitte aktivieren Sie den Cron-Job in den Einstellungen");
     }
 
     $error = false;
     $savedToken = (string) $system->queryCronToken();
     $token = (string) filter_var($_GET['CT'], FILTER_SANITIZE_STRING);
+
+    ini_set('session.gc_probability', '0');
+
+    session_start();
 
     if ($savedToken === $token) {
 
@@ -62,47 +69,7 @@ try {
 
         $IDs = $system->getUserIDs();
 
-        $datasetError = false;
-
         foreach ($IDs as $ID) {
-
-            if ($system->cronRecrypt()) {
-                $datasets = $factory->getDatasets($ID);
-
-                $encryptionKeyUpdated = false;
-                $datasetsDecrypted = array();
-
-                foreach ($datasets as $dataset) {
-                    $dataset->decrypt();
-                    $datasetsDecrypted[] = $dataset;
-                }
-
-                unset($datasets);
-
-                if ($system->updateEncryptionKey($ID, $savedToken)) {
-                    $encryptionKeyUpdated = true;
-                }
-
-                if ($encryptionKeyUpdated === true) {
-
-                    foreach ($datasetsDecrypted as $dataset) {
-
-                        $dataset->encrypt();
-
-                        if ($dataset->update()) {
-                            $datasetError = $datasetError !== true ? false : true;
-                            $debugger->cronlog('dataset geupdated ');
-                        } else {
-                            $datasetError = true;
-                            $debugger->cronlog('dataseterror id: ' . $dataset->getID());
-                        }
-                    }
-                }
-
-                unset($datasetsDecrypted);
-            }
-
-
 
             $account = $factory->getAccount();
 
@@ -113,10 +80,12 @@ try {
             $session = $factory->getSession();
             $session->setUsername($username);
 
+            //bullshit wieso in session -> gehört zu account :D
             $lockTime = $session->getLockTime($username);
             $locked = $session->isAccountLocked($username);
 
             if ($lockTime <= time() && $locked === true) {
+                //wird auch von account übernommen
                 if ($session->unlockAccount($username)) {
                     $debugger->cronlog('Account mit der ID ' . (string) $ID . ' wurde entsperrt ' . date('d-m-Y H:m:i'));
                 }
@@ -138,6 +107,14 @@ try {
                 }
             }
         }
+
+        if ($value = session_gc !== false) {
+            $debugger->cronLog("Session Garbage Collection deleted " . $value . ' invalid sessions');
+        } else {
+            $debugger->cronLog('No Invalid Sessions detected');
+        }
+
+        session_destroy();
 
         $system->finishedCron();
     }

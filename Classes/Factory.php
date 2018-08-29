@@ -150,6 +150,7 @@ class Factory {
      * @return DatabaseSettings
      */
     public function getDatabaseSettings() {
+
         if (static::$databaseSettings == null || !isset(static::$databaseSettings)) {
             static::$databaseSettings = new DatabaseSettings();
         }
@@ -255,16 +256,27 @@ class Factory {
      * @return array
      */
     public function countDatasets($user_id) {
+
         try {
-            $userID = filter_var($user_id, FILTER_SANITIZE_NUMBER_INT);
             $amount = 0;
 
-            $dbConnection = $this->getDatabase()->openConnection();
-            $statement = $dbConnection->prepare("SELECT user_id  FROM datasets WHERE user_id = :userID");
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $userID = filter_var($user_id, FILTER_SANITIZE_NUMBER_INT);
+            $apcuKey = 'datasetAmount_' . $userID;
 
-            if ($statement->execute()) {
-                $amount = $statement->rowCount();
+            if (!apcu_exists($apcuKey)) {
+
+                $amount = 0;
+
+                $dbConnection = $this->getDatabase()->openConnection();
+                $statement = $dbConnection->prepare("SELECT user_id  FROM datasets WHERE user_id = :userID");
+                $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+
+                if ($statement->execute()) {
+                    $amount = $statement->rowCount();
+                    apcu_store($apcuKey, $amount, 3600);
+                }
+            } else {
+                $amount = apcu_fetch($apcuKey);
             }
 
             return $amount;
@@ -279,23 +291,32 @@ class Factory {
 
     public function getDatasets($user_id) {
         try {
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
-            $datasets = array();
 
-            $dbConnection = $this->getDatabase()->openConnection();
-            $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM datasets WHERE user_id = :userID");
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            $datasets = null;
 
-            if ($statement->execute()) {
-                while ($object = $statement->fetchObject()) {
-                    $dataset = $this->createDataset();
+            if (!apcu_exists('datasets')) {
+                $userID = filter_var($user_id, FILTER_VALIDATE_INT);
+                $datasets = array();
 
-                    $dataset->setID($object->id);
-                    $dataset->setUserID($object->user_id);
-                    $dataset->load();
+                $dbConnection = $this->getDatabase()->openConnection();
+                $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM datasets WHERE user_id = :userID");
+                $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
-                    $datasets[] = $dataset;
+                if ($statement->execute()) {
+                    while ($object = $statement->fetchObject()) {
+                        $dataset = $this->createDataset();
+
+                        $dataset->setID($object->id);
+                        $dataset->setUserID($object->user_id);
+                        $dataset->load();
+
+                        $datasets[] = $dataset;
+                    }
                 }
+
+                apcu_store('datasets', serialize($datasets), 900);
+            } else {
+                $datasets = unserialize(apcu_fetch('datasets'));
             }
 
             return $datasets;
@@ -316,32 +337,24 @@ class Factory {
      */
     public function searchDatasets($user_id, $searchString) {
         try {
-            $userID = $user_id;
+            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $datasets = array();
-            $searchTerm = $searchString;
+            $searchTerm = "%" . filter_var($searchString, FILTER_SANITIZE_STRING) . "%";
 
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM datasets WHERE user_id = :userID");
+            $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM datasets WHERE user_id = :userID AND title LIKE :searchTerm OR project LIKE :searchTerm");
             $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
+            $statement->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
                     $dataset = $this->createDataset();
-
                     $dataset->setID($object->id);
                     $dataset->setUserID($object->user_id);
                     $dataset->getEncryption()->setUserID($object->user_id);
                     $dataset->load();
-                    $dataset->decrypt();
-                    $title = $dataset->getTitle();
-                    $login = $dataset->getLogin();
-                    $project = $dataset->getProject();
-
-                    if (strpos(strtolower($title), $searchTerm) !== false || strpos(strtolower($login), $searchTerm) !== false || strpos(strtolower($project), $searchTerm) !== false) {
-                        $dataset->encrypt();
-                        $datasets[] = $dataset;
-                    }
+                    $datasets[] = $dataset;
                 }
             }
 
@@ -363,7 +376,7 @@ class Factory {
      */
     public function getSession() {
         try {
-            return new Session($this->getDatabase(), $this->getEncryption(), $this->getDebugger());
+            return new Session($this->getDatabase(), $this->getDebugger());
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());

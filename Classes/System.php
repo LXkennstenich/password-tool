@@ -851,4 +851,76 @@ class System {
         return false;
     }
 
+    public static function getView($view) {
+        try {
+            $file = VIEW_DIR . $view . '.view.php';
+
+            if (file_exists($file)) {
+                return $file;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public static function getConfig($config) {
+        try {
+            $file = CONFIG_DIR . $config . '.php';
+
+            if (file_exists($file)) {
+                return $file;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public static function getController($controller) {
+        try {
+            $file = CONTROLLER_DIR . $controller . 'Controller.php';
+
+            if (file_exists($file)) {
+                return $file;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public static function getPage($page) {
+        try {
+            $file = ROOT_DIR . $page . '.php';
+
+            if (file_exists($file)) {
+                return $file;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
 }

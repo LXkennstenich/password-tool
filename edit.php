@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PassTool
  * Tool zum sicheren verwalten von Passwörtern
@@ -33,26 +34,14 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-if ($session->isAuthenticated() !== true) {
-    $factory->redirect('login');
-}
-
-if ($session->needAuthenticator() !== false) {
-    $factory->redirect('authenticator');
-}
-
 $datasetID = filter_var($_GET['id'], FILTER_SANITIZE_STRING);
 
 $dataset = $factory->getDataset($datasetID, $_SESSION['UID']);
 ?>
 
-<div id="main">
-    <div class="headline">
-        <h1>Datensatz bearbeiten</h1>
-    </div>
 
-    <?php include_once VIEW_DIR . 'editDataset.view.php'; ?>
-</div>
+<?php include_once VIEW_DIR . 'editDataset.view.php'; ?>
+
 
 
 

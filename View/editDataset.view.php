@@ -96,11 +96,5 @@ $dataset->decrypt();
     <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 </div>
 
-<script src="/Js/editDatasetView.min.js">
+<script src="/Js/editDatasetView.min.js"></script>
 
-</script>
-
-
-<?php
-$dataset->encrypt();
-?>

@@ -10,7 +10,7 @@ class Session {
 
     /**
      *
-     * @var Database 
+     * @var \Database 
      */
     protected $database;
 
@@ -52,14 +52,14 @@ class Session {
 
     /**
      *
-     * @var Debug 
+     * @var \Debug 
      */
     protected $debugger;
 
     /**
      * 
-     * @param Database $database
-     * @param Encryption $encryption
+     * @param \Database $database
+     * @param \Debug $debugger
      */
     public function __construct($database, $debugger) {
         $this->setDatabase($database);
@@ -188,8 +188,8 @@ class Session {
 
     /**
      * 
-     * @param type $password
-     * @return type
+     * @param string $password
+     * @return string
      */
     public function hashPassword($password) {
         return password_hash($password, PASSWORD_DEFAULT, ["cost" => 12]);
@@ -604,6 +604,23 @@ class Session {
         }
     }
 
+    private function usernameExists() {
+        $dbConnection = $this->getDatabase()->openConnection();
+        $inputUsername = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+        $usernameExists = false;
+
+        $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
+        $statement->bindParam(':username', $inputUsername);
+
+        if ($statement->execute()) {
+            if ($statement->rowCount() > 0 && $statement->rowCount() < 2) {
+                $usernameExists = true;
+            }
+        }
+
+        return $usernameExists;
+    }
+
     /**
      * 
      * @return boolean
@@ -615,19 +632,30 @@ class Session {
             }
 
             $success = false;
-            $userData = $this->queryUserdata();
-            $passwordSaved = $userData['password'];
-            $usernameSaved = $userData['username'];
-            $usernameInput = $this->getUsername();
-            $passwordInput = $this->getPassword();
 
-            if ($usernameSaved == $usernameInput && $usernameSaved != null) {
-                if (password_verify($passwordInput, $passwordSaved)) {
-                    $success = true;
+            if ($this->usernameExists() !== false) {
+                $userData = $this->queryUserdata();
+                $passwordSaved = $userData['password'];
+                $usernameSaved = $userData['username'];
+                $usernameInput = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+                $passwordInput = $this->getPassword();
+
+                $infoArray = password_get_info($passwordSaved);
+
+                if ($infoArray['algo'] != 1 || $infoArray['algoName'] != 'bcrypt' || $infoArray['options']['cost'] != 12) {
+                    return false;
+                }
+
+                if ($usernameSaved == $usernameInput && $usernameSaved != null) {
+                    if (password_verify($passwordInput, $passwordSaved)) {
+                        if (password_needs_rehash($passwordSaved, PASSWORD_DEFAULT, ["cost" => 12])) {
+                            $newPassword = $this->hashPassword($passwordSaved);
+                            $this->updatePassword($newPassword);
+                        }
+                        $success = true;
+                    }
                 }
             }
-
-            $this->getDatabase()->closeConnection($dbConnection);
 
             return $success;
         } catch (Exception $ex) {
@@ -786,6 +814,10 @@ class Session {
         try {
             $authenticated = null;
 
+
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                return false;
+            }
 
             if ($this->isValid() === false) {
                 $authenticated = false;
@@ -1003,6 +1035,8 @@ class Session {
             }
 
             $this->getDatabase()->closeConnection($dbConnection);
+
+            apcu_clear_cache();
 
             return $success;
         } catch (Exception $ex) {

@@ -34,6 +34,8 @@ if (!defined('PASSTOOL')) {
 }
 
 $debugger = $factory->getDebugger();
+$datasets = array();
+
 
 if ($searchTerm != '') {
     $datasets = $factory->searchDatasets($userID, strtolower($searchTerm));
@@ -46,8 +48,6 @@ if ($searchTerm != '') {
 
     <?php
     if (sizeof($datasets) > 0) {
-
-
 
         foreach ($datasets as $dataset) {
             ?>
@@ -82,14 +82,11 @@ if ($searchTerm != '') {
                             for ($i = 0; $i <= $length; $i++) {
                                 echo '*';
                             }
-
-                            $dataset->encrypt();
                             ?>
                         </p>
                         <i class="far fa-eye" onclick="showPassword(this)"></i>
                         <i class="fas fa-copy copy-password"></i>
 
-                        <?php $dataset->decrypt(); ?>
                     </div>
                     <div class="row">
                         <label>URL:</label>
@@ -101,13 +98,13 @@ if ($searchTerm != '') {
                     </div>
                 </div>
                 <?php
-                $dataset->encrypt();
+                unset($dataset);
                 ?>
             </div>
 
             <?php
         }
-    } else {
+    } else if ($searchTerm != '' && sizeof($datasets) <= 0) {
         ?>
 
         <p>Ihre Suche ergab keine Treffer</p>

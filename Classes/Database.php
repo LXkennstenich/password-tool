@@ -203,7 +203,7 @@ class Database {
         try {
             $dbConnection = new PDO($this->generateDNS($this->getDatabaseServer(), $this->getDatabaseName(), $this->getDatabasePort()), $this->getDatabaseUser(), $this->getDatabasePassword());
 
-            if (SYSTEM_MODE == 'DEV') {
+            if (defined(SYSTEM_MODE) && SYSTEM_MODE == 'DEV') {
                 $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             }
 

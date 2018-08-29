@@ -33,10 +33,6 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-if ($factory->isSystemInstalled() !== false) {
-    $factory->redirect('login');
-}
-
 try {
 
     $database = $factory->getDatabase();

@@ -32,18 +32,6 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-
-if ($session->isAuthenticated() !== true) {
-    $factory->redirect('login');
-}
-
-if ($session->needAuthenticator() === false) {
-    $factory->redirect('account');
-}
-
-if ($account->authenticatorIsSetup() === true) {
-    $factory->redirect('authenticator');
-}
 ?>
 
 
