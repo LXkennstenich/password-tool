@@ -9,48 +9,6 @@
 class Options extends Item {
 
     /**
-     * Die ID der Option
-     * @var int 
-     */
-    protected $id;
-
-    /**
-     * Die entsprechende User-ID
-     * @var int 
-     */
-    protected $user_id;
-
-    /**
-     * Soll der Benutzername nach dem Login angezeigt werden?
-     * @var boolean 
-     */
-    protected $display_login;
-
-    /**
-     * Soll 2-Faktor-Authentifizierung verwendet werden?
-     * @var boolean 
-     */
-    protected $use_two_factor;
-
-    /**
-     * E-Mail Benachrichtigung bei Login-Vorgang ?
-     * @var boolean 
-     */
-    protected $email_notification_login;
-
-    /**
-     * E-Mail Benachrichtigung bei Passwortänderung ?
-     * @var boolean 
-     */
-    protected $email_notification_password_change;
-
-    /**
-     *
-     * @var boolean 
-     */
-    protected $email_notifictaion_login_failed;
-
-    /**
      * Konstruktor
      * @param \Database $database
      * @param \Debug $debugger

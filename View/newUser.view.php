@@ -48,4 +48,3 @@
     <a class="button" id="newUserButton">Neuen Benutzer hinzufügen</a>
 </div>
 
-<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>

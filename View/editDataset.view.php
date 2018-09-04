@@ -93,7 +93,6 @@ $dataset->decrypt();
     </div>
 
     <button id="updateDatasetButton"  class="button">Aktualisieren</button>
-    <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 </div>
 
 <script src="/Js/editDatasetView.min.js"></script>

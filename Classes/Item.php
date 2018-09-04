@@ -129,6 +129,31 @@ class Item {
         return $success;
     }
 
+    public function getColumnNames() {
+        $dbConnection = $this->getDatabase()->openConnection();
+        $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
+
+        $statement = $dbConnection->query("SELECT * FROM $tableName LIMIT 0");
+
+        $columns = array();
+
+        for ($i = 0; $i < $statement->columnCount(); $i++) {
+            $col = $statement->getColumnMeta($i);
+            $columns[] = $col['name'];
+        }
+
+        $columnNames = array();
+
+        foreach ($columns as $key => $value) {
+            $columnNames[$value] = $value;
+        }
+
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $columnNames;
+    }
+
     /**
      * 
      * @return boolean
@@ -157,6 +182,8 @@ class Item {
             }
         }
 
+        $this->getDatabase()->closeConnection($dbConnection);
+
         return $success;
     }
 
@@ -180,6 +207,8 @@ class Item {
             }
         }
 
+        $this->getDatabase()->closeConnection($dbConnection);
+
         return $success;
     }
 
@@ -191,23 +220,42 @@ class Item {
         $dbConnection = $this->getDatabase()->openConnection();
 
         $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
-        $success = false;
+        $userID = filter_var($this->get('user_id'), FILTER_VALIDATE_INT);
+
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
-        $statement = $dbConnection->prepare("SELECT * FROM :table WHERE id = :ID");
-        $statement->bindParam(':table', $tableName, PDO::PARAM_STR);
+        $columnNames = $this->getColumnNames();
+        $columnString = '';
+
+        $i = 1;
+
+        foreach ($columnNames as $column) {
+            if ($i < sizeof($columnNames)) {
+                $columnString .= $column . ', ';
+            } else {
+                $columnString .= $column;
+            }
+
+            $i++;
+        }
+
+        if ($userID !== false) {
+            $statement = $dbConnection->prepare("SELECT $columnString FROM $tableName WHERE id = :ID AND user_id = :userID");
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+        } else {
+            $statement = $dbConnection->prepare("SELECT $columnString FROM $tableName WHERE id = :ID");
+        }
+
         $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
 
         if ($statement->execute()) {
-            while ($array = $statement->fetch(PDO::FETCH_ASSOC)) {
-                $this->setData($array);
-            }
-
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            while ($object = $statement->fetchObject()) {
+                foreach ($columnNames as $column) {
+                    $this->set($column, $object->$column);
+                }
             }
         }
 
-        return $success;
+        $this->getDatabase()->closeConnection($dbConnection);
     }
 
     /**

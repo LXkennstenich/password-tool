@@ -33,7 +33,6 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-
 if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
     include_once ELEMENTS_DIR . 'navbar.php';
 }
@@ -41,14 +40,42 @@ if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
 
 <div id = "main">
     <?php
+    include_once ELEMENTS_DIR . 'ajaxLoader.php';
     include_once System::getPage($page);
     ?>
 </div>
 
-<?php
-include_once ELEMENTS_DIR . 'ajaxLoader.php';
 
+
+<?php
 if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
+
+    $projects = $factory->getProjects($sessionUID);
+    ?>
+
+
+    <?php if (sizeof($projects) > 0) { ?>
+
+        <div class="project-container">
+            <form class="project-form" method="post">
+                <ul id="project-list">
+                    <?php foreach ($projects as $project) { ?>
+                        <li class="project-list-item">
+                            <input type="submit" class="project-list-link" name="search" value="<?php echo $project; ?>">
+                        </li>
+                    <?php } ?>
+                </ul>
+            </form>
+        </div>
+
+    <?php } else { ?>
+
+        <p>Keine Projekte gefunden</p>
+
+        <?php
+    }
+
+
     include_once System::getView('newDataset');
 
     if ($sessionAccessLevel === SESSION_ADMIN) {

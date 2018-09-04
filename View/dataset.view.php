@@ -42,6 +42,8 @@ if ($searchTerm != '') {
 } else {
     $datasets = $factory->getDatasets($userID);
 }
+
+include_once ELEMENTS_DIR . 'ajaxLoader.php';
 ?>
 
 <div class="container">

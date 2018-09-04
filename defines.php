@@ -10,11 +10,15 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-define('SYSTEM_MODE', 'DEV');
+define('SYSTEM_MODE', 'LIVE');
 
 
 if (!defined('ROOT_DIR')) {
     define('ROOT_DIR', dirname(__FILE__) . '/');
+}
+
+if (!defined('PAGE_DIR')) {
+    define('PAGE_DIR', ROOT_DIR . 'Pages/');
 }
 
 if (!defined('UPDATE_DIR')) {

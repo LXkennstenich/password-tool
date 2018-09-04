@@ -6,7 +6,24 @@
  * @author Alexander Weese
  * @copyright (c) 2018, Alexander Weese
  */
-class System {
+class System extends Item {
+
+    private static $bitbucketUsername = "LXkennstenich";
+    private static $bitbucketRepoSlug = "password-tool";
+    private static $bitbucketAPI_BaseURL = "https://api.bitbucket.org/2.0";
+    private static $bitbucket_BaseURL = "https://bitbucket.org/";
+
+    public function __construct($database, $encryption, $debugger, $account) {
+        parent::__construct(strtolower(__CLASS__));
+        $this->setDatabase($database);
+        $this->setEncryption($encryption);
+        $this->setDebugger($debugger);
+        $this->setAccount($account);
+    }
+
+    private function setAccount($account) {
+        $this->account = $account;
+    }
 
     protected $cron_recrypt;
     protected $cron_clear_session_data;
@@ -21,21 +38,6 @@ class System {
     protected $encryption;
     protected $account;
     protected $blockedIpAddresses;
-    private static $bitbucketUsername = "LXkennstenich";
-    private static $bitbucketRepoSlug = "password-tool";
-    private static $bitbucketAPI_BaseURL = "https://api.bitbucket.org/2.0";
-    private static $bitbucket_BaseURL = "https://bitbucket.org/";
-
-    public function __construct($database, $encryption, $debugger, $account) {
-        $this->setDatabase($database);
-        $this->setEncryption($encryption);
-        $this->setDebugger($debugger);
-        $this->setAccount($account);
-    }
-
-    private function setAccount($account) {
-        $this->account = $account;
-    }
 
     /**
      * 
@@ -45,64 +47,44 @@ class System {
         return $this->account;
     }
 
-    private function setDebugger($debugger) {
-        $this->debugger = $debugger;
-    }
-
-    private function setDatabase($database) {
-        $this->database = $database;
-    }
-
     private function setEncryption($encryption) {
         $this->encryption = $encryption;
     }
 
     public function setCronClearSessionData($cronClearSessionData) {
-        $this->cron_clear_session_data = filter_var($cronClearSessionData, FILTER_VALIDATE_INT);
+        $this->data['cron_clear_session_data'] = $cronClearSessionData;
     }
 
     public function setCronLast($cronLast) {
-        $this->cron_last = $cronLast;
+        $this->data['cron_last'] = $cronLast;
     }
 
     public function setLastSuccess($conLastSuccess) {
-        $this->cron_last_success = filter_var($conLastSuccess, FILTER_VALIDATE_INT);
+        $this->data['cron_last_success'] = $conLastSuccess;
     }
 
     public function setCronActive($cronActive) {
-        $this->cron_active = filter_var($cronActive, FILTER_VALIDATE_INT);
+        $this->data['cron_active'] = $cronActive;
     }
 
     public function setCronUrl($cronURL) {
-        $this->cron_url = $cronURL;
+        $this->data['cron_url'] = $cronURL;
     }
 
     public function setCronRecrypt($cronReCrypt) {
-        $this->cron_recrypt = filter_var($cronReCrypt, FILTER_VALIDATE_INT);
+        $this->data['cron_recrypt'] = $cronReCrypt;
     }
 
     public function setCronToken($cronToken) {
-        $this->cron_token = $cronToken;
+        $this->data['cron_token'] = $cronToken;
     }
 
     public function setInstalled($installed) {
-        $this->installed = $installed;
+        $this->data['installed'] = $installed;
     }
 
     public function setBlockedIpAddresses($ipAddresses) {
-        $this->blockedIpAddresses = $ipAddresses;
-    }
-
-    /**
-     * 
-     * @return \Database
-     */
-    private function getDatabase() {
-        return $this->database;
-    }
-
-    private function getDebugger() {
-        return $this->debugger;
+        $this->data['blocked_ip_addresses'] = $ipAddresses;
     }
 
     /**
@@ -114,43 +96,43 @@ class System {
     }
 
     public function getCronClearSessionData() {
-        $this->cron_clear_session_data;
+        $this->data['cron_clear_session_data'];
     }
 
     public function getCronLast() {
-        $this->cron_last;
+        $this->data['cron_last'];
     }
 
     public function getLastSuccess() {
-        $this->cron_last_success;
+        $this->data['cron_last_success'];
     }
 
     public function getCronActive() {
-        $this->cron_active;
+        $this->data['cron_active'];
     }
 
     public function getCronUrl() {
-        $this->cron_url;
+        $this->data['cron_url'];
     }
 
     public function getCronRecrypt() {
-        $this->cron_recrypt;
+        $this->data['cron_recrypt'];
     }
 
     public function getCronToken() {
-        return $this->cron_token;
+        return $this->data['cron_token'];
     }
 
     public function isEnabled() {
-        return $this->cron_active == true ? true : false;
+        return $this->data['cron_active'] == true ? true : false;
     }
 
     public function getInstalled() {
-        return $this->installed != null ? $this->installed : false;
+        return $this->data['installed'] != null ? $this->installed : false;
     }
 
     public function getBlockedIpAddresses() {
-        return $this->blockedIpAddresses;
+        return $this->data['blocked_ip_addresses'];
     }
 
     public function updateBlockedIpAddresses($ipAddresses) {
@@ -192,59 +174,6 @@ class System {
             }
 
             $this->getDatabase()->closeConnection($dbConnection);
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    public function load() {
-        try {
-            $dbConnetion = $this->getDatabase()->openConnection();
-
-            $statement = $dbConnetion->prepare("SELECT cron_recrypt,cron_clear_session_data,cron_last,cron_last_success,cron_active,cron_url,blocked_ip_addresses FROM system");
-
-            if ($statement->execute()) {
-                while ($object = $statement->fetchObject()) {
-                    $this->setCronRecrypt($object->cron_recrypt);
-                    $this->setCronClearSessionData($object->cron_clear_session_data);
-                    $this->setCronLast($object->cron_last);
-                    $this->setCronToken($object->cron_token);
-                    $this->setLastSuccess($object->cron_last_success);
-                    $this->setCronActive($object->cron_active);
-                    $this->setCronUrl($object->cron_url);
-                    $this->setInstalled($object->installed == 1 ? true : false);
-                    $this->setBlockedIpAddresses(unserialize($object->blocked_ip_addresses));
-                }
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    public function exist() {
-        try {
-            $dbConnetion = $this->getDatabase()->openConnection();
-            $exists = false;
-
-            $statement = $dbConnetion->prepare("SELECT cron_recrypt FROM system");
-
-            if ($statement->execute()) {
-                $exists = $statement->rowCount > 0 ? true : false;
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $exists;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -382,36 +311,6 @@ class System {
             $this->getDatabase()->closeConnection($dbConnection);
 
             return boolval($enabled);
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    public function update($cronActive, $clearSessionData, $cronRecrypt) {
-        try {
-            $dbConnection = $this->getDatabase()->openConnection();
-            $success = false;
-            $active = filter_var($cronActive, FILTER_VALIDATE_INT);
-            $clear = filter_var($clearSessionData, FILTER_VALIDATE_INT);
-            $recrypt = filter_var($cronRecrypt, FILTER_VALIDATE_INT);
-            $statement = $dbConnection->prepare("UPDATE system SET cron_active = :cronActive, cron_clear_session_data = :clearSessionData, cron_recrypt = :cronRecrypt");
-            $statement->bindParam(':cronActive', $active, PDO::PARAM_INT);
-            $statement->bindParam(':clearSessionData', $clear, PDO::PARAM_INT);
-            $statement->bindParam(':cronRecrypt', $recrypt, PDO::PARAM_INT);
-
-            if ($statement->execute()) {
-                if ($statement->rowCount > 0) {
-                    $success = true;
-                }
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $success;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -905,9 +804,27 @@ class System {
         }
     }
 
-    public static function getPage($page) {
+    public static function getSystemPage($page) {
         try {
             $file = ROOT_DIR . $page . '.php';
+
+            if (file_exists($file)) {
+                return $file;
+            } else {
+                return false;
+            }
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    public static function getPage($page) {
+        try {
+            $file = PAGE_DIR . $page . '.php';
 
             if (file_exists($file)) {
                 return $file;

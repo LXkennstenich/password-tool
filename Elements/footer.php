@@ -38,6 +38,9 @@ if (!defined('PASSTOOL')) {
         <a href="/account" class="button">Zurück</a>
     <?php } ?>
 </div>
+<?php if ($session->isAuthenticated() !== false) { ?>
+    <script src = "/Js/user.min.js"></script>
+<?php } ?>
 </body>
 </html>
 

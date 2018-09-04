@@ -1036,7 +1036,7 @@ class Session {
 
             $this->getDatabase()->closeConnection($dbConnection);
 
-            apcu_clear_cache();
+            //apcu_clear_cache();
 
             return $success;
         } catch (Exception $ex) {

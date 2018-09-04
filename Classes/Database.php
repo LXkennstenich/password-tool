@@ -308,8 +308,8 @@ class Database {
                             ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;";
 
                         break;
-                    case 'datasets':
-                        $sql .= "DROP TABLE IF EXISTS `datasets`;CREATE TABLE IF NOT EXISTS `datasets` (
+                    case 'dataset':
+                        $sql .= "DROP TABLE IF EXISTS `dataset`;CREATE TABLE IF NOT EXISTS `dataset` (
                             `id` int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
                             `user_id` int(10) unsigned NOT NULL,
                             `title` text NOT NULL,

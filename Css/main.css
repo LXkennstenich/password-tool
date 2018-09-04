@@ -493,6 +493,7 @@ i:first-child {
 }
 
 .loading-div {
+    display:none;
     height:35px;
     left:0;
     margin:0 auto;
@@ -702,4 +703,20 @@ i:first-child {
 #content-wrapper {
     padding-top:50px;
     box-sizing:border-box;
+}
+
+.checkforupdate #content-wrapper {
+    text-align: center;
+    font-size: 22px;
+    line-height: 28px;
+    font-family: "Roboto";
+}
+
+.project-container {
+    position: absolute;
+    top: 150px;
+    right: 600px;
+    display: inline-block;
+    text-align: center;
+    width: auto;
 }

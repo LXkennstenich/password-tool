@@ -90,5 +90,5 @@ if (!defined('PASSTOOL')) {
     </div>
     <input type="button" id="createDatasetButton"  class="form-button" value="Speichern">
 </div>
-<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
+
 

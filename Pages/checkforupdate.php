@@ -51,5 +51,8 @@ $debugger = $factory->getDebugger();
     $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});
 </script>
 
+<?php
+include_once ELEMENTS_DIR . 'ajaxLoader.php';
+
 
 

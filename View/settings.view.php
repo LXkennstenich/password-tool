@@ -69,5 +69,5 @@ if (!defined('PASSTOOL')) {
 
 
     <?php } ?>
-    <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
+
 </div>

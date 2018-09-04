@@ -32,6 +32,7 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 try {
+
     if (!defined('PASSTOOL')) {
         define('PASSTOOL', true);
     }
@@ -41,40 +42,44 @@ try {
         session_start();
     }
 
-
     ob_start();
 
     $requestUri = htmlspecialchars(strip_tags(basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))));
     $page = str_replace('/', '', $requestUri);
 
+    $pageArray = scandir('Pages');
+
     include_once 'init.php';
 
-    $file = ROOT_DIR . $page . '.php';
+    $file = $page . '.php';
+    $isPage = false;
 
-    if (file_exists($file)) {
+    if (in_array($file, $pageArray)) {
+        $filePath = ROOT_DIR . 'Pages/' . $file;
+        $isPage = true;
+    } else {
+        $filePath = ROOT_DIR . $file;
+    }
+
+    if (file_exists($filePath) && is_dir($filePath) === false) {
         header("HTTP/1.1 200 OK");
-
-        if ($page != 'Ajax' && $page != 'cron') {
+        if ($isPage) {
             include_once ELEMENTS_DIR . 'header.php';
             include_once ELEMENTS_DIR . 'authCheck.php';
             include_once ELEMENTS_DIR . 'JsGlobals.php';
             include_once ELEMENTS_DIR . 'mainTemplate.php';
         } else {
-            include_once System::getPage($page);
+            include_once System::getSystemPage($page);
         }
     } else {
+        header("HTTP/1.1 404 NOT FOUND");
         $factory->redirect('login');
     }
-
 
     $html = ob_get_clean();
 
     echo $html;
 } catch (Exception $ex) {
-    if (SYSTEM_MODE == 'DEV') {
-        $this->getDebugger()->printError($ex->getMessage());
-    }
-
     $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
 }
 

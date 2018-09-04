@@ -33,6 +33,7 @@ if (!defined('PASSTOOL')) {
     die();
 }
 ?>
+
 <div id="content-wrapper">
 
 </div>
@@ -47,7 +48,15 @@ if (!defined('PASSTOOL')) {
     request.uid = uid;
     request.searchTerm = searchTerm;
     $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});
+
 </script>
+
+<?php
+include_once ELEMENTS_DIR . 'ajaxLoader.php';
+
+
+
+
 
 
 

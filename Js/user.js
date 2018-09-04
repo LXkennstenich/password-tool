@@ -41,6 +41,10 @@ $(document).ready(function () {
         });
     });
 
+    $('.project-list-link').bind('click touch', function() {
+        $(this).submit();
+    });
+
     $('#updateSystemSettingsButton').bind('click touch', function () {
         var request = {};
         request.action = 'UpdateSystemSettings';
