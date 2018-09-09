@@ -49,6 +49,7 @@ try {
 
     $debugger = $factory->getDebugger();
     $system = $factory->getSystem();
+    $system->setID(1);
     $system->load();
 
     if ($system->isCronEnabled() != true) {
@@ -58,10 +59,6 @@ try {
     $error = false;
     $savedToken = (string) $system->queryCronToken();
     $token = (string) filter_var($_GET['CT'], FILTER_SANITIZE_STRING);
-
-    ini_set('session.gc_probability', '0');
-
-    session_start();
 
     if ($savedToken === $token) {
 
@@ -107,14 +104,6 @@ try {
                 }
             }
         }
-
-        if ($value = session_gc !== false) {
-            $debugger->cronLog("Session Garbage Collection deleted " . $value . ' invalid sessions');
-        } else {
-            $debugger->cronLog('No Invalid Sessions detected');
-        }
-
-        session_destroy();
 
         $system->finishedCron();
     }

@@ -37,11 +37,14 @@ if (!defined('PASSTOOL')) {
 }
 $secret = $account->querySecretKey($userID);
 $g = $factory->getGoogleAuthenticator();
+
 $codeInput = $request->code;
 
 if ($g->checkCode($secret, $codeInput)) {
-    if ($session->updateAuthenticator(1)) {
+    if ($session->updateAuthenticator(1, $userID)) {
         echo "1";
+    } else {
+        var_dump($session->updateAuthenticator(1, $userID));
     }
 } else {
     echo "0";

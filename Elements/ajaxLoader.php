@@ -42,7 +42,7 @@ if (!defined('PASSTOOL')) {
 
 </div>
 <script>
-    var $loading = $('.loading-div').hide();
+    var $loading = $('.loading-div img').hide();
     var $ajaxMessage = $('.ajax-message').hide();
     $(document)
             .ajaxStart(function () {

@@ -202,10 +202,7 @@ class Database {
     public function openConnection() {
         try {
             $dbConnection = new PDO($this->generateDNS($this->getDatabaseServer(), $this->getDatabaseName(), $this->getDatabasePort()), $this->getDatabaseUser(), $this->getDatabasePassword());
-
-            if (defined(SYSTEM_MODE) && SYSTEM_MODE == 'DEV') {
-                $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            }
+            $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             return $dbConnection;
         } catch (Exception $ex) {

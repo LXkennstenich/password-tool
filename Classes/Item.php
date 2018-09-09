@@ -102,31 +102,38 @@ class Item {
      * @return boolean
      */
     public function insert() {
-        $dbConnection = $this->getDatabase()->openConnection();
+        try {
+            $dbConnection = $this->getDatabase()->openConnection();
 
-        $success = false;
-        $columnString = '';
-        $valueString = '';
-        $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
-        $data = $this->getData();
+            $success = false;
+            $columnString = '';
+            $valueString = '';
+            $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
+            $data = $this->getData();
 
-        foreach ($data as $key => $value) {
-            $columnString .= $key . ', ';
-            $valueString .= $value . ', ';
-        }
-
-        $statement = $dbConnection->prepare("INSERT INTO :table (:columnString) VALUES (:valueString)");
-        $statement->bindParam(':table', $tableName, PDO::PARAM_STR);
-        $statement->bindParam(':columnString', $columnString, PDO::PARAM_STR);
-        $statement->bindParam(':valueString', $valueString, PDO::PARAM_STR);
-
-        if ($statement->execute()) {
-            if ($statement->rowCount() > 0) {
-                $success = true;
+            foreach ($data as $key => $value) {
+                $columnString .= $key . ', ';
+                $valueString .= $value . ', ';
             }
-        }
 
-        return $success;
+            $statement = $dbConnection->prepare("INSERT INTO $tableName (:columnString) VALUES (:valueString)");
+            $statement->bindParam(':columnString', $columnString, PDO::PARAM_STR);
+            $statement->bindParam(':valueString', $valueString, PDO::PARAM_STR);
+
+            if ($statement->execute()) {
+                if ($statement->rowCount() > 0) {
+                    $success = true;
+                }
+            }
+
+            return $success;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
     }
 
     public function getColumnNames() {

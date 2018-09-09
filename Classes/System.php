@@ -25,20 +25,6 @@ class System extends Item {
         $this->account = $account;
     }
 
-    protected $cron_recrypt;
-    protected $cron_clear_session_data;
-    protected $cron_last;
-    protected $cron_last_success;
-    protected $cron_active;
-    protected $cron_url;
-    protected $cron_token;
-    protected $installed;
-    protected $database;
-    protected $debugger;
-    protected $encryption;
-    protected $account;
-    protected $blockedIpAddresses;
-
     /**
      * 
      * @return \Account
@@ -49,6 +35,10 @@ class System extends Item {
 
     private function setEncryption($encryption) {
         $this->encryption = $encryption;
+    }
+
+    public function setID($id) {
+        $this->data['id'] = $id;
     }
 
     public function setCronClearSessionData($cronClearSessionData) {
@@ -93,6 +83,10 @@ class System extends Item {
      */
     private function getEncryption() {
         return $this->encryption;
+    }
+
+    public function getID() {
+        return $this->data['id'];
     }
 
     public function getCronClearSessionData() {

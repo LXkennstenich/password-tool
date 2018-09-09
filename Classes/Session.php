@@ -372,12 +372,12 @@ class Session {
         }
     }
 
-    public function updateAuthenticator($value) {
+    public function updateAuthenticator($value, $user_id) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $authenticator = filter_var($value, FILTER_VALIDATE_INT);
 
             $statement = $dbConnection->prepare("UPDATE session SET session_authenticator = :authenticator WHERE user_id = :userID");

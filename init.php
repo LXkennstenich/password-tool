@@ -42,7 +42,7 @@ $standardProject = '';
 
 $sessionUID = isset($_SESSION['UID']) ? filter_var($_SESSION['UID'], FILTER_VALIDATE_INT) : null;
 $sessionUsername = isset($_SESSION['U']) ? filter_var($_SESSION['U'], FILTER_VALIDATE_EMAIL) : null;
-$sessionIP = isset($_SESSION['IP']) ? filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) : filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP);
+$sessionIP = filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ? filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) : filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 $sessionToken = isset($_SESSION['TK']) ? filter_var($_SESSION['TK'], FILTER_SANITIZE_STRING) : null;
 $sessionTimestamp = isset($_SESSION['TS']) ? filter_var($_SESSION['TS'], FILTER_VALIDATE_INT) : null;
 $sessionAccessLevel = isset($_SESSION['AL']) ? filter_var($_SESSION['AL'], FILTER_VALIDATE_INT) : 0;
@@ -77,6 +77,7 @@ $account = $factory->getAccount();
 $account->setUsername($sessionUsername);
 $encryption = $factory->getEncryption();
 $system = $factory->getSystem();
+$system->setID(1);
 $system->load();
 $options = $factory->getOptions();
 $debugger = $factory->getDebugger();

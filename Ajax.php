@@ -31,33 +31,44 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 
-ob_flush();
-ob_start();
+try {
+    ob_flush();
+    ob_start();
 
-$request = json_decode($_POST['request']);
+    $request = json_decode($_POST['request']);
 
-$action = $request->action;
-$userID = base64_decode($request->uid);
-$sessionToken = $encryption->decrypt($request->tk, $userID);
-$sessionTimestamp = $encryption->decrypt($request->ts, $userID);
-$sessionIpAddress = base64_decode($request->ipaddress);
-$searchTerm = $request->searchTerm;
+    $action = $request->action;
+    $userID = base64_decode($request->uid);
+    $sessionToken = $encryption->decrypt($request->tk, $userID);
+    $sessionTimestamp = $encryption->decrypt($request->ts, $userID);
+    $sessionIpAddress = base64_decode($request->ipaddress);
+    $searchTerm = $request->searchTerm;
 
-if ($action == 'View') {
-    $file = VIEW_DIR . $request->file . '.view.php';
-} else {
-    $file = CONTROLLER_DIR . $action . 'Controller.php';
-}
-
-if (file_exists($file)) {
-    if ($action == 'Login' || $action == 'NewPassword') {
-        $file = CONTROLLER_DIR . $action . 'Controller.php';
-        include_once $file;
+    if ($action == 'View') {
+        $file = VIEW_DIR . $request->file . '.view.php';
     } else {
-        if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
+        $file = CONTROLLER_DIR . $action . 'Controller.php';
+    }
+
+
+
+
+    if (file_exists($file)) {
+        if ($action == 'Login' || $action == 'NewPassword' || $action == 'ValidateAuth') {
+            $file = CONTROLLER_DIR . $action . 'Controller.php';
             include_once $file;
+        } else {
+            if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
+                include_once $file;
+            }
         }
     }
+
+    $html = ob_get_clean();
+    echo $html;
+} catch (Exception $ex) {
+    echo $ex->getMessage();
 }
+
 
 
