@@ -52,6 +52,31 @@ if (!defined('PASSTOOL')) {
 </script>
 
 <?php
+$projects = $factory->getProjects($sessionUID);
+?>
+
+<?php if (sizeof($projects) > 0) { ?>
+
+    <div class="project-container">
+        <form class="project-form" method="post">
+            <ul id="project-list">
+                <?php foreach ($projects as $project) { ?>
+                    <li class="project-list-item">
+                        <input type="submit" class="project-list-link" name="search" value="<?php echo $project; ?>">
+                    </li>
+                <?php } ?>
+            </ul>
+        </form>
+    </div>
+
+<?php } else { ?>
+
+    <p>Keine Projekte gefunden</p>
+
+    <?php
+}
+
+
 include_once ELEMENTS_DIR . 'ajaxLoader.php';
 
 

@@ -50,32 +50,6 @@ if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
 <?php
 if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
 
-    $projects = $factory->getProjects($sessionUID);
-    ?>
-
-
-    <?php if (sizeof($projects) > 0) { ?>
-
-        <div class="project-container">
-            <form class="project-form" method="post">
-                <ul id="project-list">
-                    <?php foreach ($projects as $project) { ?>
-                        <li class="project-list-item">
-                            <input type="submit" class="project-list-link" name="search" value="<?php echo $project; ?>">
-                        </li>
-                    <?php } ?>
-                </ul>
-            </form>
-        </div>
-
-    <?php } else { ?>
-
-        <p>Keine Projekte gefunden</p>
-
-        <?php
-    }
-
-
     include_once System::getView('newDataset');
 
     if ($sessionAccessLevel === SESSION_ADMIN) {
@@ -84,4 +58,3 @@ if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
 }
 
 include ELEMENTS_DIR . 'footer.php';
-?>

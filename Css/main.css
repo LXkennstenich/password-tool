@@ -716,10 +716,18 @@ i:first-child {
 }
 
 .project-container {
-    position: absolute;
-    top: 150px;
-    right: 600px;
+    position: relative;
     display: inline-block;
-    text-align: center;
     width: auto;
 }
+
+#project-list {
+    display: flex;
+    flex-flow: column;
+}
+
+.project-list-item {
+    display: inline-block;
+    margin-bottom:20px;
+}
+
