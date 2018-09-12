@@ -50,9 +50,6 @@ try {
         $file = CONTROLLER_DIR . $action . 'Controller.php';
     }
 
-
-
-
     if (file_exists($file)) {
         if ($action == 'Login' || $action == 'NewPassword' || $action == 'ValidateAuth') {
             $file = CONTROLLER_DIR . $action . 'Controller.php';

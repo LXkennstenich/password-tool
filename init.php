@@ -80,6 +80,8 @@ $system = $factory->getSystem();
 $system->setID(1);
 $system->load();
 $options = $factory->getOptions();
+$options->setUserID($sessionUID);
+$options->load();
 $debugger = $factory->getDebugger();
 
 

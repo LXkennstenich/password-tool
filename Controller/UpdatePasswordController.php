@@ -37,8 +37,23 @@ if (!defined('PASSTOOL')) {
 $username = $request->username;
 $oldPassword = $request->oldPassword;
 $newPassword = $request->newPassword;
+$host = $encryption->decrypt($request->host, $userID);
+
+
+$options = $factory->getOptions();
+$options->setUserID($userID);
+$options->load();
+$system = $factory->getSystem();
+$system->setID(1);
+$system->load();
+
 
 if ($account->updatePassword($userID, $username, $oldPassword, $newPassword)) {
+
+    if ($options->getEmailNotificationPasswordChange() != false) {
+        $system->sendMail("Passwort wurde aktualisiert", "Passwortänderung Passwort-Tool", $username, $host);
+    }
+
     echo "1";
 } else {
     echo "0";

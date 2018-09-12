@@ -44,14 +44,6 @@ class Options extends Item {
     }
 
     /**
-     * Use-Two-Factor-Setter
-     * @param boolean $use_two_factor
-     */
-    public function setUseTwoFactor($use_two_factor) {
-        $this->data['use_two_factor'] = $use_two_factor;
-    }
-
-    /**
      * E-Mail-Notification-Setter
      * @param boolean $email_notification_login
      */
@@ -67,6 +59,10 @@ class Options extends Item {
         $this->data['email_notification_password_change'] = $email_notification_password_change;
     }
 
+    /**
+     * 
+     * @param type $email_notification_login_failed
+     */
     public function setEmailNotificationLoginFailed($email_notification_login_failed) {
         $this->data['email_notification_login_failed'] = $email_notification_login_failed;
     }
@@ -99,14 +95,6 @@ class Options extends Item {
      * 
      * @return boolean
      */
-    public function getUsetwoFactor() {
-        return $this->data['use_two_factor'];
-    }
-
-    /**
-     * 
-     * @return boolean
-     */
     public function getEmailNotificationLogin() {
         return $this->data['email_notification_login'];
     }
@@ -119,6 +107,10 @@ class Options extends Item {
         return $this->data['email_notification_password_change'];
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getEmailNotificationLoginFailed() {
         return $this->data['email_notification_login_failed'];
     }

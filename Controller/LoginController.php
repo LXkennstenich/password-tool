@@ -34,8 +34,14 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+$options = $factory->getOptions();
+$options->setUserID($userID);
+$options->load();
+$emailNotificationLoginFailed = $options->getEmailNotificationLoginFailed();
+$emailNotificationLogin = $options->getEmailNotificationLogin();
 $debugger = $factory->getDebugger();
 $username = filter_var($request->username, FILTER_VALIDATE_EMAIL);
+
 try {
     $time = microtime(true);
     $timeRequest = (float) $request->timestamp;
@@ -45,7 +51,11 @@ try {
     if ($timeCalculated > 500 || $timeCalculated < 1) {
         $message = 'Zeitüberschreitung Formular || Datei: ' . __FILE__ . ' Zeit: ' . $timeCalculated;
         $debugger->log($message);
-        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
+
+        if ($emailNotificationLoginFailed != false) {
+            $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
+        }
+
         exit('Fehler bei der Anfrage bitte Seite neu laden');
     }
 
@@ -98,7 +108,11 @@ try {
         if ($session->startSession()) {
             $message = 'Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' eingeloggt.';
             $debugger->log($message);
-            $system->sendMail($message, 'Login-Vorgang Password-Tool', $username, $host);
+
+            if ($emailNotificationLogin != false) {
+                $system->sendMail($message, 'Login-Vorgang Password-Tool', $username, $host);
+            }
+
             echo "1";
         }
     } else {
@@ -115,7 +129,10 @@ try {
         $message = 'Benutzer ' . $username . ' mit der IP-Adresse: ' . $sessionIpAddress . ' hat ein falsches Passwort eingegeben.';
 
         $debugger->log($message);
-        $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
+
+        if ($emailNotificationLoginFailed != false) {
+            $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
+        }
 
         echo "Benutzername oder Passwort ist nicht korrekt";
     }
