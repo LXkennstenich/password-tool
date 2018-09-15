@@ -8,6 +8,8 @@
  */
 class Factory {
 
+    private static $instance;
+
     /**
      *
      * @var \Sonata\GoogleAuthenticator\GoogleAuthenticator
@@ -55,6 +57,10 @@ class Factory {
      * @var string 
      */
     private static $sessionUID;
+    private static $sessionUserAgent;
+    private static $sessionAccessLevel;
+    private static $sessionUsername;
+    private static $sessionExpires;
 
     /**
      *
@@ -73,6 +79,14 @@ class Factory {
      * @var \Debug
      */
     private static $debug;
+
+    public static function getInstance() {
+        if (static::$instance == null || !isset(static::$instance)) {
+            static::$instance = new Factory;
+        }
+
+        return static::$instance;
+    }
 
     /**
      * 
@@ -143,6 +157,38 @@ class Factory {
         }
 
         return static::$sessionTimestamp;
+    }
+
+    public function getSessionUsername() {
+        if (static::$sessionUsername == null || !isset(static::$sessionUsername)) {
+            static::$sessionUsername = isset($_SESSION['U']) ? $_SESSION['U'] : null;
+        }
+
+        return static::$sessionUsername;
+    }
+
+    public function getSessionUserAgent() {
+        if (static::$sessionUserAgent == null || !isset(static::$sessionUserAgent)) {
+            static::$sessionUserAgent = isset($_SESSION['UA']) ? $_SESSION['UA'] : null;
+        }
+
+        return static::$sessionUserAgent;
+    }
+
+    public function getSessionAccessLevel() {
+        if (static::$sessionAccessLevel == null || !isset(static::$sessionAccessLevel)) {
+            static::$sessionAccessLevel = isset($_SESSION['AL']) ? $_SESSION['AL'] : null;
+        }
+
+        return static::$sessionAccessLevel;
+    }
+
+    public function getSessionExpires() {
+        if (static::$sessionExpires == null || !isset(static::$sessionExpires)) {
+            static::$sessionExpires = isset($_SESSION['EXPIRES']) ? $_SESSION['EXPIRES'] : null;
+        }
+
+        return static::$sessionExpires;
     }
 
     /**

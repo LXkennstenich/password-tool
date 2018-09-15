@@ -244,14 +244,6 @@ class Session {
         return bin2hex(openssl_random_pseudo_bytes(64));
     }
 
-    /**
-     * 
-     * @return int
-     */
-    private function generateSessionTimestamp() {
-        return time();
-    }
-
     private function queryUserdata() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -718,7 +710,7 @@ class Session {
             $userID = $this->getUserID();
             $sessionID = session_id();
             $sessionToken = $this->generateSessionToken();
-            $sessionTimestamp = $this->generateSessionTimestamp();
+            $sessionTimestamp = time();
             $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $this->getUseragent();
             $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $this->getIpaddress();
@@ -743,11 +735,11 @@ class Session {
                 return false;
             }
 
-            $saveID = $sessionID;
-            $saveToken = $sessionToken;
+            $saveID = $_SESSION['PHPSESSID'];
+            $saveToken = $_SESSION['TK'];
             $saveTimestamp = $sessionTimestamp;
-            $saveIpaddress = $ipAddress;
-            $saveUseragent = $userAgent;
+            $saveIpaddress = $_SESSION['IP'];
+            $saveUseragent = $_SESSION['UA'];
 
             $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent);
 
@@ -788,7 +780,7 @@ class Session {
                 return false;
             }
 
-            if ($sessionTimestamp != $savedTimestamp) {
+            if ($savedTimestamp == '') {
                 return false;
             }
 

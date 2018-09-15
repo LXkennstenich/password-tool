@@ -132,6 +132,7 @@ class System extends Item {
     public function updateBlockedIpAddresses($ipAddresses) {
         try {
             $dbConnetion = $this->getDatabase()->openConnection();
+            $success = false;
 
             $ipAddressesSerialized = is_array($ipAddresses) ? serialize($ipAddresses) : serialize(array());
             $statement = $dbConnetion->prepare("UPDATE system SET blocked_ip_addresses = :ipAddresses");
@@ -139,13 +140,13 @@ class System extends Item {
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
-                    return true;
+                    $success = true;
                 }
             }
 
             $this->getDatabase()->closeConnection($dbConnection);
 
-            return false;
+            return $success;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -513,75 +514,82 @@ class System extends Item {
             set_time_limit(0);
 
             $updateAvailable = false;
-            $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/downloads';
-            $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            if (!apcu_exists('updateAvailable')) {
 
-            $result = curl_exec($curl);
+                $url = static::$bitbucketAPI_BaseURL . '/repositories/' . static::$bitbucketUsername . '/' . static::$bitbucketRepoSlug . '/downloads';
+                $curl = curl_init($url);
 
-            $resultObject = json_decode($result);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
-            if ($result) {
+                $result = curl_exec($curl);
 
-                $fileName = 'version.dat';
-                $filePath = UPDATE_DIR . $fileName;
+                $resultObject = json_decode($result);
 
-                $valueArray = $resultObject->values;
+                if ($result) {
 
-                $downloadName = "";
+                    $fileName = 'version.dat';
+                    $filePath = UPDATE_DIR . $fileName;
 
-                $i = 0;
-                $index = null;
+                    $valueArray = $resultObject->values;
 
-                foreach ($valueArray as $value) {
-                    if ($value->name == $fileName) {
-                        $downloadName = $value->name;
-                        $index = $i;
+                    $downloadName = "";
+
+                    $i = 0;
+                    $index = null;
+
+                    foreach ($valueArray as $value) {
+                        if ($value->name == $fileName) {
+                            $downloadName = $value->name;
+                            $index = $i;
+                        }
+
+                        $i++;
                     }
 
-                    $i++;
-                }
+                    $downloadUrl = $valueArray[$index]->links->self->href;
 
-                $downloadUrl = $valueArray[$index]->links->self->href;
+                    if ($downloadUrl !== null) {
+                        if ($this->downloadFile($downloadUrl, $filePath) !== false) {
+                            $filePathCurrent = ROOT_DIR . 'version.dat';
 
-                if ($downloadUrl !== null) {
-                    if ($this->downloadFile($downloadUrl, $filePath) !== false) {
-                        $filePathCurrent = ROOT_DIR . 'version.dat';
-
-                        $serverVersion = "";
-                        $currentVersion = "";
+                            $serverVersion = "";
+                            $currentVersion = "";
 
 
-                        $versionServerArray = $this->getVersionArray($filePath);
-                        $currentVersionArray = $this->getVersionArray($filePathCurrent);
+                            $versionServerArray = $this->getVersionArray($filePath);
+                            $currentVersionArray = $this->getVersionArray($filePathCurrent);
 
 
-                        if ($currentVersionArray !== false && is_array($currentVersionArray)) {
-                            $maxIndex = sizeof($currentVersionArray) - 1;
-                            $currentVersion = $currentVersionArray[$maxIndex];
-                            $this->getDebugger()->log("Current Version: " . $currentVersion);
-                        }
+                            if ($currentVersionArray !== false && is_array($currentVersionArray)) {
+                                $maxIndex = sizeof($currentVersionArray) - 1;
+                                $currentVersion = $currentVersionArray[$maxIndex];
+                                $this->getDebugger()->log("Current Version: " . $currentVersion);
+                            }
 
-                        if ($versionServerArray !== false && is_array($versionServerArray)) {
-                            $maxIndex = sizeof($versionServerArray) - 1;
-                            $serverVersion = $versionServerArray[$maxIndex];
-                            $this->getDebugger()->log("Server Version: " . $serverVersion);
-                        }
+                            if ($versionServerArray !== false && is_array($versionServerArray)) {
+                                $maxIndex = sizeof($versionServerArray) - 1;
+                                $serverVersion = $versionServerArray[$maxIndex];
+                                $this->getDebugger()->log("Server Version: " . $serverVersion);
+                            }
 
-                        if ($serverVersion == '' || $serverVersion == null || $serverVersion == false) {
-                            return false;
-                        }
+                            if ($serverVersion == '' || $serverVersion == null || $serverVersion == false) {
+                                return false;
+                            }
 
-                        if ($currentVersion != $serverVersion && $currentVersion != null && $serverVersion != null) {
-                            $this->getDebugger()->log("Update verfügbar " . $serverVersion);
-                            $updateAvailable = $serverVersion;
+                            if ($currentVersion != $serverVersion && $currentVersion != null && $serverVersion != null) {
+                                $this->getDebugger()->log("Update verfügbar " . $serverVersion);
+                                $updateAvailable = $serverVersion;
+                            }
                         }
                     }
                 }
+
+                curl_close($curl);
+                apcu_insert('updateAvailable', $updateAvailable, 1800);
+            } else {
+                $updateAvailable = apcu_fetch('updateAvailable');
             }
-
-            curl_close($curl);
 
             return $updateAvailable;
         } catch (Exception $ex) {

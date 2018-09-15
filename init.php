@@ -40,18 +40,6 @@ if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') {
 
 $standardProject = '';
 
-$sessionUID = isset($_SESSION['UID']) ? filter_var($_SESSION['UID'], FILTER_VALIDATE_INT) : null;
-$sessionUsername = isset($_SESSION['U']) ? filter_var($_SESSION['U'], FILTER_VALIDATE_EMAIL) : null;
-$sessionIP = filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ? filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) : filter_var($_SESSION['IP'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-$sessionToken = isset($_SESSION['TK']) ? filter_var($_SESSION['TK'], FILTER_SANITIZE_STRING) : null;
-$sessionTimestamp = isset($_SESSION['TS']) ? filter_var($_SESSION['TS'], FILTER_VALIDATE_INT) : null;
-$sessionAccessLevel = isset($_SESSION['AL']) ? filter_var($_SESSION['AL'], FILTER_VALIDATE_INT) : 0;
-$searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
-
-$isSearch = $searchTerm != $standardProject ? true : false;
-$host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
-$userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
-
 include_once 'defines.php';
 
 if (SYSTEM_MODE == 'DEV') {
@@ -65,7 +53,20 @@ spl_autoload_register(function($class) {
     include_once CLASS_DIR . $class . '.php';
 });
 
-$factory = new Factory;
+$factory = Factory::getInstance();
+$sessionUID = $factory->getSessionUID();
+$sessionUsername = $factory->getSessionUsername();
+$sessionIP = $factory->getSessionIpaddress();
+$sessionToken = $factory->getSessionToken();
+$sessionTimestamp = $factory->getSessionExpires();
+$sessionAccessLevel = $factory->getSessionAccessLevel();
+$sessionExpires = $factory->getSessionExpires();
+$sessionExpired = time() >= $sessionExpires && $sessionExpires != null ? true : false;
+$searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
+
+$userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $factory->getSessionUserAgent();
+$isSearch = $searchTerm != $standardProject ? true : false;
+$host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
 
 $session = $factory->getSession();
 $session->setIpaddress($sessionIP);

@@ -39,7 +39,11 @@ $debugger = $factory->getDebugger();
 try {
     $system = $factory->getSystem();
 
-    $commitHash = $system->updateAvailable();
+    if (!apcu_exists('updateAvailable')) {
+        $commitHash = $system->updateAvailable();
+    } else {
+        $commitHash = apcu_fetch('updateAvailable');
+    }
 
     if ($commitHash !== false) {
 

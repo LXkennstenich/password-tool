@@ -174,14 +174,23 @@ class Item {
         $data = $this->getData();
         $updateString = '';
 
+        $maxIndex = sizeof($data) - 1;
+
+        $i = 0;
+
+
         foreach ($data as $key => $value) {
-            $updateString .= $key . ' = ' . $value . ',';
+            if ($i < $maxIndex) {
+                $updateString .= $key . ' = ' . "'" . $value . "'" . ', ';
+            } else {
+                $updateString .= $key . ' = ' . "'" . $value . "'";
+            }
+
+            $i++;
         }
 
-        $statement = $dbConnection->prepare("UPDATE :table SET :updateString WHERE id = :ID");
-        $statement->bindParam(':table', $tableName, PDO::PARAM_STR);
+        $statement = $dbConnection->prepare("UPDATE $tableName SET $updateString WHERE id = :ID");
         $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-        $statement->bindParam(':updateString', $updateString, PDO::PARAM_STR);
 
         if ($statement->execute()) {
             if ($statement->rowCount() > 0) {
@@ -204,8 +213,7 @@ class Item {
         $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
         $success = false;
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
-        $statement = $dbConnection->prepare("DELETE FROM :table WHERE id = :ID");
-        $statement->bindParam(':table', $tableName, PDO::PARAM_STR);
+        $statement = $dbConnection->prepare("DELETE FROM $tableName WHERE id = :ID");
         $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
 
         if ($statement->execute()) {

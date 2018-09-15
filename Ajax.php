@@ -32,11 +32,7 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 
 try {
-    ob_flush();
-    ob_start();
-
     $request = json_decode($_POST['request']);
-
     $action = $request->action;
     $userID = base64_decode($request->uid);
     $sessionToken = $encryption->decrypt($request->tk, $userID);
@@ -60,9 +56,6 @@ try {
             }
         }
     }
-
-    $html = ob_get_clean();
-    echo $html;
 } catch (Exception $ex) {
     echo $ex->getMessage();
 }

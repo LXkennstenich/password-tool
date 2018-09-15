@@ -47,7 +47,19 @@ ob_start();
 $requestUri = htmlspecialchars(strip_tags(basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))));
 $page = str_replace('/', '', $requestUri);
 
-$pageArray = scandir('Pages');
+
+if ($page != 'logout' && $sessionExpired === true) {
+    $factory->redirect('logout');
+}
+
+$pageArray = array();
+
+if (!apcu_exists('pageArray')) {
+    $pageArray = scandir('Pages');
+    apcu_store('pageArray', serialize($pageArray), 3600);
+} else {
+    $pageArray = unserialize(apcu_fetch('pageArray'));
+}
 
 include_once 'init.php';
 
