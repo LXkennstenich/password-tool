@@ -33,7 +33,9 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
+$sessionAuthenticated = $session->isAuthenticated() && $session->needAuthenticator() === false ? true : false;
+
+if ($sessionAuthenticated) {
     include_once ELEMENTS_DIR . 'navbar.php';
 }
 ?>
@@ -48,11 +50,11 @@ if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
 
 
 <?php
-if ($session->isAuthenticated() && $session->needAuthenticator() === false) {
+if ($sessionAuthenticated) {
 
     include_once System::getView('newDataset');
 
-    if ($sessionAccessLevel === SESSION_ADMIN) {
+    if ($sessionAccessLevel == SESSION_ADMIN) {
         include_once System::getView('newUser');
     }
 }

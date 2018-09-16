@@ -58,7 +58,7 @@ $sessionUID = $factory->getSessionUID();
 $sessionUsername = $factory->getSessionUsername();
 $sessionIP = $factory->getSessionIpaddress();
 $sessionToken = $factory->getSessionToken();
-$sessionTimestamp = $factory->getSessionExpires();
+$sessionTimestamp = $factory->getSessionTimestamp();
 $sessionAccessLevel = $factory->getSessionAccessLevel();
 $sessionExpires = $factory->getSessionExpires();
 $sessionExpired = time() >= $sessionExpires && $sessionExpires != null ? true : false;

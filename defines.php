@@ -62,11 +62,11 @@ if (!defined('ICON_DIR')) {
 }
 
 if (!defined('SESSION_ADMIN')) {
-    define('SESSION_ADMIN', 5);
+    define('SESSION_ADMIN', '5');
 }
 
 if (!defined('SESSION_USER')) {
-    define('SESSION_USER', 0);
+    define('SESSION_USER', '0');
 }
     
 

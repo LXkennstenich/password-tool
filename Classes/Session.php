@@ -156,7 +156,7 @@ class Session {
 
     /**
      * 
-     * @param type $username
+     * @param type $userAgent
      */
     public function setUseragent($userAgent) {
         $this->userAgent = $userAgent;
@@ -659,17 +659,15 @@ class Session {
         }
     }
 
-    private function queryAccessLevel($id, $username) {
+    public function queryAccessLevel($id) {
         try {
             $ID = filter_var($id, FILTER_VALIDATE_INT);
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
             $accessLevel = 0;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $statement = $dbConnection->prepare("SELECT access_level FROM account WHERE id = :ID AND username = :username");
+            $statement = $dbConnection->prepare("SELECT access_level FROM account WHERE id = :ID");
             $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -714,7 +712,7 @@ class Session {
             $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $this->getUseragent();
             $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $this->getIpaddress();
-            $accessLevel = $this->queryAccessLevel($userID, $name);
+            $accessLevel = $this->queryAccessLevel($userID);
 
             setcookie('PHPSESSID', $sessionID, 0, '/', $domain, true, true);
             setcookie('TK', $sessionToken, 0, '/', $domain, true, true);
@@ -781,6 +779,10 @@ class Session {
             }
 
             if ($savedTimestamp == '') {
+                return false;
+            }
+
+            if ($savedTimestamp != $sessionTimestamp) {
                 return false;
             }
 
@@ -995,7 +997,7 @@ class Session {
 
     /**
      * 
-     * @param type $userID
+     * @param type $user_id
      * @return boolean
      */
     public function deleteSessionData($user_id) {
@@ -1028,7 +1030,7 @@ class Session {
 
             $this->getDatabase()->closeConnection($dbConnection);
 
-            //apcu_clear_cache();
+            apcu_clear_cache();
 
             return $success;
         } catch (Exception $ex) {
