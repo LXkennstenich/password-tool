@@ -564,13 +564,11 @@ class System extends Item {
                             if ($currentVersionArray !== false && is_array($currentVersionArray)) {
                                 $maxIndex = sizeof($currentVersionArray) - 1;
                                 $currentVersion = $currentVersionArray[$maxIndex];
-                                $this->getDebugger()->log("Current Version: " . $currentVersion);
                             }
 
                             if ($versionServerArray !== false && is_array($versionServerArray)) {
                                 $maxIndex = sizeof($versionServerArray) - 1;
                                 $serverVersion = $versionServerArray[$maxIndex];
-                                $this->getDebugger()->log("Server Version: " . $serverVersion);
                             }
 
                             if ($serverVersion == '' || $serverVersion == null || $serverVersion == false) {
@@ -578,7 +576,6 @@ class System extends Item {
                             }
 
                             if ($currentVersion != $serverVersion && $currentVersion != null && $serverVersion != null) {
-                                $this->getDebugger()->log("Update verfügbar " . $serverVersion);
                                 $updateAvailable = $serverVersion;
                             }
                         }
@@ -586,7 +583,7 @@ class System extends Item {
                 }
 
                 curl_close($curl);
-                apcu_insert('updateAvailable', $updateAvailable, 1800);
+                apcu_store('updateAvailable', $updateAvailable, 1800);
             } else {
                 $updateAvailable = apcu_fetch('updateAvailable');
             }

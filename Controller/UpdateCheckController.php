@@ -33,6 +33,7 @@
 if (!defined('PASSTOOL')) {
     die();
 }
+apcu_clear_cache();
 set_time_limit(0);
 $debugger = $factory->getDebugger();
 

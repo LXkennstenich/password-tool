@@ -10,7 +10,7 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-define('SYSTEM_MODE', 'LIVE');
+define('SYSTEM_MODE', 'DEV');
 
 
 if (!defined('ROOT_DIR')) {
