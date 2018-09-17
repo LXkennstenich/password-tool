@@ -33,12 +33,13 @@ $(document).ready(function () {
                 if (parseInt(data) == 1) {
                     window.location.href = '/account';
                 } else {
-                    $('.ajax-message').addClass('login-failed');
+                    $('.ajax-message').addClass('alert-error');
                     $('.ajax-message').text(data);
                     setTimeout(function () {
-                        if ($('.ajax-message').hasClass('login-failed')) {
-                            $('.ajax-message').removeClass('login-failed');
+                        if ($('.ajax-message').hasClass('alert-error')) {
+                            $('.ajax-message').removeClass('alert-error');
                             $('.ajax-message').text('');
+                            $('.ajax-message').hide();
                         }
                     }, 2000);
                 }

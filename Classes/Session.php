@@ -632,13 +632,7 @@ class Session {
                 $usernameInput = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
                 $passwordInput = $this->getPassword();
 
-                $infoArray = password_get_info($passwordSaved);
-
-                if ($infoArray['algo'] != 1 || $infoArray['algoName'] != 'bcrypt' || $infoArray['options']['cost'] != 12) {
-                    return false;
-                }
-
-                if ($usernameSaved == $usernameInput && $usernameSaved != null) {
+                if ($usernameSaved == $usernameInput && $usernameSaved != null && $usernameSaved != '') {
                     if (password_verify($passwordInput, $passwordSaved)) {
                         if (password_needs_rehash($passwordSaved, PASSWORD_DEFAULT, ["cost" => 12])) {
                             $newPassword = $this->hashPassword($passwordSaved);

@@ -38,11 +38,11 @@ if (!defined('PASSTOOL')) {
     <img src="<?php echo 'https://' . $_SERVER['HTTP_HOST'] . '/Icons/logo-weese.png' ?>" width="300px">
 </div>
 
-<div id="login-form" class="form">
-    <input type="email" class="honeypot-field" id="honeypot" value="">
-    <input type="email" id="username-input" placeholder="Benutzername">
-    <input type="password" id="password-input" placeholder="Passwort">
-    <a id="login-button" class="button">Login</a>
+<div id="login-form" class="container-fluid span4 centered">
+    <input type="email" class="honeypot-field row-fluid" id="honeypot" value="">
+    <input type="email" id="username-input" class="row-fluid" placeholder="Benutzername">
+    <input type="password" id="password-input" class="row-fluid" placeholder="Passwort">
+    <a id="login-button" class="btn btn-primary">Login</a>
     <a class="forgot-password-link" href="/newpassword">Passwort vergessen ?</a>
 </div>
 

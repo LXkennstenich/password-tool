@@ -38,7 +38,7 @@ if (!defined('PASSTOOL')) {
 <div class="loading-div">
     <img src="/Icons/ajax-loader.gif" />
 </div>
-<div class="ajax-message">
+<div class="ajax-message alert ">
 
 </div>
 <script>

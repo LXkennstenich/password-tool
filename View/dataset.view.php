@@ -34,8 +34,7 @@ if (!defined('PASSTOOL')) {
 }
 
 $debugger = $factory->getDebugger();
-$datasets = array();
-
+$datasets = null;
 
 if ($searchTerm != '') {
     $datasets = $factory->searchDatasets($userID, strtolower($searchTerm));
@@ -49,7 +48,7 @@ include_once ELEMENTS_DIR . 'ajaxLoader.php';
 <div class="container">
 
     <?php
-    if (sizeof($datasets) > 0) {
+    if (isset($datasets)) {
 
         foreach ($datasets as $dataset) {
             ?>
@@ -106,6 +105,8 @@ include_once ELEMENTS_DIR . 'ajaxLoader.php';
 
             <?php
         }
+
+        unset($datasets);
     } else if ($searchTerm != '' && sizeof($datasets) <= 0) {
         ?>
 

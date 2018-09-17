@@ -21,6 +21,10 @@ class Dataset extends Item {
         $this->setEncryption($encryption);
     }
 
+    public function __destruct() {
+        
+    }
+
     /**
      * 
      * @param Encryption $encryption

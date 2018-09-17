@@ -57,7 +57,7 @@ try {
         }
     }
 } catch (Exception $ex) {
-    echo $ex->getMessage();
+    $debugger->log('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
 }
 
 

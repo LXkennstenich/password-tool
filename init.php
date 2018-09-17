@@ -56,7 +56,7 @@ spl_autoload_register(function($class) {
 $factory = Factory::getInstance();
 $sessionUID = $factory->getSessionUID();
 $sessionUsername = $factory->getSessionUsername();
-$sessionIP = $factory->getSessionIpaddress();
+$sessionIP = $factory->getSessionIpaddress() !== null ? $factory->getSessionIpaddress() : $_SERVER['REMOTE_ADDR'];
 $sessionToken = $factory->getSessionToken();
 $sessionTimestamp = $factory->getSessionTimestamp();
 $sessionAccessLevel = $factory->getSessionAccessLevel();
@@ -64,7 +64,7 @@ $sessionExpires = $factory->getSessionExpires();
 $sessionExpired = time() >= $sessionExpires && $sessionExpires != null ? true : false;
 $searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
 
-$userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $factory->getSessionUserAgent();
+$userAgent = $factory->getSessionUserAgent() !== null ? $factory->getSessionUserAgent() : $_SERVER['HTTP_USER_AGENT'];
 $isSearch = $searchTerm != $standardProject ? true : false;
 $host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
 
@@ -84,6 +84,12 @@ $options = $factory->getOptions();
 $options->setUserID($sessionUID);
 $options->load();
 $debugger = $factory->getDebugger();
+
+if ($session->isAuthenticated() !== false) {
+    if ($userAgent != $_SERVER['HTTP_USER_AGENT'] || $sessionIP != $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '' || $_SERVER['HTTP_USER_AGENT'] == '') {
+        $factory->redirect('logout');
+    }
+}
 
 
 

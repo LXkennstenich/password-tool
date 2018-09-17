@@ -8,84 +8,84 @@
  */
 class Factory {
 
-    private static $instance;
+    protected static $instance = null;
 
     /**
      *
      * @var \Sonata\GoogleAuthenticator\GoogleAuthenticator
      */
-    private static $googleAuthenticator;
+    protected static $googleAuthenticator;
 
     /**
      *
      * @var DatabaseSettings 
      */
-    private static $databaseSettings;
+    protected static $databaseSettings;
 
     /**
      *
      * @var Database 
      */
-    private static $database;
+    protected static $database;
 
     /**
      *
      * @var Encryption 
      */
-    private static $encryption;
+    protected static $encryption;
 
     /**
      *
      * @var string 
      */
-    private static $sessionToken;
+    protected static $sessionToken;
 
     /**
      *
      * @var string 
      */
-    private static $sessionIpAddress;
+    protected static $sessionIpAddress;
 
     /**
      *
      * @var string 
      */
-    private static $sessionTimestamp;
+    protected static $sessionTimestamp;
 
     /**
      *
      * @var string 
      */
-    private static $sessionUID;
-    private static $sessionUserAgent;
-    private static $sessionAccessLevel;
-    private static $sessionUsername;
-    private static $sessionExpires;
+    protected static $sessionUID;
+    protected static $sessionUserAgent;
+    protected static $sessionAccessLevel;
+    protected static $sessionUsername;
+    protected static $sessionExpires;
 
     /**
      *
      * @var \System 
      */
-    private static $system;
+    protected static $system;
 
     /**
      *
      * @var \Options
      */
-    private static $options;
+    protected static $options;
 
     /**
      *
      * @var \Debug
      */
-    private static $debug;
+    protected static $debug;
 
     public static function getInstance() {
-        if (static::$instance == null || !isset(static::$instance)) {
-            static::$instance = new Factory;
+        if (self::$instance == null || !isset(self::$instance)) {
+            self::$instance = new self;
         }
 
-        return static::$instance;
+        return self::$instance;
     }
 
     /**
@@ -425,12 +425,9 @@ class Factory {
                 if ($statement->execute()) {
                     while ($object = $statement->fetchObject()) {
                         $dataset = $this->createDataset();
-
                         $dataset->setID($object->id);
                         $dataset->setUserID($object->user_id);
                         $dataset->load();
-
-                        $this->getDebugger()->log('dataset: ' . serialize($dataset));
                         $datasets[] = $dataset;
                     }
                 }

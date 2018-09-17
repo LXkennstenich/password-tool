@@ -41,6 +41,7 @@ if (!defined('PASSTOOL')) {
 <?php if ($session->isAuthenticated() !== false) { ?>
     <script src = "/Js/user.min.js"></script>
 <?php } ?>
+<script src="/Libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
 

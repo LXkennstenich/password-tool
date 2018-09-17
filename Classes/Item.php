@@ -6,7 +6,7 @@
  * @author Alexander Weese
  * @copyright (c) 2018, Alexander Weese
  */
-class Item {
+class Item implements ItemInterface {
 
     /**
      * Tabellen-Name -> wird in der Child-Klasse an den Parent-Konstruktor übergeben

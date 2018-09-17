@@ -30,33 +30,20 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
-if (!defined('PASSTOOL')) {
-    die();
+
+interface ItemInterface {
+
+    public function __construct($tableName);
+
+    public function exists();
+
+    public function insert();
+
+    public function update();
+
+    public function delete();
+
+    public function load();
+
+    public function getColumnNames();
 }
-
-$session->deleteSessionData($_SESSION['UID']);
-
-unset($system);
-unset($account);
-unset($encryption);
-unset($options);
-unset($sessionUID);
-unset($sessionUsername);
-unset($sessionIP);
-unset($sessionToken);
-unset($sessionTimestamp);
-unset($sessionAccessLevel);
-unset($searchTerm);
-unset($isSearch);
-unset($host);
-unset($userAgent);
-
-if (!$session->isAuthenticated()) {
-    unset($session);
-    $factory->redirect('login');
-}
-
-
-
-
-
