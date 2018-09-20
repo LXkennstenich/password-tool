@@ -40,6 +40,10 @@ if (!defined('PASSTOOL')) {
     </form>
     <ul class="nav-1">
 
+        <li class="nav1-item">
+            <a class="nav1-link" href="/clearcache" title="Cache löschen"><i class="fas fa-sync-alt"></i></a>
+        </li>
+
         <?php if ($page == 'account') { ?>
 
             <li class="nav1-item">

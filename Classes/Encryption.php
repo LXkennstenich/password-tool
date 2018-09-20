@@ -80,6 +80,11 @@ class Encryption {
         return $this->database;
     }
 
+    /**
+     * 
+     * @param int $userID
+     * @return string
+     */
     private function getEncryptionKey($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
@@ -106,13 +111,18 @@ class Encryption {
         }
     }
 
+    /**
+     * 
+     * @param int $userID
+     * @return string
+     */
     public function getCipherMode($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $user = $userID;
+            $user = filter_var($userID, FILTER_VALIDATE_INT);
             $cipherMode = null;
             $statement = $dbConnection->prepare("SELECT cypher_mode FROM account WHERE id = :userID");
-            $statement->bindParam(':userID', $user, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $user, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($row = $statement->fetchObject()) {
@@ -158,6 +168,12 @@ class Encryption {
         }
     }
 
+    /**
+     * 
+     * @param string $encryptedData
+     * @param int $userID
+     * @return string
+     */
     public function decrypt($encryptedData, $userID) {
         try {
             $encryptionKey = $this->getEncryptionKey($userID);

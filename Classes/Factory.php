@@ -57,9 +57,29 @@ class Factory {
      * @var string 
      */
     protected static $sessionUID;
+
+    /**
+     *
+     * @var type 
+     */
     protected static $sessionUserAgent;
+
+    /**
+     *
+     * @var type 
+     */
     protected static $sessionAccessLevel;
+
+    /**
+     *
+     * @var type 
+     */
     protected static $sessionUsername;
+
+    /**
+     *
+     * @var type 
+     */
     protected static $sessionExpires;
 
     /**
@@ -159,6 +179,10 @@ class Factory {
         return static::$sessionTimestamp;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getSessionUsername() {
         if (static::$sessionUsername == null || !isset(static::$sessionUsername)) {
             static::$sessionUsername = isset($_SESSION['U']) ? $_SESSION['U'] : null;
@@ -167,6 +191,10 @@ class Factory {
         return static::$sessionUsername;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getSessionUserAgent() {
         if (static::$sessionUserAgent == null || !isset(static::$sessionUserAgent)) {
             static::$sessionUserAgent = isset($_SESSION['UA']) ? $_SESSION['UA'] : null;
@@ -175,6 +203,10 @@ class Factory {
         return static::$sessionUserAgent;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getSessionAccessLevel() {
         if (static::$sessionAccessLevel == null || !isset(static::$sessionAccessLevel)) {
             static::$sessionAccessLevel = isset($_SESSION['AL']) ? $_SESSION['AL'] : null;
@@ -183,6 +215,10 @@ class Factory {
         return static::$sessionAccessLevel;
     }
 
+    /**
+     * 
+     * @return type
+     */
     public function getSessionExpires() {
         if (static::$sessionExpires == null || !isset(static::$sessionExpires)) {
             static::$sessionExpires = isset($_SESSION['EXPIRES']) ? $_SESSION['EXPIRES'] : null;
@@ -256,6 +292,11 @@ class Factory {
         return $dataset;
     }
 
+    /**
+     * 
+     * @param int $user_id
+     * @return array
+     */
     public function getProjects($user_id) {
         try {
             $userID = filter_var($user_id, FILTER_VALIDATE_INT);
@@ -322,7 +363,7 @@ class Factory {
             return $userID;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
+                echo $this->getDebugger()->printError($ex->getMessage());
             }
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
@@ -382,7 +423,7 @@ class Factory {
             return $amount;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
+                echo $this->getDebugger()->printError($ex->getMessage());
             }
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
@@ -436,7 +477,7 @@ class Factory {
             return $datasets;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
+                echo $this->getDebugger()->printError($ex->getMessage());
             }
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
@@ -472,6 +513,7 @@ class Factory {
                             $dataset->getEncryption()->setUserID($object->user_id);
                             $dataset->load();
                             $datasets[] = $dataset;
+                            unset($dataset);
                         }
                     }
 
@@ -496,6 +538,7 @@ class Factory {
                         $dataset->getEncryption()->setUserID($object->user_id);
                         $dataset->load();
                         $datasets[] = $dataset;
+                        unset($dataset);
                     }
                 }
 
@@ -505,7 +548,7 @@ class Factory {
             return $datasets;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
+                echo $this->getDebugger()->printError($ex->getMessage());
             }
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);

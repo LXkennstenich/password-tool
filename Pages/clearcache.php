@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PassTool
  * Tool zum sicheren verwalten von Passwörtern
@@ -33,33 +34,11 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-$sessionAuthenticated = $session->isAuthenticated() && $session->needAuthenticator() === false ? true : false;
+apcu_clear_cache();
 
-if ($sessionAuthenticated === true) {
-    include_once ELEMENTS_DIR . 'navbar.php';
+
+if (!apcu_exists('updateAvailable')) {
+    $factory->redirect('account');
+} else {
+    echo 'Cache konnte nicht gelöscht werden';
 }
-?>
-
-<div id = "main" class="container-fluid">
-    <?php
-    if ($page != 'login') {
-        include_once ELEMENTS_DIR . 'ajaxLoader.php';
-    }
-
-    include_once System::getPage($page);
-    ?>
-</div>
-
-
-
-<?php
-if ($sessionAuthenticated === true) {
-
-    include_once System::getView('newDataset');
-
-    if ($sessionAccessLevel == SESSION_ADMIN) {
-        include_once System::getView('newUser');
-    }
-}
-
-include ELEMENTS_DIR . 'footer.php';

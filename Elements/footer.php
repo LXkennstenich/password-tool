@@ -38,10 +38,9 @@ if (!defined('PASSTOOL')) {
         <a href="/account" class="button">Zurück</a>
     <?php } ?>
 </div>
-<?php if ($session->isAuthenticated() !== false) { ?>
+<?php if ($session->isAuthenticated() === true) { ?>
     <script src = "/Js/user.min.js"></script>
 <?php } ?>
-<script src="/Libs/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
 

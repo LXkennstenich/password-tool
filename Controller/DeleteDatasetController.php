@@ -44,7 +44,10 @@ $dataset->setUserID($userID);
 $dataset->load();
 
 if ($dataset->delete()) {
+
     echo "1";
 } else {
     echo "0";
 }
+
+apcu_clear_cache();
