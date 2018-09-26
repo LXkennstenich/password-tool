@@ -111,14 +111,26 @@ class Item implements ItemInterface {
             $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
             $data = $this->getData();
 
+            $maxIndex = sizeof($data) - 1;
+
+            $i = 0;
+
             foreach ($data as $key => $value) {
-                $columnString .= $key . ', ';
-                $valueString .= $value . ', ';
+
+                if ($i < $maxIndex) {
+                    $columnString .= $key . ', ';
+                    $valueString .= "'" . $value . "'" . ', ';
+                } else {
+                    $columnString .= $key;
+                    $valueString .= "'" . $value . "'";
+                }
+
+
+
+                $i++;
             }
 
-            $statement = $dbConnection->prepare("INSERT INTO $tableName (:columnString) VALUES (:valueString)");
-            $statement->bindParam(':columnString', $columnString, PDO::PARAM_STR);
-            $statement->bindParam(':valueString', $valueString, PDO::PARAM_STR);
+            $statement = $dbConnection->prepare("INSERT INTO $tableName ( $columnString ) VALUES ( $valueString )");
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {

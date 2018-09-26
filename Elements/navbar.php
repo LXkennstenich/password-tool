@@ -41,6 +41,10 @@ if (!defined('PASSTOOL')) {
     <ul class="nav-1">
 
         <li class="nav1-item">
+            <a class="nav1-link" href="/export" title="Exportieren"><i class="fas fa-sync-alt"></i></a>
+        </li>
+
+        <li class="nav1-item">
             <a class="nav1-link" href="/clearcache" title="Cache löschen"><i class="fas fa-sync-alt"></i></a>
         </li>
 

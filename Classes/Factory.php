@@ -38,49 +38,49 @@ class Factory {
      *
      * @var string 
      */
-    protected static $sessionToken;
+    protected static $sessionToken = '';
 
     /**
      *
      * @var string 
      */
-    protected static $sessionIpAddress;
+    protected static $sessionIpAddress = '';
 
     /**
      *
      * @var string 
      */
-    protected static $sessionTimestamp;
+    protected static $sessionTimestamp = '';
+
+    /**
+     *
+     * @var int 
+     */
+    protected static $sessionUID = 0;
 
     /**
      *
      * @var string 
      */
-    protected static $sessionUID;
+    protected static $sessionUserAgent = '';
 
     /**
      *
-     * @var type 
+     * @var int 
      */
-    protected static $sessionUserAgent;
+    protected static $sessionAccessLevel = -1;
 
     /**
      *
-     * @var type 
+     * @var string 
      */
-    protected static $sessionAccessLevel;
+    protected static $sessionUsername = '';
 
     /**
      *
-     * @var type 
+     * @var string 
      */
-    protected static $sessionUsername;
-
-    /**
-     *
-     * @var type 
-     */
-    protected static $sessionExpires;
+    protected static $sessionExpires = '';
 
     /**
      *
@@ -133,8 +133,8 @@ class Factory {
      * @return string
      */
     public function getSessionUID() {
-        if (static::$sessionUID == null || !isset(static::$sessionUID)) {
-            static::$sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : null;
+        if (static::$sessionUID == 0 || !isset(static::$sessionUID)) {
+            static::$sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : 0;
         }
 
         return static::$sessionUID;
@@ -145,7 +145,7 @@ class Factory {
      * @return string
      */
     public function getSessionToken() {
-        if (static::$sessionToken == null || !isset(static::$sessionToken)) {
+        if (static::$sessionToken == '' || !isset(static::$sessionToken)) {
             if (isset($_SESSION['TK']) && isset($_SESSION['UID'])) {
                 $sessionToken = $_SESSION['TK'];
                 static::$sessionToken = $sessionToken;
@@ -160,8 +160,8 @@ class Factory {
      * @return string
      */
     public function getSessionIpaddress() {
-        if (static::$sessionIpAddress == null || !isset(static::$sessionIpAddress)) {
-            static::$sessionIpAddress = isset($_SESSION['IP']) ? $_SESSION['IP'] : null;
+        if (static::$sessionIpAddress == '' || !isset(static::$sessionIpAddress)) {
+            static::$sessionIpAddress = isset($_SESSION['IP']) ? $_SESSION['IP'] : '';
         }
 
         return static::$sessionIpAddress;
@@ -172,8 +172,8 @@ class Factory {
      * @return string
      */
     public function getSessionTimestamp() {
-        if (static::$sessionTimestamp == null || !isset(static::$sessionTimestamp)) {
-            static::$sessionTimestamp = isset($_SESSION['TS']) ? $_SESSION['TS'] : null;
+        if (static::$sessionTimestamp == '' || !isset(static::$sessionTimestamp)) {
+            static::$sessionTimestamp = isset($_SESSION['TS']) ? $_SESSION['TS'] : '';
         }
 
         return static::$sessionTimestamp;
@@ -184,8 +184,8 @@ class Factory {
      * @return type
      */
     public function getSessionUsername() {
-        if (static::$sessionUsername == null || !isset(static::$sessionUsername)) {
-            static::$sessionUsername = isset($_SESSION['U']) ? $_SESSION['U'] : null;
+        if (static::$sessionUsername == '' || !isset(static::$sessionUsername)) {
+            static::$sessionUsername = isset($_SESSION['U']) ? $_SESSION['U'] : '';
         }
 
         return static::$sessionUsername;
@@ -196,8 +196,8 @@ class Factory {
      * @return type
      */
     public function getSessionUserAgent() {
-        if (static::$sessionUserAgent == null || !isset(static::$sessionUserAgent)) {
-            static::$sessionUserAgent = isset($_SESSION['UA']) ? $_SESSION['UA'] : null;
+        if (static::$sessionUserAgent == '' || !isset(static::$sessionUserAgent)) {
+            static::$sessionUserAgent = isset($_SESSION['UA']) ? $_SESSION['UA'] : '';
         }
 
         return static::$sessionUserAgent;
@@ -208,8 +208,8 @@ class Factory {
      * @return type
      */
     public function getSessionAccessLevel() {
-        if (static::$sessionAccessLevel == null || !isset(static::$sessionAccessLevel)) {
-            static::$sessionAccessLevel = isset($_SESSION['AL']) ? $_SESSION['AL'] : null;
+        if (static::$sessionAccessLevel == -1 || !isset(static::$sessionAccessLevel)) {
+            static::$sessionAccessLevel = isset($_SESSION['AL']) ? $_SESSION['AL'] : 0;
         }
 
         return static::$sessionAccessLevel;
@@ -220,8 +220,8 @@ class Factory {
      * @return type
      */
     public function getSessionExpires() {
-        if (static::$sessionExpires == null || !isset(static::$sessionExpires)) {
-            static::$sessionExpires = isset($_SESSION['EXPIRES']) ? $_SESSION['EXPIRES'] : null;
+        if (static::$sessionExpires == '' || !isset(static::$sessionExpires)) {
+            static::$sessionExpires = isset($_SESSION['EXPIRES']) ? $_SESSION['EXPIRES'] : '';
         }
 
         return static::$sessionExpires;
@@ -257,7 +257,7 @@ class Factory {
      * @return Encryption
      */
     public function getEncryption() {
-        $sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : null;
+        $sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : 0;
 
         if (static::$encryption == null || !isset(static::$encryption)) {
             static::$encryption = new Encryption($this->getDatabase(), $sessionUID, $this->getDebugger());

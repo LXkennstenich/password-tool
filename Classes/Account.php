@@ -3,10 +3,14 @@
 /**
  * PassTool
  * Tool zum sicheren verwalten von Passwörtern
- * @author Alexander Weese
+ * 
+ * @author Alexander Weese <contact@alexweese.de>
+ * 
  * @copyright (c) 2018, Alexander Weese
  */
 class Account {
+
+
 
     /**
      *

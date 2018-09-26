@@ -36,7 +36,7 @@ class Encryption {
      * 
      * @return \Debug
      */
-    private function getDebugger() {
+    private function getDebugger(): \Debug {
         return $this->debugger;
     }
 
@@ -44,7 +44,7 @@ class Encryption {
      * 
      * @param \Debug $debugger
      */
-    private function setDebugger($debugger) {
+    private function setDebugger(\Debug $debugger) {
         $this->debugger = $debugger;
     }
 
@@ -52,7 +52,7 @@ class Encryption {
      * 
      * @param int $userID
      */
-    public function setUserID($userID) {
+    public function setUserID(int $userID) {
         $this->user_id = $userID;
     }
 
@@ -60,7 +60,7 @@ class Encryption {
      * 
      * @return int
      */
-    public function getUserID() {
+    public function getUserID(): int {
         return $this->user_id;
     }
 
@@ -68,7 +68,7 @@ class Encryption {
      * 
      * @param Database $database
      */
-    private function setDatabase($database) {
+    private function setDatabase(\Database $database) {
         $this->database = $database;
     }
 
@@ -76,7 +76,7 @@ class Encryption {
      * 
      * @return Database
      */
-    private function getDatabase() {
+    private function getDatabase(): \Database {
         return $this->database;
     }
 
@@ -85,13 +85,12 @@ class Encryption {
      * @param int $userID
      * @return string
      */
-    private function getEncryptionKey($userID) {
+    private function getEncryptionKey(int $userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $user = $userID;
             $encryptionKey = null;
             $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :userID");
-            $statement->bindParam(':userID', $user, PDO::PARAM_STR);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($row = $statement->fetchObject()) {
@@ -116,13 +115,12 @@ class Encryption {
      * @param int $userID
      * @return string
      */
-    public function getCipherMode($userID) {
+    public function getCipherMode(int $userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-            $user = filter_var($userID, FILTER_VALIDATE_INT);
             $cipherMode = null;
             $statement = $dbConnection->prepare("SELECT cypher_mode FROM account WHERE id = :userID");
-            $statement->bindParam(':userID', $user, PDO::PARAM_INT);
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($row = $statement->fetchObject()) {
@@ -142,7 +140,7 @@ class Encryption {
         }
     }
 
-    public function encrypt($stringToEncrypt, $userID) {
+    public function encrypt(string $stringToEncrypt, int $userID) {
         try {
             $encryptionKey = $this->getEncryptionKey($userID);
             $password = substr(hash('sha256', $encryptionKey, true), 0, 32);

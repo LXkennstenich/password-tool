@@ -32,6 +32,10 @@
 if (!defined('PASSTOOL')) {
     die();
 }
+
+if (function_exists('sodium_add')) {
+    echo 'sodium aktiv';
+}
 ?>
 
 <div id="content-wrapper">
