@@ -50,6 +50,8 @@ if ($account->validate($username, $token)) {
         <p>Account erfolgreich aktiviert!</p>
     </div>
 
+    <a href="/login" class="button">Zum Login</a>
+
 <?php } ?>
 
 

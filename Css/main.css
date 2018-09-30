@@ -717,3 +717,19 @@ i:first-child {
     display: inline-block;
     margin-bottom:20px;
 }
+
+.nav-list {
+    text-align:center;
+}
+
+.project-list-link {
+    margin-bottom: 15px!important;
+}
+
+.nav-header {
+    font-size: 18px;
+    line-height: 24px;
+    margin-bottom: 25px;
+    display: block;
+}
+

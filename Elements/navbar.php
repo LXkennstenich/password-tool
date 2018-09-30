@@ -34,18 +34,17 @@ if (!defined('PASSTOOL')) {
 }
 ?>
 <div id="navbar">
-    <a id="logo" href="/"><img src="/Icons/logo-backend.png"></a>
     <form action="" method="post">
         <input type="search" id="search-input" name="search" placeholder="Suche">
     </form>
     <ul class="nav-1">
 
         <li class="nav1-item">
-            <a class="nav1-link" href="/export" title="Exportieren"><i class="fas fa-sync-alt"></i></a>
+            <a class="nav1-link" href="/export" title="Exportieren"><i class="fas fa-file-export"></i></a>
         </li>
 
         <li class="nav1-item">
-            <a class="nav1-link" href="/clearcache" title="Cache löschen"><i class="fas fa-sync-alt"></i></a>
+            <a class="nav1-link" href="/clearcache" title="Cache löschen"><i class="fas fa-broom"></i></a>
         </li>
 
         <?php if ($page == 'account') { ?>

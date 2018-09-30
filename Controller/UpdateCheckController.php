@@ -33,7 +33,7 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-apcu_clear_cache();
+
 set_time_limit(0);
 $debugger = $factory->getDebugger();
 
@@ -61,6 +61,8 @@ try {
     } else {
         echo 'no update available';
     }
+
+    apcu_clear_cache();
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());
 }

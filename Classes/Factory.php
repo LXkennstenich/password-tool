@@ -432,24 +432,20 @@ class Factory {
 
     public function getDatasets($user_id) {
         try {
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $datasets = array();
 
             if (function_exists('apcu_store')) {
                 if (!apcu_exists('datasets')) {
                     $dbConnection = $this->getDatabase()->openConnection();
                     $statement = $dbConnection->prepare("SELECT id,user_id FROM dataset WHERE user_id = :userID");
-                    $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+                    $statement->bindParam(':userID', $user_id, PDO::PARAM_INT);
 
                     if ($statement->execute()) {
                         while ($object = $statement->fetchObject()) {
                             $dataset = $this->createDataset();
-
                             $dataset->setID($object->id);
                             $dataset->setUserID($object->user_id);
                             $dataset->load();
-
-                            $this->getDebugger()->log('dataset: ' . serialize($dataset));
                             $datasets[] = $dataset;
                         }
                     }
@@ -461,7 +457,7 @@ class Factory {
             } else {
                 $dbConnection = $this->getDatabase()->openConnection();
                 $statement = $dbConnection->prepare("SELECT id,user_id FROM dataset WHERE user_id = :userID");
-                $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+                $statement->bindParam(':userID', $user_id, PDO::PARAM_INT);
 
                 if ($statement->execute()) {
                     while ($object = $statement->fetchObject()) {
@@ -492,7 +488,6 @@ class Factory {
      */
     public function searchDatasets($user_id, $searchString) {
         try {
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $datasets = array();
             $searchTerm = "%" . filter_var($searchString, FILTER_SANITIZE_STRING) . "%";
 
@@ -502,7 +497,7 @@ class Factory {
                     $dbConnection = $this->getDatabase()->openConnection();
 
                     $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM dataset WHERE user_id = :userID AND title LIKE :searchTerm OR project LIKE :searchTerm");
-                    $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
+                    $statement->bindParam(':userID', $user_id, PDO::PARAM_STR);
                     $statement->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
 
                     if ($statement->execute()) {
@@ -527,7 +522,7 @@ class Factory {
                 $dbConnection = $this->getDatabase()->openConnection();
 
                 $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM dataset WHERE user_id = :userID AND title LIKE :searchTerm OR project LIKE :searchTerm");
-                $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
+                $statement->bindParam(':userID', $user_id, PDO::PARAM_STR);
                 $statement->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
 
                 if ($statement->execute()) {

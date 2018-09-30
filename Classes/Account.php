@@ -10,8 +10,6 @@
  */
 class Account {
 
-
-
     /**
      *
      * @var type 
@@ -349,12 +347,12 @@ class Account {
 
             $success = false;
             $creation = false;
-            $ID = filter_var($this->getID(), FILTER_VALIDATE_INT);
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $ID = $this->getID();
+            $username = $this->getUsername();
             $password = $this->getPassword();
-            $accessLevel = filter_var($this->getAccessLevel(), FILTER_VALIDATE_INT);
+            $accessLevel = $this->getAccessLevel();
             $secretKey = $this->getSecretKey();
-            $encryptionKey = filter_var($this->getEncryptionKey(), FILTER_SANITIZE_STRING);
+            $encryptionKey = $this->getEncryptionKey();
             $sql = '';
             $statement = new PDOStatement;
 
@@ -555,13 +553,11 @@ class Account {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $userID = filter_var($id, FILTER_VALIDATE_INT);
-            $isSetup = filter_var($value, FILTER_VALIDATE_INT);
             $success = false;
 
             $statement = $dbConnection->prepare("UPDATE account SET authenticator_is_setup = :isSetup WHERE id = :id");
-            $statement->bindParam(":id", $userID, PDO::PARAM_INT);
-            $statement->bindParam(":isSetup", $isSetup, PDO::PARAM_INT);
+            $statement->bindParam(":id", $id, PDO::PARAM_INT);
+            $statement->bindParam(":isSetup", $value, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -620,11 +616,10 @@ class Account {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $username = filter_var($name, FILTER_VALIDATE_EMAIL);
             $token = null;
 
             $statement = $dbConnection->prepare("SELECT validation_token FROM account WHERE username = :username");
-            $statement->bindParam(":username", $username, PDO::PARAM_STR);
+            $statement->bindParam(":username", $name, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -653,11 +648,10 @@ class Account {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $userID = filter_var($id, FILTER_VALIDATE_INT);
             $secretKey = null;
 
             $statement = $dbConnection->prepare("SELECT secret_key FROM account WHERE id = :userID");
-            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
+            $statement->bindParam(":userID", $id, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -686,11 +680,10 @@ class Account {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $username = filter_var($name, FILTER_VALIDATE_EMAIL);
             $success = false;
 
             $statement = $dbConnection->prepare("UPDATE account SET active = 1 WHERE username = :username");
-            $statement->bindParam(":username", $username, PDO::PARAM_STR);
+            $statement->bindParam(":username", $name, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -770,7 +763,7 @@ class Account {
 
             $exists = false;
 
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $username = $this->getUsername();
 
             $statement = $dbConnection->prepare("SELECT username FROM account WHERE username = :username");
             $statement->bindParam(":username", $username, PDO::PARAM_STR);
@@ -838,10 +831,8 @@ class Account {
 
             $username = null;
 
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
-
             $statement = $dbConnection->prepare("SELECT username FROM account WHERE id = :ID");
-            $statement->bindParam(":ID", $ID, PDO::PARAM_INT);
+            $statement->bindParam(":ID", $id, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -873,12 +864,9 @@ class Account {
 
             $password = null;
 
-            $name = filter_var($savedUsername, FILTER_VALIDATE_EMAIL);
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
-
             $statement = $dbConnection->prepare("SELECT password FROM account WHERE id = :ID AND username = :username");
-            $statement->bindParam(":ID", $ID, PDO::PARAM_INT);
-            $statement->bindParam(":username", $name, PDO::PARAM_STR);
+            $statement->bindParam(":ID", $id, PDO::PARAM_INT);
+            $statement->bindParam(":username", $savedUsername, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -911,16 +899,10 @@ class Account {
 
             $success = false;
 
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-            $value = filter_var($val, FILTER_VALIDATE_INT);
-
-
-            $password = $this->hashPassword($newPassword);
             $statement = $dbConnection->prepare("UPDATE account SET first_login_password_changed = :changed WHERE id = :ID AND username = :username");
-            $statement->bindParam(":ID", $ID, PDO::PARAM_INT);
-            $statement->bindParam(":username", $name, PDO::PARAM_STR);
-            $statement->bindParam(":changed", $value, PDO::PARAM_INT);
+            $statement->bindParam(":ID", $id, PDO::PARAM_INT);
+            $statement->bindParam(":username", $username, PDO::PARAM_STR);
+            $statement->bindParam(":changed", $val, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -954,22 +936,21 @@ class Account {
 
             $success = false;
 
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
-            $savedUsername = $this->queryUsername($ID);
-            $savedPassword = $this->queryPassword($ID, $savedUsername);
+            $savedUsername = $this->queryUsername($id);
+            $savedPassword = $this->queryPassword($id, $savedUsername);
 
 
             if ($username == $savedUsername) {
                 if (password_verify($oldPassword, $savedPassword)) {
                     $password = $this->hashPassword($newPassword);
                     $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE id = :ID AND username = :username");
-                    $statement->bindParam(":ID", $ID, PDO::PARAM_INT);
+                    $statement->bindParam(":ID", $id, PDO::PARAM_INT);
                     $statement->bindParam(":username", $username, PDO::PARAM_STR);
                     $statement->bindParam(":password", $password, PDO::PARAM_STR);
 
                     if ($statement->execute()) {
                         if ($statement->rowCount() > 0) {
-                            if ($this->updateFirstPasswordChange($ID, $username, 1)) {
+                            if ($this->updateFirstPasswordChange($id, $username, 1)) {
                                 $success = true;
                             }
                         }

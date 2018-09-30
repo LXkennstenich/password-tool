@@ -36,12 +36,6 @@ if (!defined('PASSTOOL')) {
 }
 
 
-
-/* nur get request erlauben */
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'GET') {
-    die();
-}
-
 /* kein token ? ziemlich blöd ! */
 if (!isset($_GET['CT'])) {
     die("No Authentication Token provided");

@@ -36,7 +36,7 @@ class Item implements ItemInterface {
      * Initialisiert ein neues Item-Objekt
      * @param string $tableName
      */
-    public function __construct($tableName) {
+    public function __construct(string $tableName) {
         $this->setData(array());
         $this->setTableName($tableName);
     }
@@ -246,7 +246,7 @@ class Item implements ItemInterface {
     public function load() {
         $dbConnection = $this->getDatabase()->openConnection();
 
-        $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
+        $ID = $this->get('id');
         $userID = filter_var($this->get('user_id'), FILTER_VALIDATE_INT);
 
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
