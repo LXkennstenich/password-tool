@@ -62,6 +62,7 @@ $dataset->encrypt();
 
 if ($dataset->insert()) {
     echo "1";
+    apcu_clear_cache();
 } else {
     echo "0";
 }

@@ -33,6 +33,8 @@
 if (!defined('PASSTOOL')) {
     die();
 }
+
+$projects = $factory->getProjects($userID);
 ?>
 
 <div id="newDataset">
@@ -86,7 +88,14 @@ if (!defined('PASSTOOL')) {
 
     <div class="row">
         <label for="datasetProject">Projekt</label>
-        <input type="text" placeholder="" id="datasetProject" class="form-input">
+        <select id="project-select">
+            <?php foreach ($projects as $project) { ?>
+
+                <option value="<?php echo $project; ?>"><?php echo $project; ?></option>
+
+            <?php } ?>
+        </select>
+        <input type="text" placeholder="Neues Projekt eingeben" id="datasetProject" class="form-input">
     </div>
     <input type="button" id="createDatasetButton"  class="form-button" value="Speichern">
 </div>

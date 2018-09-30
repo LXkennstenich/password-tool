@@ -20,7 +20,7 @@ $(document).ready(function () {
         request.login = document.getElementById('datasetLogin').value;
         request.password = document.getElementById('datasetPassword').value;
         request.url = document.getElementById('datasetURL').value;
-        request.project = document.getElementById('datasetProject').value;
+        request.project = document.getElementById('datasetProject').value != '' ? document.getElementById('datasetProject').value : document.getElementById('project-select').value;
 
         $.ajax({
             'type': 'POST',
