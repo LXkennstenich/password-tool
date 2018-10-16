@@ -119,11 +119,11 @@ class System extends Item {
 
     public function updateBlockedIpAddresses($ipAddresses) {
         try {
-            $dbConnetion = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
             $success = false;
 
             $ipAddressesSerialized = is_array($ipAddresses) ? serialize($ipAddresses) : serialize(array());
-            $statement = $dbConnetion->prepare("UPDATE system SET blocked_ip_addresses = :ipAddresses");
+            $statement = $dbConnection->prepare("UPDATE system SET blocked_ip_addresses = :ipAddresses");
             $statement->bindParam(':ipAddresses', $ipAddressesSerialized);
 
             if ($statement->execute()) {
@@ -146,9 +146,9 @@ class System extends Item {
 
     public function queryBlockedIpAddresses() {
         try {
-            $dbConnetion = $this->getDatabase()->openConnection();
+            $dbConnection = $this->getDatabase()->openConnection();
 
-            $statement = $dbConnetion->prepare("SELECT blocked_ip_addresses FROM system");
+            $statement = $dbConnection->prepare("SELECT blocked_ip_addresses FROM system");
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -524,7 +524,6 @@ class System extends Item {
     public function getVersionArray($path) {
         $version = file_get_contents($path);
         $version = str_replace("\n", "|", $version);
-        $versionArray = array();
 
         $index = strlen($version) - 1;
 

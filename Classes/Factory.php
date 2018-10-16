@@ -313,7 +313,7 @@ class Factory {
 
     /**
      * 
-     * @param int $user_id
+     * @param int $userID
      * @return array
      */
     public function getProjects($userID) {
@@ -403,7 +403,7 @@ class Factory {
 
     /**
      * 
-     * @param string $user_id
+     * @param string $userID
      * @return array
      */
     public function countDatasets($userID) {
@@ -498,7 +498,7 @@ class Factory {
 
     /**
      * 
-     * @param string $user_id
+     * @param string $userID
      * @param string $searchString
      * @return array
      */

@@ -176,9 +176,6 @@ class Encryption {
      */
     public function encrypt(string $stringToEncrypt, int $userID): string {
         try {
-
-            $encryptedData = null;
-
             $nonce = random_bytes(SODIUM_CRYPTO_AEAD_AES256GCM_NPUBBYTES);
             $ad = $nonce;
             $key = $this->queryEncryptionKey($userID);
@@ -199,14 +196,13 @@ class Encryption {
 
     /**
      * 
-     * @param string $encryptedData
+     * @param string $encrypted
      * @param int $userID
      * @return string
      */
-    public function decrypt(string $encryptedData, int $userID): string {
+    public function decrypt(string $encrypted, int $userID): string {
         try {
-            $decryptedData = null;
-            $encryptedData = base64_decode($encryptedData);
+            $encryptedData = base64_decode($encrypted);
 
             $dataArray = explode('||', $encryptedData);
             $nonce = base64_decode($dataArray[1]);

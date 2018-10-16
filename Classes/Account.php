@@ -315,7 +315,7 @@ class Account {
     private function generateSecretKey() {
         try {
             $authenticator = new GoogleAuthenticator();
-            return $authenticator->createSecret(); ;
+            return $authenticator->createSecret();
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -330,8 +330,6 @@ class Account {
      * @return type
      */
     public function generateEncryptionKey($username) {
-        $key = null;
-
         if (sodium_crypto_aead_aes256gcm_is_available()) {
             $key = sodium_crypto_aead_aes256gcm_keygen();
         } else {
@@ -468,8 +466,8 @@ class Account {
 
     /**
      * 
-     * @param type $id
-     * @return type
+     * @param int $userID
+     * @return boolean
      */
     public function needPasswordChange($userID) {
         try {
@@ -541,7 +539,7 @@ class Account {
 
     /**
      * 
-     * @param type $name
+     * @param string $username
      * @return boolean
      */
     public function updateValidationToken($username) {
@@ -749,8 +747,7 @@ class Account {
             $validationTokenSaved = $this->getValidationTokenByUsername($username);
 
             if ($validationToken == $validationTokenSaved) {
-                $success = $this->activateAccount($username);
-                $success = $this->updateValidationToken($username);
+                $success = $this->activateAccount($username) && $this->updateValidationToken($username) ? true : false;
             }
 
             return $success;
