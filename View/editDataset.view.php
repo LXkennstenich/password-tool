@@ -95,5 +95,5 @@ $dataset->decrypt();
     <button id="updateDatasetButton"  class="button">Aktualisieren</button>
 </div>
 
-<script src="/Js/editDatasetView.min.js"></script>
+<script type="text/javascript" src="/Js/editDatasetView.min.js" nonce="<?php echo $nonce; ?>"></script>
 

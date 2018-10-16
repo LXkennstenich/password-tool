@@ -37,6 +37,7 @@ if (!defined('PASSTOOL')) {
     define('PASSTOOL', true);
 }
 
+$host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
 
 if (session_status() == PHP_SESSION_NONE) {
     session_save_path('/tmp');
@@ -48,38 +49,11 @@ ob_start();
 $requestUri = htmlspecialchars(strip_tags(basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH))));
 $page = str_replace('/', '', $requestUri);
 
-
-if ($page != 'logout' && $sessionExpired === true) {
-    $factory->redirect('logout');
-}
-
-$pageArray = array();
-
-if (!apcu_exists('pageArray')) {
-    $pageArray = scandir('Pages');
-    apcu_store('pageArray', serialize($pageArray), 3600);
-} else {
-    $pageArray = unserialize(apcu_fetch('pageArray'));
-}
-
 include_once 'init.php';
-
-$file = $page . '.php';
-$isPage = false;
-
-if (in_array($file, $pageArray)) {
-    $filePath = ROOT_DIR . 'Pages/' . $file;
-    $isPage = true;
-} else {
-    $filePath = ROOT_DIR . $file;
-}
 
 if (file_exists($filePath) && is_dir($filePath) === false) {
     header("HTTP/1.1 200 OK");
     if ($isPage) {
-        include_once ELEMENTS_DIR . 'header.php';
-        include_once ELEMENTS_DIR . 'authCheck.php';
-        include_once ELEMENTS_DIR . 'JsGlobals.php';
         include_once ELEMENTS_DIR . 'mainTemplate.php';
     } else {
         include_once System::getSystemPage($page);
@@ -88,6 +62,10 @@ if (file_exists($filePath) && is_dir($filePath) === false) {
     header("HTTP/1.1 404 NOT FOUND");
     $factory->redirect('login');
 }
+
+
+//$time = microtime(true) - $starttime;
+//$debugger->log('Aufruf der Seite ' . $page . ' benötigte : ' . (string) $time);
 
 $html = ob_get_clean();
 

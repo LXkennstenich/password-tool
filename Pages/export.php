@@ -30,11 +30,18 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
+if (!defined('PASSTOOL')) {
+    die();
+}
+
 ob_flush();
 ob_start();
 
 $pdf = new FPDF();
 
+$pdf->SetAuthor('PasswordTool');
+$pdf->SetTitle('PasswordExport');
+$pdf->SetCreator('PasswordTool');
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->Cell(40, 10, 'Passwort Export');
@@ -47,6 +54,8 @@ $datasets = $factory->getDatasets($sessionUID);
 /* @var $dataset \Dataset */
 foreach ($datasets as $dataset) {
     $dataset->decrypt();
+    $pdf->Ln();
+    $pdf->Cell(40, 10, '-----------------------------------------------------------------------');
     $pdf->Ln();
     $pdf->Ln();
     $pdf->Cell(40, 10, $dataset->getTitle());
@@ -61,9 +70,11 @@ foreach ($datasets as $dataset) {
     unset($dataset);
 }
 
+$pdf->Close();
+
 unset($datasets);
 
-$pdf->Output();
+$pdf->Output('I', 'PasswordExport.pdf', true);
 
 $html = ob_get_clean();
 

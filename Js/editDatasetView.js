@@ -9,9 +9,12 @@ $(document).ready(function () {
     $('#updateDatasetButton').on('click touch', function () {
         var request = {};
         request.action = 'UpdateDataset';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.id = document.getElementById('edit-dataset-id').value;
         request.title = document.getElementById('datasetTitle').value;
@@ -40,9 +43,12 @@ $(document).ready(function () {
     $('#regeneratePasswordButton').bind('click touch', function () {
         var request = {};
         request.action = 'GeneratePassword';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.length = document.getElementById('passwordLengthBox').value;
         request.lowerCharacters = document.getElementById('lowerCharacters').checked !== false ? 1 : 0;

@@ -36,6 +36,12 @@ class Factory {
 
     /**
      *
+     * @var Mail
+     */
+    protected static $mail;
+
+    /**
+     *
      * @var string 
      */
     protected static $sessionToken = '';
@@ -114,7 +120,7 @@ class Factory {
      */
     public function getGoogleAuthenticator() {
         if (static::$googleAuthenticator == null || !isset(static::$googleAuthenticator)) {
-            static::$googleAuthenticator = new Sonata\GoogleAuthenticator\GoogleAuthenticator();
+            static::$googleAuthenticator = new GoogleAuthenticator();
         }
 
         return static::$googleAuthenticator;
@@ -258,12 +264,25 @@ class Factory {
      */
     public function getEncryption() {
         $sessionUID = isset($_SESSION['UID']) ? $_SESSION['UID'] : 0;
+        $sessionUsername = isset($_SESSION['U']) ? $_SESSION['U'] : '';
 
         if (static::$encryption == null || !isset(static::$encryption)) {
-            static::$encryption = new Encryption($this->getDatabase(), $sessionUID, $this->getDebugger());
+            static::$encryption = new Encryption($this->getDatabase(), $sessionUID, $this->getDebugger(), $sessionUsername);
         }
 
         return static::$encryption;
+    }
+
+    /**
+     * 
+     * @return Mail
+     */
+    public function getMail() {
+        if (static::$mail == null || !isset(static::$mail)) {
+            static::$mail = new Mail;
+        }
+
+        return static::$mail;
     }
 
     /**
@@ -297,9 +316,8 @@ class Factory {
      * @param int $user_id
      * @return array
      */
-    public function getProjects($user_id) {
+    public function getProjects($userID) {
         try {
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
             $projectArray = array();
 
             if (function_exists('apcu_store')) {
@@ -348,11 +366,10 @@ class Factory {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
             $userID = null;
 
             $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
-            $statement->bindParam(':username', $name);
+            $statement->bindParam(':username', $username);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -389,12 +406,11 @@ class Factory {
      * @param string $user_id
      * @return array
      */
-    public function countDatasets($user_id) {
+    public function countDatasets($userID) {
 
         try {
             $amount = 0;
 
-            $userID = filter_var($user_id, FILTER_SANITIZE_NUMBER_INT);
             $apcuKey = 'datasetAmount_' . $userID;
 
             if (function_exists('apcu_store')) {
@@ -486,7 +502,7 @@ class Factory {
      * @param string $searchString
      * @return array
      */
-    public function searchDatasets($user_id, $searchString) {
+    public function searchDatasets($userID, $searchString) {
         try {
             $datasets = array();
             $searchTerm = "%" . filter_var($searchString, FILTER_SANITIZE_STRING) . "%";
@@ -497,7 +513,7 @@ class Factory {
                     $dbConnection = $this->getDatabase()->openConnection();
 
                     $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM dataset WHERE user_id = :userID AND title LIKE :searchTerm OR project LIKE :searchTerm");
-                    $statement->bindParam(':userID', $user_id, PDO::PARAM_STR);
+                    $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
                     $statement->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
 
                     if ($statement->execute()) {
@@ -522,7 +538,7 @@ class Factory {
                 $dbConnection = $this->getDatabase()->openConnection();
 
                 $statement = $dbConnection->prepare("SELECT id,user_id,title,date_created,date_edited,login,password,url,project FROM dataset WHERE user_id = :userID AND title LIKE :searchTerm OR project LIKE :searchTerm");
-                $statement->bindParam(':userID', $user_id, PDO::PARAM_STR);
+                $statement->bindParam(':userID', $userID, PDO::PARAM_STR);
                 $statement->bindParam(':searchTerm', $searchTerm, PDO::PARAM_STR);
 
                 if ($statement->execute()) {
@@ -556,7 +572,7 @@ class Factory {
      */
     public function getSession() {
         try {
-            return new Session($this->getDatabase(), $this->getDebugger());
+            return new Session($this->getDatabase(), $this->getDebugger(), $this->getEncryption());
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -572,7 +588,7 @@ class Factory {
      */
     public function getAccount() {
         try {
-            return new Account($this->getDatabase(), $this->getDebugger());
+            return new Account($this->getDatabase(), $this->getDebugger(), $this->getMail());
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());

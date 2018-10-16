@@ -23,7 +23,7 @@ class Options extends Item {
      * ID-Setter
      * @param int $id
      */
-    public function setID($id) {
+    public function setID(int $id) {
         $this->data['id'] = $id;
     }
 
@@ -31,7 +31,7 @@ class Options extends Item {
      * User-ID-Setter
      * @param int $user_id
      */
-    public function setUserID($user_id) {
+    public function setUserID(int $user_id) {
         $this->data['user_id'] = $user_id;
     }
 
@@ -39,39 +39,31 @@ class Options extends Item {
      * Display-Login-Setter
      * @param boolean $display_login
      */
-    public function setDisplayLogin($display_login) {
-        $this->data['display_login'] = $display_login;
+    public function setDisplayLogin(int $display_login) {
+        $this->data['display_login'] = boolval($display_login);
     }
 
     /**
      * E-Mail-Notification-Setter
      * @param boolean $email_notification_login
      */
-    public function setEmailNotificationLogin($email_notification_login) {
-        $this->data['email_notification_login'] = $email_notification_login;
+    public function setEmailNotificationLogin(int $email_notification_login) {
+        $this->data['email_notification_login'] = boolval($email_notification_login);
     }
 
     /**
      * E-Mail-Notification-Password-Change-Setter
      * @param boolean $email_notification_password_change
      */
-    public function setEmailNotificationPasswordChange($email_notification_password_change) {
-        $this->data['email_notification_password_change'] = $email_notification_password_change;
-    }
-
-    /**
-     * 
-     * @param type $email_notification_login_failed
-     */
-    public function setEmailNotificationLoginFailed($email_notification_login_failed) {
-        $this->data['email_notification_login_failed'] = $email_notification_login_failed;
+    public function setEmailNotificationPasswordChange(int $email_notification_password_change) {
+        $this->data['email_notification_password_change'] = boolval($email_notification_password_change);
     }
 
     /**
      * 
      * @return int
      */
-    public function getID() {
+    public function getID(): int {
         return $this->data['id'];
     }
 
@@ -79,7 +71,7 @@ class Options extends Item {
      * 
      * @return int
      */
-    public function getUserID() {
+    public function getUserID(): int {
         return $this->data['user_id'];
     }
 
@@ -87,7 +79,7 @@ class Options extends Item {
      * 
      * @return boolean
      */
-    public function getDisplayLogin() {
+    public function getDisplayLogin(): bool {
         return $this->data['display_login'];
     }
 
@@ -95,7 +87,7 @@ class Options extends Item {
      * 
      * @return boolean
      */
-    public function getEmailNotificationLogin() {
+    public function getEmailNotificationLogin(): bool {
         return $this->data['email_notification_login'];
     }
 
@@ -103,16 +95,8 @@ class Options extends Item {
      * 
      * @return boolean
      */
-    public function getEmailNotificationPasswordChange() {
+    public function getEmailNotificationPasswordChange(): bool {
         return $this->data['email_notification_password_change'];
-    }
-
-    /**
-     * 
-     * @return type
-     */
-    public function getEmailNotificationLoginFailed() {
-        return $this->data['email_notification_login_failed'];
     }
 
 }

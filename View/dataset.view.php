@@ -116,4 +116,4 @@ include_once ELEMENTS_DIR . 'ajaxLoader.php';
 </div>
 
 
-<script src = "/Js/datasetView.min.js" async=""></script>
+<script type="text/javascript" src="/Js/datasetView.min.js" nonce="<?php echo $nonce; ?>"></script>

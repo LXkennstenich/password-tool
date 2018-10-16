@@ -26,7 +26,7 @@
 /* @var $isSearch string */
 /* @var $host string */
 /* @var $userAgent string */
-/* @var $g \Sonata\GoogleAuthenticator\GoogleAuthenticator */
+/* @var $g GoogleAuthenticator */
 
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
@@ -35,17 +35,24 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-$secret = $account->querySecretKey($userID);
-$g = $factory->getGoogleAuthenticator();
 
-$codeInput = $request->code;
+try {
+    $secret = $account->querySecretKey($userID);
+    $g = $factory->getGoogleAuthenticator();
 
-if ($g->checkCode($secret, $codeInput)) {
-    if ($session->updateAuthenticator(1, $userID)) {
-        echo "1";
+    $codeInput = $request->code;
+
+    if ($g->verifyCode($secret, $codeInput, 100)) {
+        if ($session->updateAuthenticator(1, $userID)) {
+            echo "1";
+        } else {
+            echo "0";
+        }
     } else {
-        var_dump($session->updateAuthenticator(1, $userID));
+        echo "0";
     }
-} else {
-    echo "0";
+} catch (Exception $ex) {
+    echo $ex->getMessage();
 }
+
+

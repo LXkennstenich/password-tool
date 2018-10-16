@@ -43,5 +43,5 @@ if (!defined('PASSTOOL')) {
     <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 </div>
 
-<script src="/Js/login.min.js"></script>
+<script type="text/javascript"  src="/Js/login.min.js" nonce="<?php echo $nonce; ?>"></script>
 

@@ -10,7 +10,7 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-define('SYSTEM_MODE', 'LIVE');
+define('SYSTEM_MODE', 'DEV');
 
 
 if (!defined('ROOT_DIR')) {
@@ -59,6 +59,10 @@ if (!defined('VIEW_DIR')) {
 
 if (!defined('ICON_DIR')) {
     define('ICON_DIR', ROOT_DIR . 'Icons/');
+}
+
+if (!defined('KEY_DIR')) {
+    define('KEY_DIR', ROOT_DIR . 'Keys/');
 }
 
 if (!defined('SESSION_ADMIN')) {

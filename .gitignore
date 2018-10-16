@@ -3,3 +3,4 @@
 /logs/log.txt
 /Config/Config.php
 /vendor
+/Config/mailConfig.php

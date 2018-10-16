@@ -41,7 +41,7 @@ try {
     $datasetPassword = $request->password;
     $datasetURL = filter_var($request->url, FILTER_SANITIZE_URL);
     $datasetProject = filter_var($request->project, FILTER_SANITIZE_STRING);
-    $dataset = $factory->createDataset();
+    $dataset = $factory->getDataset($datasetID, $userID);
     $dataset->setID($datasetID);
     $dataset->setUserID($userID);
     $dataset->setTitle($datasetTitle);

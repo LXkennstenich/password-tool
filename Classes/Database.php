@@ -68,7 +68,7 @@ class Database {
      * 
      * @return \Debug
      */
-    private function getDebugger() {
+    private function getDebugger(): \Debug {
         return $this->debugger;
     }
 
@@ -76,7 +76,7 @@ class Database {
      * 
      * @param \Debug $debugger
      */
-    private function setDebugger($debugger) {
+    private function setDebugger(\Debug $debugger) {
         $this->debugger = $debugger;
     }
 
@@ -87,7 +87,7 @@ class Database {
      * @param int $databasePort
      * @return string
      */
-    private function generateDNS($databaseServer, $databaseName, $databasePort) {
+    private function generateDNS(string $databaseServer, string $databaseName, int $databasePort) {
         try {
             return $dns = 'mysql:' . 'host=' . $databaseServer . ';' . 'port=' . $databasePort . ';' . 'dbname=' . $databaseName;
         } catch (Exception $ex) {
@@ -103,7 +103,7 @@ class Database {
      * Setzt den Datenbank-Server
      * @param string $databaseServer
      */
-    private function setDatabaseServer($databaseServer) {
+    private function setDatabaseServer(string $databaseServer) {
         $this->databaseServer = $databaseServer;
     }
 
@@ -111,7 +111,7 @@ class Database {
      * Setzt den Datenbank-Namen
      * @param string $databaseName
      */
-    private function setDatabaseName($databaseName) {
+    private function setDatabaseName(string $databaseName) {
         $this->databaseName = $databaseName;
     }
 
@@ -119,7 +119,7 @@ class Database {
      * Setzt den Datenbank-Benutzer
      * @param string $databaseUser
      */
-    private function setDatabaseUser($databaseUser) {
+    private function setDatabaseUser(string $databaseUser) {
         $this->databaseUser = $databaseUser;
     }
 
@@ -127,7 +127,7 @@ class Database {
      * Setzt das Datenbank-Passwort
      * @param string $databasePassword
      */
-    private function setDatabasePassword($databasePassword) {
+    private function setDatabasePassword(string $databasePassword) {
         $this->databasePassword = $databasePassword;
     }
 
@@ -135,7 +135,7 @@ class Database {
      * Setzt den Datenbank-Port
      * @param int $databasePort
      */
-    private function setDatabasePort($databasePort) {
+    private function setDatabasePort(int $databasePort) {
         $this->databasePort = $databasePort;
     }
 
@@ -143,7 +143,7 @@ class Database {
      * Admin Email
      * @param string $email
      */
-    private function setAdminEmail($email) {
+    private function setAdminEmail(string $email) {
         $this->adminEmail = $email;
     }
 
@@ -151,7 +151,7 @@ class Database {
      * Gibt den Datenbank-Server zurück
      * @return string
      */
-    private function getDatabaseServer() {
+    private function getDatabaseServer(): string {
         return $this->databaseServer;
     }
 
@@ -159,7 +159,7 @@ class Database {
      * Gibt den Datenbank-Namen zurück
      * @return string
      */
-    private function getDatabaseName() {
+    private function getDatabaseName(): string {
         return $this->databaseName;
     }
 
@@ -167,7 +167,7 @@ class Database {
      * Gibt den Datenbank-Benutzer zurück
      * @return string
      */
-    private function getDatabaseUser() {
+    private function getDatabaseUser(): string {
         return $this->databaseUser;
     }
 
@@ -175,7 +175,7 @@ class Database {
      * Gibt das Datenbank-Passwort zurück
      * @return string
      */
-    private function getDatabasePassword() {
+    private function getDatabasePassword(): string {
         return $this->databasePassword;
     }
 
@@ -183,7 +183,7 @@ class Database {
      * Gibt den Datenbank-Port zurück
      * @return int
      */
-    private function getDatabasePort() {
+    private function getDatabasePort(): int {
         return $this->databasePort;
     }
 
@@ -191,7 +191,7 @@ class Database {
      * Admin Email
      * @return string
      */
-    public function getAdminEmail() {
+    public function getAdminEmail(): string {
         return $this->adminEmail;
     }
 
@@ -199,7 +199,7 @@ class Database {
      * Gibt eine neue Datenbankverbindung zurück
      * @return \PDO
      */
-    public function openConnection() {
+    public function openConnection(): \PDO {
         try {
             $dbConnection = new PDO($this->generateDNS($this->getDatabaseServer(), $this->getDatabaseName(), $this->getDatabasePort()), $this->getDatabaseUser(), $this->getDatabasePassword());
             $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -218,7 +218,7 @@ class Database {
      * schliesst eine Datenbankverbindung
      * @param \PDO $connection
      */
-    public function closeConnection(&$connection) {
+    public function closeConnection(\PDO &$connection) {
         try {
             unset($connection);
         } catch (Exception $ex) {
@@ -230,7 +230,7 @@ class Database {
         }
     }
 
-    public function getUserID($username) {
+    public function getUserID(string $username) {
         try {
             $dbConnection = $this->openConnection();
 
@@ -256,9 +256,20 @@ class Database {
         }
     }
 
-    public function setup() {
+    private function createSystemEncryptionKey(): bool {
+        $file = KEY_DIR . 'system.key';
+        $key = base64_encode(random_bytes(SODIUM_CRYPTO_BOX_SECRETKEYBYTES));
+
+        if (file_put_contents($file, $key)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function setup(): bool {
         try {
-            if ($this->createTables()) {
+            if ($this->createTables() && $this->createSystemEncryptionKey()) {
                 return true;
             }
 
@@ -279,7 +290,7 @@ class Database {
             $tables = array(
                 'account',
                 'session',
-                'datasets',
+                'dataset',
                 'system',
                 'options'
             );
@@ -289,71 +300,78 @@ class Database {
 
                 switch ($table) {
                     case 'account':
-                        $sql .= "DROP TABLE IF EXISTS `account`;CREATE TABLE IF NOT EXISTS `account` (
-                            `id` int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                            `username` text NOT NULL,
-                            `password` text NOT NULL,
-                            `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                            `access_level` int(10) unsigned NOT NULL,
-                            `secret_key` text NOT NULL,
-                            `encryption_key` text NOT NULL,
-                            `cypher_mode` varchar(256) NOT NULL DEFAULT 'AES-256-CBC',
-                            `validation_token` text NOT NULL,
-                            `active` tinyint(1) NOT NULL DEFAULT '0',
-                            `first_login_password_changed` tinyint(1) NOT NULL DEFAULT '0',
-                            `authenticator_is_setup` tinyint(1) NOT NULL DEFAULT '0'
-                            ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;";
-
+                        $sql .= "CREATE TABLE IF NOT EXISTS `account` (
+                                `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                                `username` text NOT NULL,
+                                `password` text NOT NULL,
+                                `last_login` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                `access_level` int(10) UNSIGNED NOT NULL,
+                                `secret_key` text NOT NULL,
+                                `encryption_key` varchar(256) NOT NULL,
+                                `validation_token` text NOT NULL,
+                                `active` tinyint(1) NOT NULL DEFAULT '0',
+                                `first_login_password_changed` tinyint(1) NOT NULL DEFAULT '0',
+                                `authenticator_is_setup` tinyint(1) NOT NULL DEFAULT '0',
+                                `locked` tinyint(1) NOT NULL DEFAULT '0',
+                                `login_attempts` int(11) NOT NULL DEFAULT '0',
+                                `locktime` int(11) NOT NULL DEFAULT '0',
+                                PRIMARY KEY (`id`)
+                                ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;";
                         break;
                     case 'dataset':
-                        $sql .= "DROP TABLE IF EXISTS `dataset`;CREATE TABLE IF NOT EXISTS `dataset` (
-                            `id` int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                            `user_id` int(10) unsigned NOT NULL,
-                            `title` text NOT NULL,
-                            `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                            `date_edited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            `login` text NOT NULL,
-                            `password` text NOT NULL,
-                            `url` text NOT NULL,
-                            `project` text NOT NULL
-                            ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;";
+                        $sql .= "CREATE TABLE IF NOT EXISTS `dataset` (
+                                `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                                `user_id` int(10) UNSIGNED NOT NULL,
+                                `title` text NOT NULL,
+                                `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                `date_edited` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                `login` text NOT NULL,
+                                `password` text NOT NULL,
+                                `url` text NOT NULL,
+                                `project` text NOT NULL,
+                                PRIMARY KEY (`id`)
+                              ) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;";
                         break;
                     case 'session':
-                        $sql .= "DROP TABLE IF EXISTS `session`;CREATE TABLE IF NOT EXISTS `session` (
-                            `id` int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                            `user_id` int(10) unsigned NOT NULL,
-                            `session_id` text NOT NULL,
-                            `session_token` text NOT NULL,
-                            `session_timestamp` text NOT NULL,
-                            `session_ipaddress` text NOT NULL,
-                            `session_useragent` text NOT NULL,
-                            `session_authenticator` tinyint(1) NOT NULL DEFAULT '0',
-                            `session_accesslevel` int(10) unsigned NOT NULL
-                            ) ENGINE=InnoDB AUTO_INCREMENT=97 DEFAULT CHARSET=utf8;";
+                        $sql .= "CREATE TABLE IF NOT EXISTS `session` (
+                                `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                                `user_id` int(10) UNSIGNED NOT NULL,
+                                `session_id` text NOT NULL,
+                                `session_token` text NOT NULL,
+                                `session_timestamp` text NOT NULL,
+                                `session_ipaddress` text NOT NULL,
+                                `session_useragent` text NOT NULL,
+                                `session_authenticator` tinyint(1) NOT NULL DEFAULT '0',
+                                `session_accesslevel` int(10) UNSIGNED NOT NULL,
+                                PRIMARY KEY (`id`)
+                              ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;";
                         break;
                     case 'options':
-                        $sql .= "DROP TABLE IF EXISTS `options`;CREATE TABLE IF NOT EXISTS `options` (
-                            `id` int(10) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                            `user_id` int(10) unsigned NOT NULL UNIQUE KEY,
-                            `display_login` tinyint(1) NOT NULL DEFAULT '1',
-                            `use_two_factor` tinyint(1) NOT NULL DEFAULT '1',
-                            `regenerate_session_id` tinyint(1) NOT NULL DEFAULT '1',
-                            `email_notification_login` tinyint(1) NOT NULL DEFAULT '1',
-                            `email_notification_password_change` tinyint(1) NOT NULL DEFAULT '1'
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                        $sql .= "CREATE TABLE IF NOT EXISTS `options` (
+                                `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+                                `user_id` int(10) UNSIGNED NOT NULL,
+                                `display_login` tinyint(1) NOT NULL DEFAULT '1',
+                                `use_two_factor` tinyint(1) NOT NULL DEFAULT '1',
+                                `regenerate_session_id` tinyint(1) NOT NULL DEFAULT '1',
+                                `email_notification_login` tinyint(1) NOT NULL DEFAULT '1',
+                                `email_notification_password_change` tinyint(1) NOT NULL DEFAULT '1',
+                                PRIMARY KEY (`id`),
+                                UNIQUE KEY `user_id` (`user_id`)
+                              ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;";
                         break;
                     case 'system':
-                        $sql .= "DROP TABLE IF EXISTS `system`;CREATE TABLE IF NOT EXISTS `system` (
-                            `cron_recrypt` tinyint(1) NOT NULL DEFAULT '1',
-                            `cron_clear_session_data` tinyint(1) NOT NULL DEFAULT '1',
-                            `cron_last` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            `cron_last_success` tinyint(1) NOT NULL,
-                            `cron_active` tinyint(1) NOT NULL DEFAULT '0',
-                            `cron_url` text NOT NULL,
-                            `cron_token` text NOT NULL,
-                            `doing_cron` tinyint(1) NOT NULL DEFAULT '0',
-                            `installed` tinyint(1) NOT NULL DEFAULT '0'
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+                        $sql .= "CREATE TABLE IF NOT EXISTS `system` (
+                                `id` int(10) UNSIGNED NOT NULL DEFAULT '1',
+                                `cron_clear_session_data` tinyint(1) NOT NULL DEFAULT '1',
+                                `cron_last` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                                `cron_last_success` tinyint(1) NOT NULL,
+                                `cron_active` tinyint(1) NOT NULL DEFAULT '0',
+                                `cron_token` text NOT NULL,
+                                `installed` tinyint(1) NOT NULL DEFAULT '0',
+                                `doing_cron` tinyint(1) NOT NULL DEFAULT '0',
+                                `blocked_ip_addresses` text NOT NULL,
+                                PRIMARY KEY (`id`)
+                              ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
                         break;
                 }
                 $dbConnection->exec($sql);
@@ -371,49 +389,22 @@ class Database {
         }
     }
 
-    private function linkCheck($url) {
-        $http = false;
-        $https = false;
-
-        if (strpos($url, 'http') === false) {
-            $http = true;
-        }
-
-        if (strpos($url, 'https') === false) {
-            $https = true;
-        }
-
-        if ($http && $https) {
-            if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-                $url = 'https://' . $url;
-            } else {
-                $url = 'http://' . $url;
-            }
-        }
-
-        return $url;
-    }
-
     private function generateCronToken() {
         return bin2hex(openssl_random_pseudo_bytes(32));
     }
 
-    public function insertDefaultValues($user_id, $tableName) {
+    public function insertDefaultValues(int $userID, string $table) {
         try {
             $dbConnection = $this->openConnection();
             $statement = new PDOStatement;
             $success = false;
-            $table = filter_var($tableName, FILTER_SANITIZE_STRING);
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
 
             switch ($table) {
                 case 'system':
                     $cronLastSuccess = 0;
                     $cronToken = $this->generateCronToken();
-                    $cronUrl = $this->linkCheck($_SERVER['HTTP_HOST'] . '/cron?CT=' . $cronToken);
-                    $statement = $dbConnection->prepare("INSERT INTO system (cron_last_success,cron_url,cron_token) VALUES (:cronLastSuccess,:cronUrl,:cronToken)");
+                    $statement = $dbConnection->prepare("INSERT INTO system (cron_last_success,cron_token) VALUES (:cronLastSuccess,:cronToken)");
                     $statement->bindParam(':cronLastSuccess', $cronLastSuccess, PDO::PARAM_INT);
-                    $statement->bindParam(':cronUrl', $cronUrl, PDO::PARAM_STR);
                     $statement->bindParam(':cronToken', $cronToken, PDO::PARAM_STR);
                     break;
                 case 'options':
@@ -440,7 +431,7 @@ class Database {
         }
     }
 
-    public function systemIsInstalled() {
+    public function systemIsInstalled(): bool {
         try {
             $dbConnection = $this->openConnection();
             $success = false;
@@ -462,7 +453,7 @@ class Database {
         }
     }
 
-    public function getSystemInstalled() {
+    public function getSystemInstalled(): bool {
         try {
             $dbConnection = $this->openConnection();
             $installed = false;

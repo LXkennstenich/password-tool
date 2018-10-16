@@ -6,15 +6,21 @@
  * @author Alexander Weese
  * @copyright (c) 2018, Alexander Weese
  */
-class Dataset extends Item {
+final class Dataset extends Item {
 
     /**
      *
-     * @var Encryption 
+     * @var \Encryption 
      */
     protected $encryption;
 
-    public function __construct($database, $encryption, $debugger) {
+    /**
+     * 
+     * @param \Database $database
+     * @param \Encryption $encryption
+     * @param \Debug $debugger
+     */
+    public function __construct(\Database $database, \Encryption $encryption, \Debug $debugger) {
         parent::__construct(strtolower(__CLASS__));
         $this->setDatabase($database);
         $this->setDebugger($debugger);
@@ -29,7 +35,7 @@ class Dataset extends Item {
      * 
      * @param Encryption $encryption
      */
-    public function setEncryption($encryption) {
+    public function setEncryption(\Encryption $encryption) {
         $this->encryption = $encryption;
     }
 
@@ -37,7 +43,7 @@ class Dataset extends Item {
      * 
      * @return Encryption
      */
-    public function getEncryption() {
+    public function getEncryption(): \Encryption {
         return $this->encryption;
     }
 
@@ -45,43 +51,79 @@ class Dataset extends Item {
      * 
      * @param int $ID
      */
-    public function setID($ID) {
+    public function setID(int $ID) {
         $this->data['id'] = $ID;
     }
 
-    public function setUserID($userID) {
+    /**
+     * 
+     * @param int $userID
+     */
+    public function setUserID(int $userID) {
         $this->data['user_id'] = $userID;
     }
 
-    public function setTitle($title) {
+    /**
+     * 
+     * @param string $title
+     */
+    public function setTitle(string $title) {
         $this->data['title'] = $title;
     }
 
-    public function setDateCreated($dateCreated) {
+    /**
+     * 
+     * @param string $dateCreated
+     */
+    public function setDateCreated(string $dateCreated) {
         $this->data['date_created'] = $dateCreated;
     }
 
-    public function setDateEdited($dateEdited) {
+    /**
+     * 
+     * @param string $dateEdited
+     */
+    public function setDateEdited(string $dateEdited) {
         $this->data['date_edited'] = $dateEdited;
     }
 
-    public function setLogin($login) {
+    /**
+     * 
+     * @param string $login
+     */
+    public function setLogin(string $login) {
         $this->data['login'] = $login;
     }
 
-    public function setPassword($password) {
+    /**
+     * 
+     * @param string $password
+     */
+    public function setPassword(string $password) {
         $this->data['password'] = $password;
     }
 
-    public function setUrl($url) {
+    /**
+     * 
+     * @param string $url
+     */
+    public function setUrl(string $url) {
         $this->data['url'] = $url;
     }
 
-    public function setProject($project) {
+    /**
+     * 
+     * @param string $project
+     */
+    public function setProject(string $project) {
         $this->data['project'] = $project;
     }
 
-    public function getID() {
+    /**
+     * 
+     * @return int
+     */
+    public function getID(): int {
         return $this->data['id'];
     }
 
@@ -89,38 +131,69 @@ class Dataset extends Item {
      * 
      * @return int
      */
-    public function getUserID() {
+    public function getUserID(): int {
         return $this->data['user_id'];
     }
 
-    public function getTitle() {
+    /**
+     * 
+     * @return string
+     */
+    public function getTitle(): string {
         return $this->data['title'];
     }
 
-    public function getDateCreated() {
+    /**
+     * 
+     * @return string
+     */
+    public function getDateCreated(): string {
         return $this->data['date_created'];
     }
 
-    public function getDateEdited() {
+    /**
+     * 
+     * @return string
+     */
+    public function getDateEdited(): string {
         return $this->data['date_edited'];
     }
 
-    public function getLogin() {
+    /**
+     * 
+     * @return string
+     */
+    public function getLogin(): string {
         return $this->data['login'];
     }
 
-    public function getPassword() {
+    /**
+     * 
+     * @return string
+     */
+    public function getPassword(): string {
         return $this->data['password'];
     }
 
-    public function getUrl() {
+    /**
+     * 
+     * @return string
+     */
+    public function getUrl(): string {
         return $this->data['url'];
     }
 
-    public function getProject() {
+    /**
+     * 
+     * @return string
+     */
+    public function getProject(): string {
         return $this->data['project'];
     }
 
+    /**
+     * 
+     */
     public function encrypt() {
         try {
             $userID = $this->getUserID();
@@ -140,6 +213,9 @@ class Dataset extends Item {
         }
     }
 
+    /**
+     * 
+     */
     public function decrypt() {
         try {
             $userID = $this->getUserID();

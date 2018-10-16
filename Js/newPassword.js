@@ -22,6 +22,7 @@ $(document).ready(function () {
         request.ipaddress = ipaddress;
         request.host = host;
         request.userAgent = userAgent;
+        request.uid = uid;
 
         if(request.username == '') {
             return false;

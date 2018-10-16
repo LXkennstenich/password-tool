@@ -33,43 +33,22 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
-$sessionUIDEncoded = base64_encode($sessionUID);
-$sessionTokenEncrypted = $encryption->encrypt($sessionToken, $sessionUID);
-$sessionTimestampEncrypted = $encryption->encrypt($sessionTimestamp, $sessionUID);
-$sessionIpAddressEncoded = base64_encode($sessionIP);
-$sessionHostEncrypted = $userID != '' ? $encryption->encrypt($host, $sessionUID) : $host;
-$sessionUserAgentEncrypted = $userID != '' ? $encryption->encrypt($userAgent, $sessionUID) : $userAgent;
-$jsVarSearchTerm = 'var searchTerm="' . $searchTerm . '";';
-$jsVarUID = 'var uid="' . $sessionUIDEncoded . '";';
-$jsVarToken = 'var token="' . $sessionTokenEncrypted . '";';
-$jsVarTimestamp = 'var timestamp="' . $sessionTimestampEncrypted . '";';
-$jsVarIpAddress = 'var ipaddress="' . $sessionIpAddressEncoded . '";';
-$jsVarHost = 'var host="' . $sessionHostEncrypted . '";';
-$jsVarUserAgent = 'var userAgent="' . $sessionUserAgentEncrypted . '";';
-$jsVarRequestTimestamp = 'var requestTimestamp="' . microtime(true) . '";';
+
+$sessionUIDEncoded = $encryption->systemEncrypt($sessionUID);
+$sessionTokenEncrypted = $encryption->systemEncrypt($sessionToken);
+$sessionTimestampEncrypted = $encryption->systemEncrypt($sessionTimestamp);
+$sessionIpAddressEncoded = $encryption->systemEncrypt($sessionIP);
+$sessionHostEncrypted = $encryption->systemEncrypt($host);
+$sessionUserAgentEncrypted = $encryption->systemEncrypt($userAgent);
 ?>
 
-<script>
-<?php
-echo $jsVarUID;
-echo $jsVarToken;
-echo $jsVarTimestamp;
-echo $jsVarSearchTerm;
-echo $jsVarIpAddress;
-echo $jsVarHost;
-echo $jsVarUserAgent;
-echo $jsVarRequestTimestamp;
-?>
-    function getAjaxUrl() {
-        var hostname = document.location.hostname;
-        var url = "https://" + hostname + "/" + "Ajax";
-        return url;
-    }
+<input type="hidden" id="searchTerm" value="<?php echo $searchTerm; ?>" />
+<input type="hidden" id="sessionUID" value="<?php echo $sessionUIDEncoded; ?>" />
+<input type="hidden" id="sessionToken" value="<?php echo $sessionTokenEncrypted; ?>" />
+<input type="hidden" id="sessionTimestamp" value="<?php echo $sessionTimestampEncrypted; ?>" />
+<input type="hidden" id="sessionIpAddress" value="<?php echo $sessionIpAddressEncoded; ?>" />
+<input type="hidden" id="sessionHost" value="<?php echo $sessionHostEncrypted; ?>" />
+<input type="hidden" id="sessionUserAgent" value="<?php echo $sessionUserAgentEncrypted; ?>" />
+<input type="hidden" id="requestTimestamp" value="<?php echo microtime(true); ?>" />
 
-    $.ajaxSetup({
-        async: true,
-        cache: true,
-        url: getAjaxUrl()
-    });
-
-</script>
+<script type="text/javascript"  src="/Js/js-globals.min.js" nonce="<?php echo $nonce; ?>"></script>

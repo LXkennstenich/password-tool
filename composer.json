@@ -1,6 +1,0 @@
-{
-    "require": {
-        "sonata-project/google-authenticator": "2.2.0",
-        "phan/phan": "dev-master"
-    }
-}

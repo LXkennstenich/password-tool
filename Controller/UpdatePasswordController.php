@@ -37,7 +37,7 @@ if (!defined('PASSTOOL')) {
 $username = $request->username;
 $oldPassword = $request->oldPassword;
 $newPassword = $request->newPassword;
-$host = $encryption->decrypt($request->host, $userID);
+$host = $request->host;
 
 
 $options = $factory->getOptions();

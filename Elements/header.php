@@ -37,12 +37,17 @@ if (!defined('PASSTOOL')) {
 <html lang="de-DE">
     <head>
         <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="application-name" content="PasswordTool">
+        <meta name="robots" content="noindex,nofollow">
+        <meta name="googlebot" content="noindex,nofollow">
         <title>Password Tool</title>
-        <script src="/Js/jquery.min.js"></script>
-        <script src="/Libs/fancybox/dist/jquery.fancybox.min.js"></script>
+        <script type="text/javascript"  src="/Js/jquery.min.js" nonce="<?php echo $nonce; ?>"></script>
+        <script type="text/javascript"  src="/Libs/fancybox/dist/jquery.fancybox.min.js" nonce="<?php echo $nonce; ?>"></script>
         <link rel="stylesheet" type="text/css" href="/Css/main.min.css" />
+        <link rel="stylesheet" type="text/css" href="/Css/1024px.min.css" />
         <link rel="stylesheet" type="text/css" href="/Libs/fancybox/dist/jquery.fancybox.min.css" />
-        <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="/Libs/fontawesome/css/all.min.css" />
     </head>
     <body class="<?php echo $page; ?>">
 

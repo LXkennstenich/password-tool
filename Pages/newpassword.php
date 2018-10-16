@@ -55,7 +55,7 @@ if (!defined('PASSTOOL')) {
 </div>
 
 
-<script src="/Js/newPassword.min.js"></script>
+<script type="text/javascript"  src="/Js/newPassword.min.js" nonce="<?php echo $nonce; ?>"></script>
 
 
 

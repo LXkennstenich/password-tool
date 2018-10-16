@@ -8,13 +8,55 @@ $(document).ready(function () {
     $('#createNewDatasetButton').fancybox();
     $('#newUserLink').fancybox();
 
-    $('#createDatasetButton').bind('click touch', function () {
+    $('.container').hide();
+
+    $('#navbar-trigger').bind('click touch', function () {
+        if($(this).hasClass('open') === false) {
+            $(this).addClass('open');
+            $(this).next('.container').slideDown('slow');
+        } else {
+            $(this).removeClass('open');
+            $(this).next('.container').slideUp('slow');
+        }
+    });
+
+    $('#clearCacheButton').bind('click touch', function () {
         var request = {};
-        request.action = 'NewDataset';
+        request.action = 'ClearCache';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
+        request.uid = uid;
+
+        $.ajax({
+            'type': 'POST',
+            'data': {"request": JSON.stringify(request)},
+            'url': getAjaxUrl(),
+            'success': function (data) {
+                if (parseInt(data) != 1) {
+                    alert('Cache konnte nicht geleert werden!');
+                }
+            },
+            error: function (jqXHR, exception) {
+                $('.ajax-message .text').addClass('error');
+                displayNotice(jqXHR + exception);
+            }
+
+        });
+    });
+
+    $('#createDatasetButton').bind('click touch', function () {
+        var request = {};
+        request.action = 'NewDataset';
         request.timestamp = requestTimestamp;
+        request.tk = token;
+        request.ts = timestamp;
+        request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.title = document.getElementById('datasetTitle').value;
         request.login = document.getElementById('datasetLogin').value;
@@ -41,17 +83,19 @@ $(document).ready(function () {
         });
     });
 
-    $('.project-list-link').bind('click touch', function() {
+    $('.project-list-link').bind('click touch', function () {
         $(this).submit();
     });
 
     $('#updateSystemSettingsButton').bind('click touch', function () {
         var request = {};
         request.action = 'UpdateSystemSettings';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
-        request.timestamp = requestTimestamp;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.cronActive = document.getElementById('cronActive').checked !== false ? 1 : 0;
         request.clearSessionData = document.getElementById('cronClearSessionData').checked !== false ? 1 : 0;
@@ -79,9 +123,12 @@ $(document).ready(function () {
     $('#generatePasswordButton').bind('click touch', function () {
         var request = {};
         request.action = 'GeneratePassword';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.length = document.getElementById('passwordLengthBox').value;
         request.lowerCharacters = document.getElementById('lowerCharacters').checked !== false ? 1 : 0;
@@ -107,9 +154,12 @@ $(document).ready(function () {
     $('#validate-auth-setup-button').bind('click touch', function () {
         var request = {};
         request.action = 'AuthSetup';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.validate = 1;
 
@@ -132,9 +182,12 @@ $(document).ready(function () {
     $('#authenticator-button').bind('click touch', function () {
         var request = {};
         request.action = 'ValidateAuth';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.code = document.getElementById('authenticator-code').value;
 
@@ -146,7 +199,7 @@ $(document).ready(function () {
                 if (parseInt(data) == 1) {
                     window.location.href = '/account';
                 } else {
-                    $('.ajax-message').text("Authenticator Code ist nicht gültig!");
+                    $('.ajax-message').text(data);
                 }
             },
             error: function (jqXHR, exception) {
@@ -159,9 +212,12 @@ $(document).ready(function () {
     $('#update-password-button').bind('click touch', function () {
         var request = {};
         request.action = 'UpdatePassword';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.username = document.getElementById('username-input').value;
         request.oldPassword = document.getElementById('password-input-old').value;
@@ -192,12 +248,15 @@ $(document).ready(function () {
         }
     });
 
-    $('#newUserButton').bind('click touch', function() {
+    $('#newUserButton').bind('click touch', function () {
         var request = {};
         request.action = 'NewUser';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.username = document.getElementById('newUsername').value;
         request.accessLevel = document.getElementById('newAccessLevel').value;
@@ -238,9 +297,12 @@ function showPassword(selector) {
     } else {
         var request = {};
         request.action = 'DecryptPassword';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.id = $(selector).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
 

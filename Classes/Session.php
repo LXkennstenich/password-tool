@@ -16,6 +16,12 @@ class Session {
 
     /**
      *
+     * @var \Encryption 
+     */
+    protected $encryption;
+
+    /**
+     *
      * @var string 
      */
     protected $username;
@@ -60,10 +66,12 @@ class Session {
      * 
      * @param \Database $database
      * @param \Debug $debugger
+     * @param \Encryption $encryption
      */
-    public function __construct($database, $debugger) {
+    public function __construct($database, $debugger, $encryption) {
         $this->setDatabase($database);
         $this->setDebugger($debugger);
+        $this->setEncryption($encryption);
     }
 
     /**
@@ -72,6 +80,14 @@ class Session {
      */
     private function getDebugger() {
         return $this->debugger;
+    }
+
+    private function setEncryption(\Encryption $encryption) {
+        $this->encryption = $encryption;
+    }
+
+    private function getEncryption(): \Encryption {
+        return $this->encryption;
     }
 
     /**
@@ -127,7 +143,7 @@ class Session {
      * @param type $username
      */
     public function setUsername($username) {
-        $this->username = filter_var($username, FILTER_VALIDATE_EMAIL);
+        $this->username = $username;
     }
 
     /**
@@ -143,7 +159,7 @@ class Session {
      * @param type $username
      */
     public function setIpaddress($ipaddress) {
-        $this->ip_address = filter_var($ipaddress, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        $this->ip_address = $ipaddress;
     }
 
     /**
@@ -175,7 +191,7 @@ class Session {
      * @param type $password
      */
     public function setPassword($password) {
-        $this->password = filter_var($password, FILTER_SANITIZE_STRING);
+        $this->password = $password;
     }
 
     /**
@@ -184,15 +200,6 @@ class Session {
      */
     private function getPassword() {
         return $this->password;
-    }
-
-    /**
-     * 
-     * @param string $password
-     * @return string
-     */
-    public function hashPassword($password) {
-        return password_hash($password, PASSWORD_DEFAULT, ["cost" => 12]);
     }
 
     /**
@@ -249,7 +256,7 @@ class Session {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $row = array();
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $username = $this->getUsername();
 
             if ($username) {
                 $statement = $dbConnection->prepare("SELECT username,password FROM account WHERE username = :username AND active = 1");
@@ -275,42 +282,12 @@ class Session {
         }
     }
 
-    private function updatePassword($passwordToUpdate) {
-        try {
-            $dbConnection = $this->getDatabase()->openConnection();
-
-            $success = false;
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
-            $password = $passwordToUpdate;
-
-            $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE username = :username");
-            $statement->bindParam(":password", $password, PDO::PARAM_STR);
-            $statement->bindParam(":username", $username, PDO::PARAM_STR);
-
-            if ($statement->execute()) {
-                if ($statement->rowCount() > 0) {
-                    $success = true;
-                }
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $success;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
     public function queryUserID() {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $ID = null;
-            $name = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $name = $this->getUsername();
 
             $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
             $statement->bindParam(":username", $name, PDO::PARAM_STR);
@@ -338,7 +315,7 @@ class Session {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $needAuthenticator = true;
-            $userID = filter_var($this->getUserID(), FILTER_VALIDATE_INT);
+            $userID = $this->getUserID();
 
             $statement = $dbConnection->prepare("SELECT session_authenticator FROM session WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
@@ -364,17 +341,15 @@ class Session {
         }
     }
 
-    public function updateAuthenticator($value, $user_id) {
+    public function updateAuthenticator($value, $userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $userID = filter_var($user_id, FILTER_VALIDATE_INT);
-            $authenticator = filter_var($value, FILTER_VALIDATE_INT);
 
             $statement = $dbConnection->prepare("UPDATE session SET session_authenticator = :authenticator WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
-            $statement->bindParam(":authenticator", $authenticator, PDO::PARAM_INT);
+            $statement->bindParam(":authenticator", $value, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -421,14 +396,12 @@ class Session {
 
     public function unlockAccount($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-
             $success = false;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("UPDATE account SET login_attempts = 0, locked = 0, locktime = 0 WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -450,14 +423,12 @@ class Session {
 
     public function isAccountLocked($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-
             $locked = false;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("SELECT locked FROM account WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -479,14 +450,12 @@ class Session {
 
     public function getLockTime($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-
             $locktime = 0;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("SELECT locktime FROM account WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -508,14 +477,13 @@ class Session {
 
     public function lockAccount($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
             $lockTime = time() + (15 * 60);
             $success = false;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("UPDATE account SET locked = 1, locktime = :lockTime WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
             $statement->bindParam(':lockTime', $lockTime, PDO::PARAM_INT);
 
             if ($statement->execute()) {
@@ -538,14 +506,12 @@ class Session {
 
     public function getLoginAttempts($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
-
             $attempts = 0;
 
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("SELECT login_attempts FROM account WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
 
             if ($statement->execute()) {
                 while ($object = $statement->fetchObject()) {
@@ -567,7 +533,6 @@ class Session {
 
     public function countLoginAttempt($username) {
         try {
-            $name = filter_var($username, FILTER_VALIDATE_EMAIL);
             $success = false;
             $attempts = $this->getLoginAttempts($name) == '' || $this->getLoginAttempts($name) == null ? 0 : $this->getLoginAttempts($name);
             $attempts++;
@@ -575,7 +540,7 @@ class Session {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $statement = $dbConnection->prepare("UPDATE account SET login_attempts = :loginAttempts WHERE username = :username");
-            $statement->bindParam(':username', $name, PDO::PARAM_STR);
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
             $statement->bindParam(':loginAttempts', $attempts, PDO::PARAM_INT);
 
             if ($statement->execute()) {
@@ -598,11 +563,11 @@ class Session {
 
     private function usernameExists() {
         $dbConnection = $this->getDatabase()->openConnection();
-        $inputUsername = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+        $inputUsername = $this->getUsername();
         $usernameExists = false;
 
         $statement = $dbConnection->prepare("SELECT id FROM account WHERE username = :username");
-        $statement->bindParam(':username', $inputUsername);
+        $statement->bindParam(':username', $inputUsername, PDO::PARAM_STR);
 
         if ($statement->execute()) {
             if ($statement->rowCount() > 0 && $statement->rowCount() < 2) {
@@ -633,11 +598,9 @@ class Session {
                 $passwordInput = $this->getPassword();
 
                 if ($usernameSaved == $usernameInput && $usernameSaved != null && $usernameSaved != '') {
-                    if (password_verify($passwordInput, $passwordSaved)) {
-                        if (password_needs_rehash($passwordSaved, PASSWORD_DEFAULT, ["cost" => 12])) {
-                            $newPassword = $this->hashPassword($passwordSaved);
-                            $this->updatePassword($newPassword);
-                        }
+                    if (sodium_crypto_pwhash_str_verify($passwordSaved, $passwordInput)) {
+                        sodium_memzero($passwordInput);
+                        sodium_memzero($passwordSaved);
                         $success = true;
                     }
                 }
@@ -653,9 +616,8 @@ class Session {
         }
     }
 
-    public function queryAccessLevel($id) {
+    public function queryAccessLevel($ID) {
         try {
-            $ID = filter_var($id, FILTER_VALIDATE_INT);
             $accessLevel = 0;
 
             $dbConnection = $this->getDatabase()->openConnection();
@@ -681,6 +643,10 @@ class Session {
         }
     }
 
+    public function cookiesSet() {
+        return isset($_COOKIE['PHPSESSID']) && isset($_COOKIE['TK']) && isset($_COOKIE['TS']) ? true : false;
+    }
+
     /**
      * 
      * @return boolean
@@ -703,15 +669,11 @@ class Session {
             $sessionID = session_id();
             $sessionToken = $this->generateSessionToken();
             $sessionTimestamp = time();
-            $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
+
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : $this->getUseragent();
             $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : $this->getIpaddress();
             $accessLevel = $this->queryAccessLevel($userID);
-
-            setcookie('PHPSESSID', $sessionID, 0, '/', $domain, true, true);
-            setcookie('TK', $sessionToken, 0, '/', $domain, true, true);
-            setcookie('TS', $cookieTimestamp, 0, '/', $domain, true, true);
-
+            $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
             $_SESSION['PHPSESSID'] = $sessionID;
             $_SESSION['U'] = $name;
             $_SESSION['UID'] = $userID;
@@ -800,14 +762,25 @@ class Session {
 
     public function isAuthenticated() {
         try {
-            $authenticated = null;
+            $authenticated = true;
 
+            if (!isset($_COOKIE['TS']) || !isset($_COOKIE['TK'])) {
+                return false;
+            }
+
+            $cookieTimestamp = $this->getEncryption()->systemDecrypt($_COOKIE['TS']);
+            $cookieToken = $this->getEncryption()->systemDecrypt($_COOKIE['TK']);
+            $cookieSessionID = $_COOKIE['PHPSESSID'];
 
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 return false;
             }
 
             if ($this->isValid() === false) {
+                $authenticated = false;
+            }
+
+            if ($_SESSION['PHPSESSID'] != $cookieSessionID) {
                 $authenticated = false;
             }
 
@@ -823,22 +796,15 @@ class Session {
                 $authenticated = false;
             }
 
-            if (!isset($_SESSION['TK']) || $_SESSION['TK'] != $_COOKIE['TK']) {
+            if (!isset($_SESSION['TK']) || $_SESSION['TK'] != $cookieToken) {
                 $authenticated = false;
             }
 
-            if (!isset($_SESSION['TS']) || $_SESSION['TS'] + (60 * 60 * 2) != $_COOKIE['TS']) {
+            if (!isset($_SESSION['TS']) || $_SESSION['TS'] + (60 * 60 * 2) != $cookieTimestamp) {
                 $authenticated = false;
             }
 
-            if ($authenticated === false) {
-                $this->deleteSessionData($_SESSION['UID']);
-                return false;
-            }
-
-
-
-            return true;
+            return $authenticated;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -893,12 +859,11 @@ class Session {
         }
     }
 
-    public function queryAjaxSessionData($user_id) {
+    public function queryAjaxSessionData($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $sessionData = array();
-            $userID = $user_id;
 
             $statement = $dbConnection->prepare("SELECT session_token,session_timestamp,session_ipaddress FROM session WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
@@ -923,20 +888,14 @@ class Session {
         }
     }
 
-    private function saveSessionData($user_id, $id, $token, $timestamp, $ipaddress, $useragent) {
+    private function saveSessionData($userID, $sessionID, $sessionToken, $sessionTimestamp, $sessionIpaddress, $sessionUserAgent) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $userID = filter_var($user_id, FILTER_SANITIZE_STRING);
-            $sessionID = filter_var($id, FILTER_SANITIZE_STRING);
-            $sessionToken = $token;
-            $sessionIpaddress = filter_var($ipaddress, FILTER_SANITIZE_STRING);
-            $sessionUserAgent = filter_var($useragent, FILTER_SANITIZE_STRING);
-            $sessionTimestamp = $timestamp;
 
             $statement = $dbConnection->prepare("INSERT INTO session (user_id,session_id,session_token,session_timestamp,session_ipaddress,session_useragent) VALUES (:userID,:sessionID,:sessionToken,:sessionTimestamp,:sessionIpaddress,:sessionUseragent)");
-            $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
+            $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
             $statement->bindParam(":sessionID", $sessionID, PDO::PARAM_STR);
             $statement->bindParam(":sessionToken", $sessionToken, PDO::PARAM_STR);
             $statement->bindParam(":sessionTimestamp", $sessionTimestamp, PDO::PARAM_STR);
@@ -961,12 +920,11 @@ class Session {
         }
     }
 
-    public function deleteSessionDataFromDatabase($user_id) {
+    public function deleteSessionDataFromDatabase($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $userID = $user_id;
 
             $statement = $dbConnection->prepare("DELETE FROM session WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
@@ -991,15 +949,14 @@ class Session {
 
     /**
      * 
-     * @param type $user_id
+     * @param type $userID
      * @return boolean
      */
-    public function deleteSessionData($user_id) {
+    public function deleteSessionData($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $userID = $user_id;
 
             $statement = $dbConnection->prepare("DELETE FROM session WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_INT);

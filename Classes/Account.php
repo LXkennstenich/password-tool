@@ -18,6 +18,12 @@ class Account {
 
     /**
      *
+     * @var Mail
+     */
+    protected $mail;
+
+    /**
+     *
      * @var type 
      */
     protected $id;
@@ -93,9 +99,26 @@ class Account {
      * @param type $database
      * @param type $debugger
      */
-    public function __construct($database, $debugger) {
+    public function __construct($database, $debugger, $mail) {
         $this->setDatabase($database);
         $this->setDebugger($debugger);
+        $this->setMail($mail);
+    }
+
+    /**
+     * 
+     * @param Mail $mail
+     */
+    public function setMail($mail) {
+        $this->mail = $mail;
+    }
+
+    /**
+     * 
+     * @return Mail
+     */
+    public function getMail() {
+        return $this->mail;
     }
 
     /**
@@ -291,18 +314,8 @@ class Account {
      */
     private function generateSecretKey() {
         try {
-            $secretKeyLength = 10;
-
-            $allowedCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-            $secretKey = '';
-
-            for ($i = 1; $i <= $secretKeyLength; $i++) {
-                $allowedCharactersLength = strlen($allowedCharacters);
-                $random = random_int(0, $allowedCharactersLength);
-                $secretKey .= mb_substr($allowedCharacters, $random, 1);
-            }
-
-            return $secretKey;
+            $authenticator = new GoogleAuthenticator();
+            return $authenticator->createSecret(); ;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -316,8 +329,30 @@ class Account {
      * 
      * @return type
      */
-    public function generateEncryptionKey() {
-        return bin2hex(openssl_random_pseudo_bytes(256));
+    public function generateEncryptionKey($username) {
+        $key = null;
+
+        if (sodium_crypto_aead_aes256gcm_is_available()) {
+            $key = sodium_crypto_aead_aes256gcm_keygen();
+        } else {
+            $key = sodium_crypto_aead_chacha20poly1305_keygen();
+        }
+
+        $length = strlen($key) / 2;
+        $keyArray = str_split($key, $length);
+
+        $key = base64_encode($keyArray[0]);
+        $keyLocal = base64_encode($keyArray[1]);
+
+        $hashUsername = md5($username);
+
+        $file = KEY_DIR . $hashUsername . '.key';
+
+
+        file_put_contents($file, $keyLocal);
+
+
+        return $key;
     }
 
     /**
@@ -327,7 +362,7 @@ class Account {
      */
     private function hashPassword($password) {
         try {
-            return password_hash($password, PASSWORD_DEFAULT, ["cost" => 12]);
+            return sodium_crypto_pwhash_str($password, SODIUM_CRYPTO_PWHASH_OPSLIMIT_MODERATE, SODIUM_CRYPTO_PWHASH_MEMLIMIT_MODERATE);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -346,39 +381,22 @@ class Account {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
-            $creation = false;
-            $ID = $this->getID();
             $username = $this->getUsername();
-            $password = $this->getPassword();
+            $password = $this->hashPassword($this->getPassword());
             $accessLevel = $this->getAccessLevel();
             $secretKey = $this->getSecretKey();
             $encryptionKey = $this->getEncryptionKey();
-            $sql = '';
-            $statement = new PDOStatement;
 
-            if ($ID == false) {
-                $creation = true;
-                $sql .= "INSERT INTO account (username,password,access_level,secret_key,encryption_key,validation_token) VALUES (:username,:password,:accessLevel,:secretKey,:encryptionKey,:validationToken)";
-                $statement = $dbConnection->prepare($sql);
-                $this->setValidationToken($this->generateValidationToken());
-                $validationToken = $this->getValidationToken();
-                $password = $this->hashPassword($this->getPassword());
-                $statement->bindParam(':username', $username, PDO::PARAM_STR);
-                $statement->bindParam(':password', $password, PDO::PARAM_STR);
-                $statement->bindParam(':accessLevel', $accessLevel, PDO::PARAM_INT);
-                $statement->bindParam(':secretKey', $secretKey, PDO::PARAM_STR);
-                $statement->bindParam(':encryptionKey', $encryptionKey, PDO::PARAM_STR);
-                $statement->bindParam(':validationToken', $validationToken, PDO::PARAM_STR);
-            } else {
-                $sql .= "UPDATE account SET (username,password,access_level,secret_key,encryption_key) VALUES (:username,:password,:accessLevel,:secretKey,:encryptionKey) WHERE id = :id";
-                $statement = $dbConnection->prepare($sql);
-                $statement->bindParam(':id', $ID, PDO::PARAM_INT);
-                $statement->bindParam(':username', $username, PDO::PARAM_STR);
-                $statement->bindParam(':password', $password, PDO::PARAM_STR);
-                $statement->bindParam(':accessLevel', $accessLevel, PDO::PARAM_INT);
-                $statement->bindParam(':secretKey', $secretKey, PDO::PARAM_STR);
-                $statement->bindParam(':encryptionKey', $encryptionKey, PDO::PARAM_STR);
-            }
+            $statement = $dbConnection->prepare("INSERT INTO account (username,password,access_level,secret_key,encryption_key,validation_token) VALUES (:username,:password,:accessLevel,:secretKey,:encryptionKey,:validationToken)");
+            $this->setValidationToken($this->generateValidationToken());
+            $validationToken = $this->getValidationToken();
+            $statement->bindParam(':username', $username, PDO::PARAM_STR);
+            $statement->bindParam(':password', $password, PDO::PARAM_STR);
+            $statement->bindParam(':accessLevel', $accessLevel, PDO::PARAM_INT);
+            $statement->bindParam(':secretKey', $secretKey, PDO::PARAM_STR);
+            $statement->bindParam(':encryptionKey', $encryptionKey, PDO::PARAM_STR);
+            $statement->bindParam(':validationToken', $validationToken, PDO::PARAM_STR);
+
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {
@@ -386,7 +404,7 @@ class Account {
                 }
             }
 
-            if ($success && $creation) {
+            if ($success) {
                 $this->sendUserInformation();
                 $this->sendValidationMail();
             }
@@ -403,6 +421,28 @@ class Account {
         }
     }
 
+    public function updateEncryptionKey($userID) {
+        $dbConnection = $this->getDatabase()->openConnection();
+
+        $success = false;
+
+        $encryptionKey = bin2hex($this->generateEncryptionKey($this->getUsername()));
+
+        $statement = $dbConnection->prepare("UPDATE account set encryption_key = :encryptionKey WHERE id = :id");
+        $statement->bindParam(":encryptionKey", $encryptionKey, PDO::PARAM_STR);
+        $statement->bindParam(":id", $userID, PDO::PARAM_INT);
+
+        if ($statement->execute()) {
+            if ($statement->rowCount() > 0) {
+                $success = true;
+            }
+        }
+
+        $this->getDatabase()->closeConnection($dbConnection);
+
+        return $success;
+    }
+
     /**
      * 
      */
@@ -411,19 +451,12 @@ class Account {
             $password = $this->getPassword();
             $username = $this->getUsername();
 
-            $host = $_SERVER['HTTP_HOST'];
-            $hostAddress = 'https://' . $host;
-
-            $header = 'From: no-reply@' . $host . "\r\n" .
-                    'X-Sender: ' . $hostAddress . "\r\n" .
-                    'X-Mailer: PHP/' . phpversion();
-
             $subject = 'Ihre Zugangsdaten zum Passwort-Tool';
             $message = 'Mit dieser E-Mail erhalten Sie Ihre Zugangsdaten zum Passwort-Tool. Nach erstmaligem Login müssen Sie einen neues Passwort vergeben.' . "\r\n";
             $message .= 'Benutzername: ' . $username . "\r\n";
             $message .= 'Passwort: ' . $password . "\r\n";
 
-            mail($username, $subject, $message, $header);
+            $this->getMail()->sendMail($subject, $message, $username);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -438,11 +471,9 @@ class Account {
      * @param type $id
      * @return type
      */
-    public function needPasswordChange($id) {
+    public function needPasswordChange($userID) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
-
-            $userID = filter_var($id, FILTER_VALIDATE_INT);
 
             $needChange = false;
 
@@ -477,7 +508,7 @@ class Account {
                 return false;
             }
 
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $username = $this->getUsername();
 
             $generatedPassword = $this->generatePassword();
             $this->setPassword($generatedPassword);
@@ -513,11 +544,10 @@ class Account {
      * @param type $name
      * @return boolean
      */
-    public function updateValidationToken($name) {
+    public function updateValidationToken($username) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
-            $username = filter_var($name, FILTER_VALIDATE_EMAIL);
             $validationToken = $this->generateValidationToken();
             $success = false;
 
@@ -589,15 +619,12 @@ class Account {
             $hostAddress = 'https://' . $host;
             $validationURL = $hostAddress . '/validation?u=' . $username . '&' . 't=' . $validationToken;
 
-            $header = 'From: no-reply@' . $host . "\r\n" .
-                    'X-Sender: ' . $hostAddress . "\r\n" .
-                    'X-Mailer: PHP/' . phpversion();
 
             $subject = 'Bestätigen Sie Ihren Zugang zum Passwort-Tool';
             $message = 'Bitte bestätigen Sie ihre E-Mail Adresse beim klick auf folgenden Link: ';
             $message .= $validationURL;
 
-            mail($username, $subject, $message, $header);
+            $this->getMail()->sendMail($subject, $message, $username);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -743,7 +770,7 @@ class Account {
         try {
             $this->setPassword($this->generatePassword());
             $this->setSecretKey($this->generateSecretKey());
-            $this->setEncryptionKey($this->generateEncryptionKey());
+            $this->setEncryptionKey($this->generateEncryptionKey($this->getUsername()));
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -796,7 +823,7 @@ class Account {
 
             $isSetup = false;
 
-            $username = filter_var($this->getUsername(), FILTER_VALIDATE_EMAIL);
+            $username = $this->getUsername();
 
             $statement = $dbConnection->prepare("SELECT authenticator_is_setup FROM account WHERE username = :username");
             $statement->bindParam(":username", $username, PDO::PARAM_STR);
@@ -941,7 +968,7 @@ class Account {
 
 
             if ($username == $savedUsername) {
-                if (password_verify($oldPassword, $savedPassword)) {
+                if (sodium_crypto_pwhash_str_verify($savedPassword, $oldPassword)) {
                     $password = $this->hashPassword($newPassword);
                     $statement = $dbConnection->prepare("UPDATE account SET password = :password WHERE id = :ID AND username = :username");
                     $statement->bindParam(":ID", $id, PDO::PARAM_INT);

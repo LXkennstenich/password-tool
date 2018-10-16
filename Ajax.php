@@ -30,15 +30,22 @@
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------------------------------------- */
+if (!defined('PASSTOOL')) {
+    die();
+}
 
 try {
+
     $request = json_decode($_POST['request']);
     $action = filter_var($request->action, FILTER_SANITIZE_STRING);
-    $userID = filter_var(base64_decode($request->uid), FILTER_VALIDATE_INT);
-    $sessionToken = filter_var($encryption->decrypt($request->tk, $userID), FILTER_SANITIZE_STRING);
-    $sessionTimestamp = filter_var($encryption->decrypt($request->ts, $userID), FILTER_SANITIZE_STRING);
-    $sessionIpAddress = filter_var(base64_decode($request->ipaddress), FILTER_VALIDATE_IP);
+    $userID = filter_var($encryption->systemDecrypt($request->uid), FILTER_VALIDATE_INT);
+    $sessionToken = filter_var($encryption->systemDecrypt($request->tk), FILTER_SANITIZE_STRING);
+    $sessionTimestamp = filter_var($encryption->systemDecrypt($request->ts), FILTER_SANITIZE_STRING);
+    $sessionIpAddress = $encryption->systemDecrypt($request->ipaddress);
     $searchTerm = filter_var($request->searchTerm, FILTER_SANITIZE_STRING);
+
+
+
 
     if ($action == 'View') {
         $file = VIEW_DIR . $request->file . '.view.php';

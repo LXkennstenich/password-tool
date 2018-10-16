@@ -38,18 +38,7 @@ if (!defined('PASSTOOL')) {
 
 </div>
 
-<script>
-    var request = {};
-    request.action = 'View';
-    request.file = 'dataset';
-    request.tk = token;
-    request.ts = timestamp;
-    request.ipaddress = ipaddress;
-    request.uid = uid;
-    request.searchTerm = searchTerm;
-    $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});
-
-</script>
+<script type="text/javascript" src="/Js/load-datasets.min.js" nonce="<?php echo $nonce; ?>"></script>
 
 <?php
 $projects = $factory->getProjects($sessionUID);
@@ -63,7 +52,6 @@ $projects = $factory->getProjects($sessionUID);
         <?php foreach ($projects as $project) { ?>
             <input type="submit" class="project-list-link" name="search" value="<?php echo $project; ?>">
         <?php } ?>
-        </ul>
     </form>
 
 

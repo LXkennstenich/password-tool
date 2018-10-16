@@ -40,7 +40,7 @@ $debugger = $factory->getDebugger();
 <div id="content-wrapper">
 
 </div>
-<script>
+<script type="text/javascript" nonce="<?php echo $nonce; ?>">
     var request = {};
     request.action = 'UpdateCheck';
     request.tk = token;

@@ -32,24 +32,17 @@
 if (!defined('PASSTOOL')) {
     die();
 }
-?>
 
+if ($page != 'account') {
+    ?>
 
-<div class="loading-div">
-    <img src="/Icons/ajax-loader.gif" />
-</div>
-<div class="ajax-message alert ">
+    <div class="loading-div">
+        <img src="/Icons/ajax-loader.gif" />
+    </div>
+    <div class="ajax-message alert ">
 
-</div>
-<script>
-    var $loading = $('.loading-div img').hide();
-    var $ajaxMessage = $('.ajax-message').hide();
-    $(document)
-            .ajaxStart(function () {
-                $loading.show();
-            })
-            .ajaxStop(function () {
-                $loading.hide();
-                $ajaxMessage.show();
-            });
-</script>
+    </div>
+
+<?php } ?>
+
+<script type="text/javascript"  src="/Js/ajax-loader.min.js" nonce="<?php echo $nonce; ?>"></script>

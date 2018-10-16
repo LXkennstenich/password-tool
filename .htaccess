@@ -1,17 +1,23 @@
 RewriteEngine On
 
 <IfModule mod_headers.c>
+Header always edit Set-Cookie (.*) "$1;HttpOnly;Secure"
 Header always unset "X-Powered-By" 
 Header unset "X-Powered-By"
 Header set Strict-Transport-Security "max-age=31536000; includeSubDomains;preload"
 Header always set X-XSS-Protection "1; mode=block"
 Header always set X-FRAME-OPTIONS "DENY"
-Header always edit Set-Cookie (.*) " $1; HttpOnly; Secure"
 Header always set X-Content-Type-Options "nosniff"
 Header set Referrer-Policy "same-origin"
+Header always set Feature-Policy "geolocation 'none'; midi 'none'; notifications 'none'; push 'none'; microphone 'none'; camera 'none'; magnetometer 'none'; gyroscope 'none'; speaker 'none'; vibrate 'none'; fullscreen 'none'; payment  'none'; sync-xhr 'self'"
 </IfModule>
 
 <Files "*.txt">
+Order Allow,Deny
+Deny from all
+</Files>
+
+<Files "*.key">
 Order Allow,Deny
 Deny from all
 </Files>
@@ -52,4 +58,20 @@ AddOutputFilterByType DEFLATE application/xhtml+xml
 AddOutputFilterByType DEFLATE application/rss+xml
 AddOutputFilterByType DEFLATE application/javascript
 AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType image/jpg "access 1 month"
+ExpiresByType image/jpeg "access 1 month"
+ExpiresByType image/gif "access 1 month"
+ExpiresByType image/png "access 1 month"
+ExpiresByType text/css "access 1 month"
+ExpiresByType text/html "access 1 month"
+ExpiresByType application/pdf "access 1 month"
+ExpiresByType text/x-javascript "access 1 month"
+ExpiresByType application/x-shockwave-flash "access 1 month"
+ExpiresByType image/x-icon "access 1 month"
+ExpiresDefault "access 1 month"
 </IfModule>

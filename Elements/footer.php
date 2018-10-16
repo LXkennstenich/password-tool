@@ -39,7 +39,7 @@ if (!defined('PASSTOOL')) {
     <?php } ?>
 </div>
 <?php if ($session->isAuthenticated() === true) { ?>
-    <script src = "/Js/user.min.js"></script>
+    <script type="text/javascript"  src = "/Js/user.min.js" nonce="<?php echo $nonce; ?>"></script>
 <?php } ?>
 </body>
 </html>

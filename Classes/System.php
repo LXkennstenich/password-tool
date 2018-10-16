@@ -57,14 +57,6 @@ class System extends Item {
         $this->data['cron_active'] = $cronActive;
     }
 
-    public function setCronUrl($cronURL) {
-        $this->data['cron_url'] = $cronURL;
-    }
-
-    public function setCronRecrypt($cronReCrypt) {
-        $this->data['cron_recrypt'] = $cronReCrypt;
-    }
-
     public function setCronToken($cronToken) {
         $this->data['cron_token'] = $cronToken;
     }
@@ -103,10 +95,6 @@ class System extends Item {
 
     public function getCronActive() {
         $this->data['cron_active'];
-    }
-
-    public function getCronUrl() {
-        $this->data['cron_url'];
     }
 
     public function getCronRecrypt() {
@@ -217,71 +205,6 @@ class System extends Item {
             $this->getDatabase()->closeConnection($dbConnection);
 
             return $token;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    private function getEncryptionKey($userID) {
-        try {
-            $dbConnection = $this->getDatabase()->openConnection();
-            $key = null;
-            $ID = filter_var($userID, FILTER_VALIDATE_INT);
-            $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :ID");
-            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-
-            if ($statement->execute()) {
-                while ($object = $statement->fetchObject()) {
-                    $key = $object->encryption_key;
-                }
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $key;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    public function updateEncryptionKey($id, $cronToken) {
-        try {
-            $token = (string) filter_var($cronToken, FILTER_SANITIZE_STRING);
-            $savedToken = (string) $this->queryCronToken();
-            $success = false;
-            if ($token === $savedToken) {
-
-                $newKey = $this->getAccount()->generateEncryptionKey();
-                $dbConnection = $this->getDatabase()->openConnection();
-                $ID = filter_var($id, FILTER_VALIDATE_INT);
-
-                $statement = $dbConnection->prepare("UPDATE account SET encryption_key = :encryptionKey WHERE id = :ID");
-                $statement->bindParam(':encryptionKey', $newKey, PDO::PARAM_STR);
-                $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
-
-                $oldKey = $this->getEncryptionKey($ID);
-
-                if ($statement->execute()) {
-                    if ($statement->rowCount() > 0) {
-                        $newKey = $this->getEncryptionKey($ID);
-                        if ($newKey != $oldKey) {
-                            $success = true;
-                        }
-                    }
-                }
-            }
-
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $success;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());

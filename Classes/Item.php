@@ -37,6 +37,7 @@ class Item implements ItemInterface {
      * @param string $tableName
      */
     public function __construct(string $tableName) {
+
         $this->setData(array());
         $this->setTableName($tableName);
     }
@@ -45,7 +46,7 @@ class Item implements ItemInterface {
      * 
      * @param string $tableName
      */
-    protected function setTableName($tableName) {
+    protected function setTableName(string $tableName) {
         $this->tableName = $tableName;
     }
 
@@ -53,7 +54,7 @@ class Item implements ItemInterface {
      * 
      * @return string
      */
-    protected function getTableName() {
+    protected function getTableName(): string {
         return $this->tableName;
     }
 
@@ -61,7 +62,7 @@ class Item implements ItemInterface {
      * 
      * @param array $array
      */
-    protected function setData($array) {
+    public function setData(array $array) {
         $this->data = $array;
     }
 
@@ -69,7 +70,7 @@ class Item implements ItemInterface {
      * 
      * @return array
      */
-    protected function getData() {
+    public function getData(): array {
         return $this->data;
     }
 
@@ -77,7 +78,7 @@ class Item implements ItemInterface {
      * 
      * @return boolean
      */
-    public function exists() {
+    public function exists(): bool {
         $dbConnection = $this->getDatabase()->openConnection();
 
         $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
@@ -101,7 +102,7 @@ class Item implements ItemInterface {
      * 
      * @return boolean
      */
-    public function insert() {
+    public function insert(): bool {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
@@ -148,7 +149,7 @@ class Item implements ItemInterface {
         }
     }
 
-    public function getColumnNames() {
+    public function getColumnNames(): array {
         $dbConnection = $this->getDatabase()->openConnection();
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
 
@@ -177,7 +178,7 @@ class Item implements ItemInterface {
      * 
      * @return boolean
      */
-    public function update() {
+    public function update(): bool {
         $dbConnection = $this->getDatabase()->openConnection();
 
         $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
@@ -189,7 +190,6 @@ class Item implements ItemInterface {
         $maxIndex = sizeof($data) - 1;
 
         $i = 0;
-
 
         foreach ($data as $key => $value) {
             if ($i < $maxIndex) {
@@ -219,10 +219,10 @@ class Item implements ItemInterface {
      * 
      * @return boolean
      */
-    public function delete() {
+    public function delete(): bool {
         $dbConnection = $this->getDatabase()->openConnection();
 
-        $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
+        $ID = $this->get('id');
         $success = false;
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
         $statement = $dbConnection->prepare("DELETE FROM $tableName WHERE id = :ID");
@@ -246,7 +246,7 @@ class Item implements ItemInterface {
     public function load() {
         $dbConnection = $this->getDatabase()->openConnection();
 
-        $ID = $this->get('id');
+        $ID = filter_var($this->get('id'), FILTER_VALIDATE_INT);
         $userID = filter_var($this->get('user_id'), FILTER_VALIDATE_INT);
 
         $tableName = filter_var($this->getTableName(), FILTER_SANITIZE_STRING);
@@ -265,16 +265,23 @@ class Item implements ItemInterface {
             $i++;
         }
 
-        if ($userID !== false) {
+
+        if ($ID !== false && $userID !== false) {
             $statement = $dbConnection->prepare("SELECT $columnString FROM $tableName WHERE id = :ID AND user_id = :userID");
             $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
-        } else {
+            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+        } else if ($userID === false) {
             $statement = $dbConnection->prepare("SELECT $columnString FROM $tableName WHERE id = :ID");
+            $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+        } else if ($ID === false) {
+            $statement = $dbConnection->prepare("SELECT $columnString FROM $tableName WHERE user_id = :userID");
+            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
         }
 
-        $statement->bindParam(':ID', $ID, PDO::PARAM_INT);
+
 
         if ($statement->execute()) {
+
             while ($object = $statement->fetchObject()) {
                 foreach ($columnNames as $column) {
                     $this->set($column, $object->$column);
@@ -287,16 +294,16 @@ class Item implements ItemInterface {
 
     /**
      * 
-     * @param type $key
+     * @param string $key
      * @return type
      */
-    public function get($key) {
+    public function get(string $key) {
         return array_key_exists($key, $this->data) ? $this->data[$key] : null;
     }
 
     /**
      * 
-     * @param type $key
+     * @param string $key
      * @param type $value
      */
     public function set($key, $value) {
@@ -307,7 +314,7 @@ class Item implements ItemInterface {
      * 
      * @param \Database $database
      */
-    protected function setDatabase($database) {
+    protected function setDatabase(\Database $database) {
         $this->database = $database;
     }
 
@@ -315,7 +322,7 @@ class Item implements ItemInterface {
      * 
      * @param \Debug $debug
      */
-    protected function setDebugger($debug) {
+    protected function setDebugger(\Debug $debug) {
         $this->debug = $debug;
     }
 
@@ -323,7 +330,7 @@ class Item implements ItemInterface {
      * 
      * @return \Database
      */
-    protected function getDatabase() {
+    protected function getDatabase(): \Database {
         return $this->database;
     }
 
@@ -331,7 +338,7 @@ class Item implements ItemInterface {
      * 
      * @return \Debug
      */
-    protected function getDebugger() {
+    protected function getDebugger(): \Debug {
         return $this->debug;
     }
 

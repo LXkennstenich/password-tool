@@ -34,50 +34,70 @@ if (!defined('PASSTOOL')) {
 }
 ?>
 <div id="navbar">
-    <form action="" method="post">
-        <input type="search" id="search-input" name="search" placeholder="Suche">
-    </form>
-    <ul class="nav-1">
 
-        <li class="nav1-item">
-            <a class="nav1-link" href="/export" title="Exportieren"><i class="fas fa-file-export"></i></a>
-        </li>
+    <div id="navbar-trigger">
 
-        <li class="nav1-item">
-            <a class="nav1-link" href="/clearcache" title="Cache löschen"><i class="fas fa-broom"></i></a>
-        </li>
+    </div>
 
-        <?php if ($page == 'account') { ?>
+    <div class="container">
+        <form action="" method="post">
+            <input type="search" id="search-input" name="search" placeholder="Suche">
+        </form>
+        <ul class="nav-1">
 
             <li class="nav1-item">
-                <a class="nav1-link" href="/checkforupdate"><i class="fas fa-sync-alt" style="<?= $system->updateAvailable() ? 'color:orange;' : '' ?>"></i></a>
+                <a class="nav1-link" href="/export" title="Exportieren"><i class="fas fa-file-export"></i> Exportieren</a>
             </li>
-
-        <?php } ?>
-
-        <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>
-            <li class="nav1-item">
-                <a class="nav1-link" id="newUserLink" href="#newUser"><i class="fas fa-user-plus"></i></a>
-            </li>
-        <?php } ?>
-
-        <?php if ($page == 'account') { ?>
 
             <li class="nav1-item">
-                <a class="nav1-link" id="createNewDatasetButton" href="#newDataset"><i class="fas fa-plus"></i></a>
+                <a id="clearCacheButton" class="nav1-link" title="Cache löschen"><i class="fas fa-broom"></i> Cache leeren</a>
             </li>
 
-        <?php } ?>
+            <?php if ($page == 'account') { ?>
 
-        <li class="nav1-item">
-            <a class="nav1-link" id="settingsLink" href="/settings"><i class="fas fa-cog"></i></a>
-        </li>
+                <?php
+                if (!apcu_exists('updateAvailable')) {
+                    $updateAvailable = $system->updateAvailable();
+                    apcu_store('updateAvailable', $updateAvailable, 1800);
+                } else {
+                    $updateAvailablef = apcu_fetch('updateAvailable');
+                }
+                ?>
 
-    </ul>
-    <form method="post" action="/logout" >
-        <input type="submit" value="Ausloggen">
-    </form>
+
+                <li class="nav1-item">
+                    <a class="nav1-link <?= $updateAvailable !== false ? 'orange' : '' ?>" href="/checkforupdate"><i class="fas fa-sync-alt"></i> Updates suchen</a>
+                </li>
+
+            <?php } ?>
+
+            <?php if ($sessionAccessLevel === SESSION_ADMIN) { ?>
+                <li class="nav1-item">
+                    <a class="nav1-link" id="newUserLink" href="#newUser"><i class="fas fa-user-plus"></i> Benutzer hinzufügen</a>
+                </li>
+            <?php } ?>
+
+            <?php if ($page == 'account') { ?>
+
+                <li class="nav1-item">
+                    <a class="nav1-link" id="createNewDatasetButton" href="#newDataset"><i class="fas fa-plus"></i> Neuer Datensatz</a>
+                </li>
+
+            <?php } ?>
+
+            <li class="nav1-item">
+                <a class="nav1-link" id="settingsLink" href="/settings"><i class="fas fa-cog"></i> Einstellungen</a>
+            </li>
+
+
+
+        </ul>
+        <form method="post" action="/logout" >
+            <input type="submit" value="Ausloggen">
+        </form>
+    </div>
 </div>
+
 
 
 

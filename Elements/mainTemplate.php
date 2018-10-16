@@ -33,11 +33,15 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+include_once ELEMENTS_DIR . 'header.php';
+
 $sessionAuthenticated = $session->isAuthenticated() && $session->needAuthenticator() === false ? true : false;
 
 if ($sessionAuthenticated === true) {
     include_once ELEMENTS_DIR . 'navbar.php';
 }
+
+include_once ELEMENTS_DIR . 'JsGlobals.php';
 ?>
 
 <div id = "main" class="container-fluid">

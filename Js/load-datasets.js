@@ -1,0 +1,12 @@
+var request = {};
+request.action = 'View';
+request.file = 'dataset';
+request.searchTerm = searchTerm;
+request.timestamp = requestTimestamp;
+request.tk = token;
+request.ts = timestamp;
+request.ipaddress = ipaddress;
+request.host = host;
+request.userAgent = userAgent;
+request.uid = uid;
+$("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});

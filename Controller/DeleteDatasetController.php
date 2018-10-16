@@ -37,17 +37,17 @@ if (!defined('PASSTOOL')) {
 
 $dataset = $factory->createDataset();
 
-$id = $request->id;
+$id = filter_var($request->id, FILTER_VALIDATE_INT);
 
 $dataset->setID($id);
 $dataset->setUserID($userID);
 $dataset->load();
 
 if ($dataset->delete()) {
-
+    apcu_clear_cache();
     echo "1";
 } else {
     echo "0";
 }
 
-apcu_clear_cache();
+

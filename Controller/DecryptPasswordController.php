@@ -39,15 +39,13 @@ $debugger = $factory->getDebugger();
 
 try {
 
-    $id = $request->id;
+    $id = filter_var($request->id, FILTER_VALIDATE_INT);
 
     $dataset = $factory->getDataset($id, $userID);
 
     $dataset->decrypt();
 
     echo $dataset->getPassword();
-
-    $dataset->encrypt();
 
     unset($dataset);
 } catch (Exception $ex) {

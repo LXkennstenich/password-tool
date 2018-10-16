@@ -93,6 +93,36 @@ body.login {
     height:100vh
 }
 
+#navbar-trigger {
+    display:block;
+    background:url(/Icons/bars-solid.png)center center no-repeat;
+    background-size:contain;
+    width:40px;
+    height:28px;
+    position: absolute;
+    top: 15px;
+    right: 50px;
+    cursor: pointer;
+}
+
+#navbar .container {
+    max-width: 320px;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    position: absolute;
+    top: 50px;
+    right: 30px;
+    display: block;
+    z-index: 999;
+}
+
+.nav-1 {
+    width: 100%;
+    max-width: 320px;
+    position: relative;
+}
 
 #login-form,.authenticator-form,#authenticator-setup,#first-time-password-change,.form {
     -webkit-box-sizing:border-box;
@@ -339,6 +369,12 @@ input[type=button],input[type=submit],.nav1-link,.button {
     right:0;
     text-decoration:none;
     border:none;
+
+}
+
+.nav1-link {
+    line-height: 40px;
+    border-bottom: 1px solid #fff;
 }
 
 input[type=submit],
@@ -347,14 +383,11 @@ input[type=button]{
 }
 
 form {
-    -webkit-box-sizing:border-box;
-    box-sizing:border-box;
-    display:inline-block;
-    float:left;
-    height:auto;
-    margin-left:10px;
-    padding-left:15px;
-    width:auto
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    display: inline-block;
+    height: auto;
+    width: 100%;
 }
 
 #navbar {
@@ -371,29 +404,28 @@ form {
     display:flex;
     height:auto;
     height:60px;
-    justify-content:center;
-    overflow:hidden;
+    justify-content:flex-start;
+    overflow:visible;
     position:relative;
     width:auto
 }
 
 #navbar form input {
-    -webkit-box-sizing:border-box;
-    box-sizing:border-box;
-    float:left;
-    height:35px;
-    margin-left:25px;
-    padding:8px;
-    position:relative
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    float: left;
+    height: 35px;
+    padding: 8px;
+    position: relative;
+    width: 100%;
 }
 
 .nav1-item {
     -webkit-box-sizing:border-box;
     box-sizing:border-box;
     display:inline-block;
-    float:left;
-    margin-left:25px;
-    text-align:center
+    text-align:center;
+    width: 100%;
 }
 
 #info {
@@ -495,13 +527,13 @@ i:first-child {
 }
 
 .container {
-    -webkit-box-sizing:border-box;
-    box-sizing:border-box;
-    float:left;
-    height:auto;
-    overflow:hidden;
-    padding:15px;
-    width:70%
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    float: left;
+    height: auto;
+    overflow: hidden;
+    padding: 15px;
+    width: 100%;
 }
 
 .dataset-title {
@@ -719,7 +751,11 @@ i:first-child {
 }
 
 .nav-list {
-    text-align:center;
+    text-align: center;
+    width: 300px;
+    position: absolute;
+    top: 150px;
+    right: 200px;
 }
 
 .project-list-link {
@@ -750,4 +786,8 @@ i:first-child {
     padding: 8px;
     position: relative;
     width: 100%;
+}
+
+.orange {
+    color:orange;
 }

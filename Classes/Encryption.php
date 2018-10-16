@@ -22,14 +22,59 @@ class Encryption {
 
     /**
      *
+     * @var string 
+     */
+    protected $username;
+
+    /**
+     *
+     * @var string 
+     */
+    protected $encryptionKey;
+
+    /**
+     *
      * @var \Debug 
      */
     protected $debugger;
 
-    public function __construct($database, $userID, $debugger) {
+    public function __construct(\Database $database, int $userID, \Debug $debugger, string $username) {
         $this->setDatabase($database);
         $this->setDebugger($debugger);
         $this->setUserID($userID);
+        $this->setUsername($username);
+    }
+
+    /**
+     * 
+     * @param string $username
+     */
+    public function setUsername(string $username) {
+        $this->username = $username;
+    }
+
+    /**
+     * 
+     * @return string
+     */
+    public function getUsername(): string {
+        return $this->username;
+    }
+
+    /**
+     * 
+     * @param string $encryptionKey
+     */
+    public function setEncryptionKey(string $encryptionKey) {
+        $this->encryptionKey = $encryptionKey;
+    }
+
+    /**
+     * 
+     * @return string
+     */
+    public function getEncryptionKey(): string {
+        return $this->encryptionKey;
     }
 
     /**
@@ -85,22 +130,31 @@ class Encryption {
      * @param int $userID
      * @return string
      */
-    private function getEncryptionKey(int $userID) {
+    public function queryEncryptionKey(int $userID): string {
         try {
-            $dbConnection = $this->getDatabase()->openConnection();
-            $encryptionKey = null;
-            $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :userID");
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+            if (!isset($this->encryptionKey)) {
+                $dbConnection = $this->getDatabase()->openConnection();
+                $encryptionKey = null;
+                $username = $this->getUsername();
 
-            if ($statement->execute()) {
-                while ($row = $statement->fetchObject()) {
-                    $encryptionKey = $row->encryption_key;
+                $hash = md5($username);
+                $file = KEY_DIR . $hash . '.key';
+                $key = base64_decode(file_get_contents($file));
+                $statement = $dbConnection->prepare("SELECT encryption_key FROM account WHERE id = :userID");
+                $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+
+                if ($statement->execute()) {
+                    while ($row = $statement->fetchObject()) {
+                        $encryptionKey = base64_decode($row->encryption_key);
+                    }
                 }
+
+                $this->getDatabase()->closeConnection($dbConnection);
+
+                $this->setEncryptionKey($encryptionKey . $key);
             }
 
-            $this->getDatabase()->closeConnection($dbConnection);
-
-            return $encryptionKey;
+            return $this->getEncryptionKey();
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -108,55 +162,32 @@ class Encryption {
 
             $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
         }
+    }
+
+    public function getSystemEncryptionKey(): string {
+        return base64_decode(file_get_contents(KEY_DIR . 'system.key'));
     }
 
     /**
      * 
+     * @param string $stringToEncrypt
      * @param int $userID
      * @return string
      */
-    public function getCipherMode(int $userID) {
+    public function encrypt(string $stringToEncrypt, int $userID): string {
         try {
-            $dbConnection = $this->getDatabase()->openConnection();
-            $cipherMode = null;
-            $statement = $dbConnection->prepare("SELECT cypher_mode FROM account WHERE id = :userID");
-            $statement->bindParam(':userID', $userID, PDO::PARAM_INT);
 
-            if ($statement->execute()) {
-                while ($row = $statement->fetchObject()) {
-                    $cipherMode = $row->cypher_mode;
-                }
-            }
+            $encryptedData = null;
 
-            $this->getDatabase()->closeConnection($dbConnection);
+            $nonce = random_bytes(SODIUM_CRYPTO_AEAD_AES256GCM_NPUBBYTES);
+            $ad = $nonce;
+            $key = $this->queryEncryptionKey($userID);
 
-            return $cipherMode;
-        } catch (Exception $ex) {
-            if (SYSTEM_MODE == 'DEV') {
-                $this->getDebugger()->printError($ex->getMessage());
-            }
-
-            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
-        }
-    }
-
-    public function encrypt(string $stringToEncrypt, int $userID) {
-        try {
-            $encryptionKey = $this->getEncryptionKey($userID);
-            $password = substr(hash('sha256', $encryptionKey, true), 0, 32);
-            $cipherMode = $this->getCipherMode($userID);
-            $encrypteddataFinal = null;
+            $encryptedData = sodium_crypto_aead_aes256gcm_encrypt($stringToEncrypt, $ad, $nonce, $key);
+            $encryptedData .= '||' . base64_encode($nonce);
 
 
-
-            if ($encryptionKey !== null && $cipherMode !== null) {
-                $cipherLength = openssl_cipher_iv_length($cipherMode);
-                $vektor = openssl_random_pseudo_bytes($cipherLength);
-                $encryptedData = base64_encode(openssl_encrypt($stringToEncrypt, $cipherMode, $password, OPENSSL_RAW_DATA, $vektor));
-                $encrypteddataFinal = $encryptedData . ':' . base64_encode($vektor);
-            }
-
-            return $encrypteddataFinal;
+            return base64_encode($encryptedData);
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -172,21 +203,20 @@ class Encryption {
      * @param int $userID
      * @return string
      */
-    public function decrypt($encryptedData, $userID) {
+    public function decrypt(string $encryptedData, int $userID): string {
         try {
-            $encryptionKey = $this->getEncryptionKey($userID);
-            $password = substr(hash('sha256', $encryptionKey, true), 0, 32);
-            $cipherMode = $this->getCipherMode($userID);
-            $decryptedDataFinal = null;
+            $decryptedData = null;
+            $encryptedData = base64_decode($encryptedData);
 
-            if ($encryptionKey != null && $cipherMode != null) {
-                $dataArray = explode(':', $encryptedData);
-                $encryptedPassword = base64_decode($dataArray[0]);
-                $vektor = base64_decode($dataArray[1]);
-                $decryptedDataFinal = openssl_decrypt($encryptedPassword, $cipherMode, $password, OPENSSL_RAW_DATA, $vektor);
-            }
+            $dataArray = explode('||', $encryptedData);
+            $nonce = base64_decode($dataArray[1]);
+            $ad = $nonce;
+            $key = $this->queryEncryptionKey($userID);
+            $encryptedString = $dataArray[0];
+            $decryptedData = sodium_crypto_aead_aes256gcm_decrypt($encryptedString, $ad, $nonce, $key);
 
-            return $decryptedDataFinal;
+
+            return $decryptedData;
         } catch (Exception $ex) {
             if (SYSTEM_MODE == 'DEV') {
                 $this->getDebugger()->printError($ex->getMessage());
@@ -196,7 +226,67 @@ class Encryption {
         }
     }
 
-    public function generatePassword($length, $lowerCharacters, $higherCharacters, $numeric, $specialChars) {
+    /**
+     * 
+     * @param string $dataToEncrypt
+     * @return string | null
+     */
+    public function systemEncrypt(string $dataToEncrypt) {
+        try {
+            $nonce = random_bytes(SODIUM_CRYPTO_AEAD_AES256GCM_NPUBBYTES);
+            $ad = $nonce;
+            $key = $this->getSystemEncryptionKey();
+            $encryptedData = sodium_crypto_aead_aes256gcm_encrypt($dataToEncrypt, $ad, $nonce, $key);
+            $encryptedData .= '||' . base64_encode($nonce);
+
+
+            return base64_encode($encryptedData);
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    /**
+     * 
+     * @param string $dataToDecrypt
+     * @return string | null
+     */
+    public function systemDecrypt(string $dataToDecrypt) {
+        try {
+            $encryptedData = base64_decode($dataToDecrypt);
+
+            $dataArray = explode('||', $encryptedData);
+            $nonce = base64_decode($dataArray[1]);
+            $ad = $nonce;
+            $key = $this->getSystemEncryptionKey();
+            $encryptedString = $dataArray[0];
+            $decryptedData = sodium_crypto_aead_aes256gcm_decrypt($encryptedString, $ad, $nonce, $key);
+
+
+            return $decryptedData;
+        } catch (Exception $ex) {
+            if (SYSTEM_MODE == 'DEV') {
+                $this->getDebugger()->printError($ex->getMessage());
+            }
+
+            $this->getDebugger()->databaselog('Ausnahme: ' . $ex->getMessage() . ' Zeile: ' . __LINE__ . ' Datei: ' . __FILE__ . ' Klasse: ' . __CLASS__);
+        }
+    }
+
+    /**
+     * 
+     * @param int $length
+     * @param bool $lowerCharacters
+     * @param bool $higherCharacters
+     * @param bool $numeric
+     * @param bool $specialChars
+     * @return string
+     */
+    public function generatePassword(int $length, bool $lowerCharacters, bool $higherCharacters, bool $numeric, bool $specialChars): string {
         try {
             $passwortLength = $length;
 

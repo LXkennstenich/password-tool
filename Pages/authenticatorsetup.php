@@ -40,7 +40,9 @@ if (!defined('PASSTOOL')) {
     <p for="qr-code">Scannen Sie diesen QR-Code mit Ihrer Google-Authenticator-App</p>
     <?php
     try {
-        echo '<img id="qr-code" src="' . \Sonata\GoogleAuthenticator\GoogleQrUrl::generate($sessionUsername, $account->querySecretKey($sessionUID), $host) . '" width="200" height="200" alt="">';
+        $ga = $factory->getGoogleAuthenticator();
+        $src = $ga->getQRCodeGoogleUrl($host, $account->querySecretKey($sessionUID));
+        echo '<img id="qr-code" src="' . $src . '" width="200" height="200" alt="">';
     } catch (Exception $ex) {
         echo $ex->getMessage();
     }

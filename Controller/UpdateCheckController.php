@@ -42,6 +42,7 @@ try {
 
     if (!apcu_exists('updateAvailable')) {
         $commitHash = $system->updateAvailable();
+        apcu_store('updateAvailable', $commitHash, 1800);
     } else {
         $commitHash = apcu_fetch('updateAvailable');
     }
@@ -61,8 +62,6 @@ try {
     } else {
         echo 'no update available';
     }
-
-    apcu_clear_cache();
 } catch (Exception $ex) {
     $debugger->log($ex->getMessage());
 }

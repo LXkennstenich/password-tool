@@ -19,9 +19,12 @@ $('.delete-dataset-link').bind('click touch', function () {
     if (confirm("Den ausgewählten Datensatz wirklich löschen?")) {
         var request = {};
         request.action = 'DeleteDataset';
+        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
+        request.host = host;
+        request.userAgent = userAgent;
         request.uid = uid;
         request.id = $(this).attr('datasetid');
         $.ajax({
@@ -50,9 +53,12 @@ $('.copy-password').bind('click touch', function () {
 
     var request = {};
     request.action = 'DecryptPassword';
+    request.timestamp = requestTimestamp;
     request.tk = token;
     request.ts = timestamp;
     request.ipaddress = ipaddress;
+    request.host = host;
+    request.userAgent = userAgent;
     request.uid = uid;
     request.id = $(this).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
 

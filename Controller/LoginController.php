@@ -33,14 +33,19 @@
 if (!defined('PASSTOOL')) {
     die();
 }
+$username = filter_var($request->username, FILTER_VALIDATE_EMAIL);
+$userID = $factory->getUserID($username);
+
+if ($userID === null || $userID <= 0) {
+    exit('Benutzername oder Passwort ist nicht korrekt');
+}
 
 $options = $factory->getOptions();
 $options->setUserID($userID);
 $options->load();
-$emailNotificationLoginFailed = $options->getEmailNotificationLoginFailed();
 $emailNotificationLogin = $options->getEmailNotificationLogin();
 $debugger = $factory->getDebugger();
-$username = filter_var($request->username, FILTER_VALIDATE_EMAIL);
+
 
 try {
     $time = microtime(true);
@@ -51,11 +56,7 @@ try {
     if ($timeCalculated > 500 || $timeCalculated < 1) {
         $message = 'Zeitüberschreitung Formular || Datei: ' . __FILE__ . ' Zeit: ' . $timeCalculated;
         $debugger->log($message);
-
-        if ($emailNotificationLoginFailed != false) {
-            $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
-        }
-
+        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
         exit('Fehler bei der Anfrage bitte Seite neu laden');
     }
 
@@ -130,9 +131,9 @@ try {
 
         $debugger->log($message);
 
-        if ($emailNotificationLoginFailed != false) {
-            $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
-        }
+
+        $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
+
 
         echo "Benutzername oder Passwort ist nicht korrekt";
     }

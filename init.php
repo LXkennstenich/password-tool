@@ -34,26 +34,48 @@ if (!defined('PASSTOOL')) {
     die();
 }
 
+include_once 'defines.php';
+
 if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') {
     exit('Kein SSL Zertifikat vorhanden! Diese Software setzt das vorhanden sein eines SSL-Zertifikats voraus, um höchstmögliche Sicherheit zu bieten.');
 }
 
+
+
+$pageArray = array();
+
+if (!apcu_exists('pageArray')) {
+    $pageArray = scandir('Pages');
+    apcu_store('pageArray', serialize($pageArray), 3600);
+} else {
+    $pageArray = unserialize(apcu_fetch('pageArray'));
+}
+
+$file = $page . '.php';
+$isPage = false;
+
+if (in_array($file, $pageArray)) {
+    $filePath = ROOT_DIR . 'Pages/' . $file;
+    $isPage = true;
+} else {
+    $filePath = ROOT_DIR . $file;
+}
+
 $standardProject = '';
 
-include_once 'defines.php';
+
 
 if (SYSTEM_MODE == 'DEV') {
     ini_set('display_errors', 1);
     error_reporting(E_ALL ^ E_NOTICE);
 }
 
-require_once ROOT_DIR . 'vendor/autoload.php';
-
 spl_autoload_register(function($class) {
     include_once CLASS_DIR . $class . '.php';
 });
 
 $factory = Factory::getInstance();
+
 $sessionUID = $factory->getSessionUID();
 $sessionUsername = $factory->getSessionUsername();
 $sessionIP = $factory->getSessionIpaddress() !== null ? $factory->getSessionIpaddress() : $_SERVER['REMOTE_ADDR'];
@@ -62,11 +84,16 @@ $sessionTimestamp = $factory->getSessionTimestamp();
 $sessionAccessLevel = $factory->getSessionAccessLevel();
 $sessionExpires = $factory->getSessionExpires();
 $sessionExpired = time() >= $sessionExpires && $sessionExpires != null ? true : false;
+
+if ($page != 'logout' && $sessionExpired == true) {
+    $factory->redirect('logout');
+}
+
 $searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
 
 $userAgent = $factory->getSessionUserAgent() !== null ? $factory->getSessionUserAgent() : $_SERVER['HTTP_USER_AGENT'];
 $isSearch = $searchTerm != $standardProject ? true : false;
-$host = isset($_SERVER['SERVER_NAME']) ? filter_var($_SERVER['SERVER_NAME'], FILTER_SANITIZE_URL) : filter_var($_SERVER['HTTP_HOST'], FILTER_SANITIZE_URL);
+
 
 $session = $factory->getSession();
 $session->setIpaddress($sessionIP);
@@ -74,23 +101,43 @@ $session->setHost($host);
 $session->setUseragent($userAgent);
 $session->setUsername($sessionUsername);
 $session->setUserID($sessionUID);
-$account = $factory->getAccount();
-$account->setUsername($sessionUsername);
-$encryption = $factory->getEncryption();
-$system = $factory->getSystem();
-$system->setID(1);
-$system->load();
-$options = $factory->getOptions();
-$options->setUserID($sessionUID);
-$options->load();
-$debugger = $factory->getDebugger();
 
-if ($session->isAuthenticated() !== false) {
-    if ($userAgent != $_SERVER['HTTP_USER_AGENT'] || $sessionIP != $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '' || $_SERVER['HTTP_USER_AGENT'] == '') {
-        $factory->redirect('logout');
+$encryption = $factory->getEncryption();
+
+if ($page != 'installation') {
+
+    $account = $factory->getAccount();
+    $account->setUsername($sessionUsername);
+
+    $system = $factory->getSystem();
+    $system->setID(1);
+    $system->load();
+    $options = $factory->getOptions();
+    $options->setUserID($sessionUID);
+    $options->load();
+    $debugger = $factory->getDebugger();
+
+    if ($session->isAuthenticated() !== false) {
+        if ($userAgent != $_SERVER['HTTP_USER_AGENT'] || $sessionIP != $_SERVER['REMOTE_ADDR'] || $_SERVER['REMOTE_ADDR'] == '' || $_SERVER['HTTP_USER_AGENT'] == '') {
+            $factory->redirect('logout');
+        }
+    }
+
+
+    include_once ELEMENTS_DIR . 'authCheck.php';
+
+    if ($session->cookiesSet() !== true && $session->isAuthenticated() !== true && $session->isValid()) {
+        $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
+        $cookieTimestampEncrypted = $encryption->systemEncrypt($cookieTimestamp);
+        $cookieToken = $encryption->systemEncrypt($sessionToken);
+        $sessionID = $_SESSION['PHPSESSID'];
+
+        setcookie('PHPSESSID', $sessionID, $cookieTimestamp, '/', $host, true, true);
+        setcookie('TK', $cookieToken, $cookieTimestamp, '/', $host, true, true);
+        setcookie('TS', $cookieTimestampEncrypted, $cookieTimestamp, '/', $host, true, true);
+        $factory->redirect('login');
     }
 }
-
 
 
 

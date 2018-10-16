@@ -35,7 +35,7 @@ if (!defined('PASSTOOL')) {
 }
 
 $encryption = $factory->getEncryption();
-$length = $request->length;
+$length = filter_var($request->length, FILTER_VALIDATE_INT);
 $lowerCharacters = $request->lowerCharacters == 1 ? true : false;
 $highCharacters = $request->highCharacters == 1 ? true : false;
 $numbers = $request->numbers == 1 ? true : false;

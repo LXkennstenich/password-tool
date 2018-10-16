@@ -24,6 +24,7 @@ $(document).ready(function () {
         request.ipaddress = ipaddress;
         request.host = host;
         request.userAgent = userAgent;
+        request.uid = uid;
 
         $.ajax({
             'type': 'POST',
@@ -31,7 +32,7 @@ $(document).ready(function () {
             'url': getAjaxUrl(),
             'success': function (data) {
                 if (parseInt(data) == 1) {
-                    window.location.href = '/account';
+                    window.location.href = '/login';
                 } else {
                     $('.ajax-message').addClass('alert-error');
                     $('.ajax-message').text(data);
