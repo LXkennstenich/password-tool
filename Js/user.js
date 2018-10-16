@@ -11,7 +11,7 @@ $(document).ready(function () {
     $('.container').hide();
 
     $('#navbar-trigger').bind('click touch', function () {
-        if($(this).hasClass('open') === false) {
+        if ($(this).hasClass('open') === false) {
             $(this).addClass('open');
             $(this).next('.container').slideDown('slow');
         } else {
@@ -30,6 +30,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
 
         $.ajax({
             'type': 'POST',
@@ -58,6 +59,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.title = document.getElementById('datasetTitle').value;
         request.login = document.getElementById('datasetLogin').value;
         request.password = document.getElementById('datasetPassword').value;
@@ -97,6 +99,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.cronActive = document.getElementById('cronActive').checked !== false ? 1 : 0;
         request.clearSessionData = document.getElementById('cronClearSessionData').checked !== false ? 1 : 0;
         request.recrypt = document.getElementById('cronRecrypt').checked !== false ? 1 : 0;
@@ -130,6 +133,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.length = document.getElementById('passwordLengthBox').value;
         request.lowerCharacters = document.getElementById('lowerCharacters').checked !== false ? 1 : 0;
         request.highCharacters = document.getElementById('highCharacters').checked !== false ? 1 : 0;
@@ -161,6 +165,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.validate = 1;
 
         $.ajax({
@@ -189,6 +194,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.code = document.getElementById('authenticator-code').value;
 
         $.ajax({
@@ -219,6 +225,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.username = document.getElementById('username-input').value;
         request.oldPassword = document.getElementById('password-input-old').value;
         request.newPassword = document.getElementById('password-input-new').value;
@@ -258,6 +265,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.username = document.getElementById('newUsername').value;
         request.accessLevel = document.getElementById('newAccessLevel').value;
         $.ajax({
@@ -304,6 +312,7 @@ function showPassword(selector) {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.id = $(selector).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
 
         $.ajax({

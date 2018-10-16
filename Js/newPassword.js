@@ -23,6 +23,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
 
         if(request.username == '') {
             return false;

@@ -36,6 +36,7 @@ if (!defined('PASSTOOL')) {
 
 if (apcu_clear_cache()) {
     $cacheInfo = apcu_cache_info(true);
+
     if ($cacheInfo !== false && $cacheInfo['mem_size'] <= 0) {
         echo '1';
     } else {

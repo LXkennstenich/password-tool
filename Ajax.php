@@ -43,9 +43,8 @@ try {
     $sessionTimestamp = filter_var($encryption->systemDecrypt($request->ts), FILTER_SANITIZE_STRING);
     $sessionIpAddress = $encryption->systemDecrypt($request->ipaddress);
     $searchTerm = filter_var($request->searchTerm, FILTER_SANITIZE_STRING);
-
-
-
+    $userAgent = filter_var($encryption->systemDecrypt($request->userAgent), FILTER_SANITIZE_STRING);
+    $accessLevel = filter_var($encryption->systemDecrypt($request->accessLevel), FILTER_VALIDATE_INT);
 
     if ($action == 'View') {
         $file = VIEW_DIR . $request->file . '.view.php';
@@ -58,7 +57,7 @@ try {
             $file = CONTROLLER_DIR . $action . 'Controller.php';
             include_once $file;
         } else {
-            if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID)) {
+            if ($session->ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID, $userAgent, $accessLevel)) {
                 include_once $file;
             }
         }

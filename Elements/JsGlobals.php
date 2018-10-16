@@ -40,6 +40,7 @@ $sessionTimestampEncrypted = $encryption->systemEncrypt($sessionTimestamp);
 $sessionIpAddressEncoded = $encryption->systemEncrypt($sessionIP);
 $sessionHostEncrypted = $encryption->systemEncrypt($host);
 $sessionUserAgentEncrypted = $encryption->systemEncrypt($userAgent);
+$sessionAccessLevelEncrypted = $encryption->systemEncrypt($sessionAccessLevel);
 ?>
 
 <input type="hidden" id="searchTerm" value="<?php echo $searchTerm; ?>" />
@@ -49,6 +50,7 @@ $sessionUserAgentEncrypted = $encryption->systemEncrypt($userAgent);
 <input type="hidden" id="sessionIpAddress" value="<?php echo $sessionIpAddressEncoded; ?>" />
 <input type="hidden" id="sessionHost" value="<?php echo $sessionHostEncrypted; ?>" />
 <input type="hidden" id="sessionUserAgent" value="<?php echo $sessionUserAgentEncrypted; ?>" />
+<input type="hidden" id="sessionAccessLevel" value="<?php echo $sessionAccessLevelEncrypted; ?>" />
 <input type="hidden" id="requestTimestamp" value="<?php echo microtime(true); ?>" />
 
 <script type="text/javascript"  src="/Js/js-globals.min.js" nonce="<?php echo $nonce; ?>"></script>

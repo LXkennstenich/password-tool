@@ -25,6 +25,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
 
         $.ajax({
             'type': 'POST',

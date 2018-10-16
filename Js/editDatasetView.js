@@ -16,6 +16,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.id = document.getElementById('edit-dataset-id').value;
         request.title = document.getElementById('datasetTitle').value;
         request.login = document.getElementById('datasetLogin').value;
@@ -50,6 +51,7 @@ $(document).ready(function () {
         request.host = host;
         request.userAgent = userAgent;
         request.uid = uid;
+        request.accessLevel = accessLevel;
         request.length = document.getElementById('passwordLengthBox').value;
         request.lowerCharacters = document.getElementById('lowerCharacters').checked !== false ? 1 : 0;
         request.highCharacters = document.getElementById('highCharacters').checked !== false ? 1 : 0;

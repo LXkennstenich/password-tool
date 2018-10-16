@@ -39,6 +39,19 @@ switch ($page) {
         if ($session->isAuthenticated() === true) {
             $factory->redirect('account');
         }
+
+        if ($session->cookiesSet() !== true && $session->isAuthenticated() !== true && $session->isValid()) {
+            $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
+            $cookieTimestampEncrypted = $encryption->systemEncrypt($cookieTimestamp);
+            $cookieToken = $encryption->systemEncrypt($sessionToken);
+            $sessionID = $_SESSION['PHPSESSID'];
+
+            setcookie('PHPSESSID', $sessionID, 0, '/', $host, true, true);
+            setcookie('TK', $cookieToken, 0, '/', $host, true, true);
+            setcookie('TS', $cookieTimestampEncrypted, 0, '/', $host, true, true);
+            $factory->redirect('login');
+        }
+
         break;
     case 'newpassword':
         if ($session->isAuthenticated() === true) {

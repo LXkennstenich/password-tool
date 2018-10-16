@@ -40,7 +40,7 @@ if (!defined('PASSTOOL')) {
     <input type="password" id="password-input" class="row-fluid" placeholder="Passwort">
     <a id="login-button" class="btn btn-primary">Login</a>
     <a class="forgot-password-link" href="/newpassword">Passwort vergessen ?</a>
-    <?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
+<?php include_once ELEMENTS_DIR . 'ajaxLoader.php'; ?>
 </div>
 
 <script type="text/javascript"  src="/Js/login.min.js" nonce="<?php echo $nonce; ?>"></script>

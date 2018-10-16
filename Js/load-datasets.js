@@ -9,4 +9,5 @@ request.ipaddress = ipaddress;
 request.host = host;
 request.userAgent = userAgent;
 request.uid = uid;
+request.accessLevel = accessLevel;
 $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});

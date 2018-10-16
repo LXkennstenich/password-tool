@@ -85,10 +85,6 @@ $sessionAccessLevel = $factory->getSessionAccessLevel();
 $sessionExpires = $factory->getSessionExpires();
 $sessionExpired = time() >= $sessionExpires && $sessionExpires != null ? true : false;
 
-if ($page != 'logout' && $sessionExpired == true) {
-    $factory->redirect('logout');
-}
-
 $searchTerm = isset($_POST['search']) ? filter_var($_POST['search'], FILTER_SANITIZE_STRING) : $standardProject;
 
 $userAgent = $factory->getSessionUserAgent() !== null ? $factory->getSessionUserAgent() : $_SERVER['HTTP_USER_AGENT'];
@@ -125,18 +121,6 @@ if ($page != 'installation') {
 
 
     include_once ELEMENTS_DIR . 'authCheck.php';
-
-    if ($session->cookiesSet() !== true && $session->isAuthenticated() !== true && $session->isValid()) {
-        $cookieTimestamp = $sessionTimestamp + (60 * 60 * 2);
-        $cookieTimestampEncrypted = $encryption->systemEncrypt($cookieTimestamp);
-        $cookieToken = $encryption->systemEncrypt($sessionToken);
-        $sessionID = $_SESSION['PHPSESSID'];
-
-        setcookie('PHPSESSID', $sessionID, $cookieTimestamp, '/', $host, true, true);
-        setcookie('TK', $cookieToken, $cookieTimestamp, '/', $host, true, true);
-        setcookie('TS', $cookieTimestampEncrypted, $cookieTimestamp, '/', $host, true, true);
-        $factory->redirect('login');
-    }
 }
 
 

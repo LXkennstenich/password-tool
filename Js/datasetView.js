@@ -27,6 +27,7 @@ $('.delete-dataset-link').bind('click touch', function () {
         request.userAgent = userAgent;
         request.uid = uid;
         request.id = $(this).attr('datasetid');
+        request.accessLevel = accessLevel;
         $.ajax({
             'type': 'POST',
             'data': {"request": JSON.stringify(request)},
@@ -60,6 +61,7 @@ $('.copy-password').bind('click touch', function () {
     request.host = host;
     request.userAgent = userAgent;
     request.uid = uid;
+    request.accessLevel = accessLevel;
     request.id = $(this).parent('.row').parent('.content').parent('.dataset').children('.datasetID').val();
 
     $.ajax({

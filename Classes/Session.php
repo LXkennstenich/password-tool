@@ -156,7 +156,7 @@ class Session {
 
     /**
      * 
-     * @param type $username
+     * @param string $ipaddress
      */
     public function setIpaddress($ipaddress) {
         $this->ip_address = $ipaddress;
@@ -534,7 +534,7 @@ class Session {
     public function countLoginAttempt($username) {
         try {
             $success = false;
-            $attempts = $this->getLoginAttempts($name) == '' || $this->getLoginAttempts($name) == null ? 0 : $this->getLoginAttempts($name);
+            $attempts = $this->getLoginAttempts($username) == '' || $this->getLoginAttempts($username) == null ? 0 : $this->getLoginAttempts($username);
             $attempts++;
 
             $dbConnection = $this->getDatabase()->openConnection();
@@ -644,7 +644,7 @@ class Session {
     }
 
     public function cookiesSet() {
-        return isset($_COOKIE['PHPSESSID']) && isset($_COOKIE['TK']) && isset($_COOKIE['TS']) ? true : false;
+        return isset($_COOKIE['PHPSESSID']) && isset($_COOKIE['TK']) && isset($_COOKIE['TS']) && $_COOKIE['TS'] != '' && $_COOKIE['TK'] != '' ? true : false;
     }
 
     /**
@@ -694,8 +694,9 @@ class Session {
             $saveTimestamp = $sessionTimestamp;
             $saveIpaddress = $_SESSION['IP'];
             $saveUseragent = $_SESSION['UA'];
+            $saveAccessLevel = $_SESSION['AL'];
 
-            $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent);
+            $this->saveSessionData($userID, $saveID, $saveToken, $saveTimestamp, $saveIpaddress, $saveUseragent, $saveAccessLevel);
 
             return true;
         } catch (Exception $ex) {
@@ -715,12 +716,14 @@ class Session {
      * @param string $userID
      * @return boolean
      */
-    public function ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID) {
+    public function ajaxCheck($sessionToken, $sessionTimestamp, $sessionIpAddress, $userID, $userAgent, $accessLevel) {
         try {
             $sessionData = $this->queryAjaxSessionData($userID);
             $savedToken = $sessionData['session_token'];
             $savedTimestamp = $sessionData['session_timestamp'];
             $savedIpaddress = $sessionData['session_ipaddress'];
+            $savedUseragent = $sessionData['session_useragent'];
+            $savedAccessLevel = $sessionData['session_accesslevel'];
 
             if ($sessionToken == '') {
                 return false;
@@ -738,6 +741,14 @@ class Session {
                 return false;
             }
 
+            if ($savedUseragent == '') {
+                return false;
+            }
+
+            if ($savedAccessLevel == '') {
+                return false;
+            }
+
             if ($savedTimestamp != $sessionTimestamp) {
                 return false;
             }
@@ -747,6 +758,14 @@ class Session {
             }
 
             if ($sessionIpAddress != $savedIpaddress) {
+                return false;
+            }
+
+            if ($savedUseragent != $userAgent) {
+                return false;
+            }
+
+            if ($savedAccessLevel != $accessLevel) {
                 return false;
             }
 
@@ -764,7 +783,7 @@ class Session {
         try {
             $authenticated = true;
 
-            if (!isset($_COOKIE['TS']) || !isset($_COOKIE['TK'])) {
+            if (!$this->cookiesSet()) {
                 return false;
             }
 
@@ -802,6 +821,10 @@ class Session {
 
             if (!isset($_SESSION['TS']) || $_SESSION['TS'] + (60 * 60 * 2) != $cookieTimestamp) {
                 $authenticated = false;
+            }
+
+            if ($authenticated === false) {
+                $this->deleteSessionData($_SESSION['UID']);
             }
 
             return $authenticated;
@@ -865,7 +888,7 @@ class Session {
 
             $sessionData = array();
 
-            $statement = $dbConnection->prepare("SELECT session_token,session_timestamp,session_ipaddress FROM session WHERE user_id = :userID");
+            $statement = $dbConnection->prepare("SELECT session_token,session_timestamp,session_ipaddress,session_useragent,session_accesslevel FROM session WHERE user_id = :userID");
             $statement->bindParam(":userID", $userID, PDO::PARAM_STR);
 
             if ($statement->execute()) {
@@ -873,6 +896,8 @@ class Session {
                     $sessionData['session_token'] = $object->session_token;
                     $sessionData['session_timestamp'] = $object->session_timestamp;
                     $sessionData['session_ipaddress'] = $object->session_ipaddress;
+                    $sessionData['session_useragent'] = $object->session_useragent;
+                    $sessionData['session_accesslevel'] = (int) $object->session_accesslevel;
                 }
             }
 
@@ -888,19 +913,20 @@ class Session {
         }
     }
 
-    private function saveSessionData($userID, $sessionID, $sessionToken, $sessionTimestamp, $sessionIpaddress, $sessionUserAgent) {
+    private function saveSessionData($userID, $sessionID, $sessionToken, $sessionTimestamp, $sessionIpaddress, $sessionUserAgent, $sessionAccessLevel) {
         try {
             $dbConnection = $this->getDatabase()->openConnection();
 
             $success = false;
 
-            $statement = $dbConnection->prepare("INSERT INTO session (user_id,session_id,session_token,session_timestamp,session_ipaddress,session_useragent) VALUES (:userID,:sessionID,:sessionToken,:sessionTimestamp,:sessionIpaddress,:sessionUseragent)");
+            $statement = $dbConnection->prepare("INSERT INTO session (user_id,session_id,session_token,session_timestamp,session_ipaddress,session_useragent,session_accesslevel) VALUES (:userID,:sessionID,:sessionToken,:sessionTimestamp,:sessionIpaddress,:sessionUseragent,:sessionAccessLevel)");
             $statement->bindParam(":userID", $userID, PDO::PARAM_INT);
             $statement->bindParam(":sessionID", $sessionID, PDO::PARAM_STR);
             $statement->bindParam(":sessionToken", $sessionToken, PDO::PARAM_STR);
             $statement->bindParam(":sessionTimestamp", $sessionTimestamp, PDO::PARAM_STR);
             $statement->bindParam(":sessionIpaddress", $sessionIpaddress, PDO::PARAM_STR);
             $statement->bindParam(":sessionUseragent", $sessionUserAgent, PDO::PARAM_STR);
+            $statement->bindParam(":sessionAccessLevel", $sessionAccessLevel, PDO::PARAM_INT);
 
             if ($statement->execute()) {
                 if ($statement->rowCount() > 0) {

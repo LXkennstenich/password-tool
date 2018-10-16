@@ -7,6 +7,7 @@ var timestamp = $('#sessionTimestamp').val();
 var ipaddress = $('#sessionIpAddress').val();
 var host = $('#sessionHost').val();
 var userAgent = $('#sessionUserAgent').val();
+var accessLevel = $('#sessionAccessLevel').val();
 var requestTimestamp = $('#requestTimestamp').val();
 
     function getAjaxUrl() {
