@@ -89,7 +89,7 @@ $dataset->decrypt();
 
     <div class="row">
         <label for="datasetProject">Projekt</label>
-        <input type="text" placeholder="" id="datasetProject" class="form-input" value="<?php echo $dataset->getProject(); ?>">
+        <input type="text" id="datasetProject" class="form-input" value="<?php echo $dataset->getProject(); ?>">
     </div>
 
     <button id="updateDatasetButton"  class="button">Aktualisieren</button>

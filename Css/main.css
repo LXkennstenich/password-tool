@@ -264,6 +264,17 @@ body.login {
     width:50%
 }
 
+.alert {
+    display: block;
+    width: 470px;
+    font-size: 40px;
+    line-height: 50px;
+    margin: 0 auto;
+    position: relative;
+    font-family: "Roboto" !important;
+    text-align: center;
+}
+
 #search-button {
     background-image:url(/Icons/search.png);
     background-position:left center;

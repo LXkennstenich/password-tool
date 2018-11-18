@@ -142,4 +142,14 @@ switch ($page) {
             $factory->redirect('login');
         }
         break;
+    case 'export':
+        if ($session->isAuthenticated() !== true) {
+            $factory->redirect('login');
+        }
+        break;
+    case 'edit':
+        if ($session->isAuthenticated() !== true) {
+            $factory->redirect('login');
+        }
+        break;
 }

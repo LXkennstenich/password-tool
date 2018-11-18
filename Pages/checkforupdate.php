@@ -46,8 +46,10 @@ $debugger = $factory->getDebugger();
     request.tk = token;
     request.ts = timestamp;
     request.ipaddress = ipaddress;
+    request.host = host;
+    request.userAgent = userAgent;
     request.uid = uid;
-    request.searchTerm = searchTerm;
+    request.accessLevel = accessLevel;
     $("#content-wrapper").load(getAjaxUrl(), {"request": JSON.stringify(request)});
 </script>
 

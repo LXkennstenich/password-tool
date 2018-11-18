@@ -600,7 +600,7 @@ class Factory {
 
     public function getSystem() {
         if (static::$system == null || !isset(static::$system)) {
-            static::$system = new System($this->getDatabase(), $this->getEncryption(), $this->getDebugger(), $this->getAccount());
+            static::$system = new System($this->getDatabase(), $this->getEncryption(), $this->getDebugger(), $this->getAccount(), $this->getMail());
         }
 
         return static::$system;

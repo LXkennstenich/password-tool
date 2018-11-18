@@ -573,8 +573,8 @@ class Account {
 
     /**
      * 
-     * @param type $id
-     * @param type $value
+     * @param int $id
+     * @param int $value
      * @return boolean
      */
     public function updateAuthSetup($id, $value) {

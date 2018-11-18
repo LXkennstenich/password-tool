@@ -87,7 +87,6 @@ include_once ELEMENTS_DIR . 'ajaxLoader.php';
                         </p>
                         <i class="far fa-eye" onclick="showPassword(this)"></i>
                         <i class="fas fa-copy copy-password"></i>
-
                     </div>
                     <div class="row">
                         <label>URL:</label>

@@ -56,7 +56,7 @@ try {
     if ($timeCalculated > 500 || $timeCalculated < 1) {
         $message = 'Zeitüberschreitung Formular || Datei: ' . __FILE__ . ' Zeit: ' . $timeCalculated;
         $debugger->log($message);
-        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username, $session->getHost());
+        $system->sendMail($message, "Zeitüberschreitung bei Login-Versuch", $username);
         exit('Fehler bei der Anfrage bitte Seite neu laden');
     }
 
@@ -97,8 +97,8 @@ try {
     $session->setUsername($username);
     $session->setPassword($password);
 
-    $host = $request->host;
-    $userAgent = $request->userAgent;
+    $host = $host;
+    $userAgent = $userAgent;
 
     $session->setIpaddress($sessionIpAddress);
     $session->setUserID($factory->getUserID($username));
@@ -111,7 +111,7 @@ try {
             $debugger->log($message);
 
             if ($emailNotificationLogin != false) {
-                $system->sendMail($message, 'Login-Vorgang Password-Tool', $username, $host);
+                $system->sendMail($message, 'Login-Vorgang Password-Tool', $username);
             }
 
             echo "1";
@@ -132,7 +132,7 @@ try {
         $debugger->log($message);
 
 
-        $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username, $host);
+        $system->sendMail($message, 'Fehlgeschlagener Login-Vorgang Password-Tool', $username);
 
 
         echo "Benutzername oder Passwort ist nicht korrekt";

@@ -12,13 +12,31 @@ class System extends Item {
     private static $bitbucketRepoSlug = "password-tool";
     private static $bitbucketAPI_BaseURL = "https://api.bitbucket.org/2.0";
     private static $bitbucket_BaseURL = "https://bitbucket.org/";
+    protected $mail;
 
-    public function __construct($database, $encryption, $debugger, $account) {
+    public function __construct($database, $encryption, $debugger, $account, $mail) {
         parent::__construct(strtolower(__CLASS__));
         $this->setDatabase($database);
         $this->setEncryption($encryption);
         $this->setDebugger($debugger);
         $this->setAccount($account);
+        $this->setMail($mail);
+    }
+
+    /**
+     * 
+     * @param \Mail $mail
+     */
+    private function setMail(\Mail $mail) {
+        $this->mail = $mail;
+    }
+
+    /**
+     * 
+     * @return \Mail
+     */
+    private function getMail(): \Mail {
+        return $this->mail;
     }
 
     private function setAccount($account) {
@@ -648,27 +666,13 @@ class System extends Item {
         return false;
     }
 
-    public function sendMail($message, $subject, $mailAddress, $host) {
-        $hostAddress = 'https://' . $host;
+    public function sendMail($message, $subject, $mailAddress) {
 
-        $subjectFiltered = filter_var($subject, FILTER_SANITIZE_STRING);
-        $messageFiltered = filter_var($message, FILTER_SANITIZE_STRING);
+        $subject = filter_var($subject, FILTER_SANITIZE_STRING);
+        $message = filter_var($message, FILTER_SANITIZE_STRING);
         $address = filter_var($mailAddress, FILTER_VALIDATE_EMAIL);
 
-        $header = 'From: no-reply@' . $host . "\r\n" .
-                'X-Sender: ' . $hostAddress . "\r\n" .
-                'X-Mailer: PHP/' . phpversion();
-
-
-
-        if (mail($address, $subjectFiltered, $messageFiltered, $header) !== false) {
-            $this->getDebugger()->log("Nachricht an " . $address . ' versendet');
-            return true;
-        }
-
-        $this->getDebugger()->log("Versenden der Nachricht an " . $address . ' fehlgeschlagen');
-
-        return false;
+        $this->getMail()->sendMail($subject, $message, $address);
     }
 
     public static function getView($view) {

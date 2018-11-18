@@ -23,7 +23,6 @@ $(document).ready(function () {
     $('#clearCacheButton').bind('click touch', function () {
         var request = {};
         request.action = 'ClearCache';
-        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
@@ -52,7 +51,6 @@ $(document).ready(function () {
     $('#createDatasetButton').bind('click touch', function () {
         var request = {};
         request.action = 'NewDataset';
-        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
@@ -92,7 +90,6 @@ $(document).ready(function () {
     $('#updateSystemSettingsButton').bind('click touch', function () {
         var request = {};
         request.action = 'UpdateSystemSettings';
-        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;
@@ -126,7 +123,6 @@ $(document).ready(function () {
     $('#generatePasswordButton').bind('click touch', function () {
         var request = {};
         request.action = 'GeneratePassword';
-        request.timestamp = requestTimestamp;
         request.tk = token;
         request.ts = timestamp;
         request.ipaddress = ipaddress;

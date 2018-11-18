@@ -46,6 +46,10 @@ try {
     $userAgent = filter_var($encryption->systemDecrypt($request->userAgent), FILTER_SANITIZE_STRING);
     $accessLevel = filter_var($encryption->systemDecrypt($request->accessLevel), FILTER_VALIDATE_INT);
 
+    if ($action == 'Login') {
+        $host = filter_var($encryption->systemDecrypt($request->host), FILTER_SANITIZE_STRING);
+    }
+
     if ($action == 'View') {
         $file = VIEW_DIR . $request->file . '.view.php';
     } else {

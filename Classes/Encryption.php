@@ -225,7 +225,7 @@ class Encryption {
     /**
      * 
      * @param string $dataToEncrypt
-     * @return string | null
+     * @return string 
      */
     public function systemEncrypt(string $dataToEncrypt) {
         try {

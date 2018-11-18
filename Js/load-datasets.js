@@ -2,7 +2,6 @@ var request = {};
 request.action = 'View';
 request.file = 'dataset';
 request.searchTerm = searchTerm;
-request.timestamp = requestTimestamp;
 request.tk = token;
 request.ts = timestamp;
 request.ipaddress = ipaddress;
